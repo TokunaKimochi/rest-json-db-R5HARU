@@ -1,0 +1,29 @@
+{
+  "name": "rest-json-db-r5haru",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18.16.0",
+    "pnpm": ">=8.4.0"
+  },
+  "packageManager": "pnpm@8.4.0",
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "start": "node dist\\index.js",
+    "nodemon": "nodemon dist\\index.js",
+    "watch": "tsc --watch",
+    "dev": "concurrently --names \"🧊     tsc,🦕 nodemon\" --prefix-colors \"#83cbff,#00d26a\" \"pnpm run watch\" \"pnpm run nodemon\"",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.1.0",
+    "@types/nodemon": "^1.19.2",
+    "concurrently": "^8.0.1",
+    "nodemon": "^2.0.22",
+    "typescript": "^5.0.4"
+  }
+}
