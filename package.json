@@ -14,7 +14,9 @@
     "nodemon": "nodemon dist\\index.js",
     "watch": "tsc --watch",
     "dev": "concurrently --names \"🧊     tsc,🦕 nodemon\" --prefix-colors \"#83cbff,#00d26a\" \"pnpm run watch\" \"pnpm run nodemon\"",
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "eslint src/ --ext .tsx,.ts --fix",
+    "format": "prettier --write \"**/*.+(js|json|yml|ts|tsx)\""
   },
   "keywords": [],
   "author": "",
@@ -22,8 +24,16 @@
   "devDependencies": {
     "@types/node": "^20.1.0",
     "@types/nodemon": "^1.19.2",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
     "concurrently": "^8.0.1",
+    "eslint": "^8.42.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
     "nodemon": "^2.0.22",
+    "prettier": "^2.8.8",
     "typescript": "^5.0.4"
   }
 }
