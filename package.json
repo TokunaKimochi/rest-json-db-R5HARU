@@ -2,7 +2,7 @@
   "name": "rest-json-db-r5haru",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "src/indes.ts",
   "engines": {
     "node": ">=18.16.0",
     "pnpm": ">=8.4.0"
