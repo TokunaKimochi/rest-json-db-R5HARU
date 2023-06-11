@@ -2,7 +2,7 @@
   "name": "rest-json-db-r5haru",
   "version": "0.0.1",
   "description": "",
-  "main": "src/indes.ts",
+  "main": "src/index.ts",
   "engines": {
     "node": ">=18.16.0",
     "pnpm": ">=8.4.0"
@@ -15,8 +15,8 @@
     "watch": "tsc --watch",
     "dev": "concurrently --names \"🧊     tsc,🦕 nodemon\" --prefix-colors \"#83cbff,#00d26a\" \"pnpm run watch\" \"pnpm run nodemon\"",
     "build": "tsc",
-    "lint": "eslint src/ --ext .tsx,.ts --fix",
-    "format": "prettier --write \"**/*.+(js|json|yml|ts|tsx)\""
+    "lint": "eslint src/ --ext .ts --fix",
+    "format": "prettier --write \"**/*.+(js|json|yml|ts)\""
   },
   "keywords": [],
   "author": "",
