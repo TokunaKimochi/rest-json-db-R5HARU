@@ -19,7 +19,13 @@ export function notFound(req: Request, res: Response, next: NextFunction): void 
   next(error);
 }
 
-export function errorHandler(err: HttpException, _: Request, res: Response<ErrorResponse>): void {
+export function errorHandler(
+  err: HttpException,
+  _req: Request,
+  res: Response<ErrorResponse>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _next: NextFunction
+): void {
   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
   res.status(statusCode);
   res.json({
