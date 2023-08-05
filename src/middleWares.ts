@@ -1,18 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import ErrorResponse from 'interfaces/ErrorResponse';
 
-class HttpException extends Error {
-  statusCode?: number;
-
-  message: string;
-
-  constructor(statusCode: number, message: string) {
-    super(message);
-    this.statusCode = statusCode || 500;
-    this.message = message;
-  }
-}
-
 export function notFound(req: Request, res: Response, next: NextFunction): void {
   res.status(404);
   const error = new Error(`🔍 - Not Found - ${req.originalUrl}`);
@@ -20,15 +8,14 @@ export function notFound(req: Request, res: Response, next: NextFunction): void 
 }
 
 export function errorHandler(
-  err: HttpException,
+  err: Error,
   _req: Request,
   res: Response<ErrorResponse>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction
 ): void {
   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
-  res.status(statusCode);
-  res.json({
+  res.status(statusCode).json({
     message: err.message,
     stack: err.stack,
   });
