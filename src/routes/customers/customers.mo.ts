@@ -32,8 +32,8 @@ export const customersTbSchema = z
 
 export const filterQuerySchema = z
   .object({
-    size: z.number().int().gte(1).lte(100).default(10),
-    page: z.number().int().positive().default(1),
+    size: z.coerce.number().int().gte(1).lte(50).default(10),
+    page: z.coerce.number().int().positive().default(1),
   })
   .partial();
 
