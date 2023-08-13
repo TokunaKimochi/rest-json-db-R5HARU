@@ -9,6 +9,7 @@ const dbConf: IConnectionParameters = {
   user: process.env.PG_USERNAME,
   password: process.env.PG_PASSWORD,
   database: process.env.PG_DATABASE,
+  allowExitOnIdle: true,
 };
 
 export const db: IDatabase<{}> = pgp(dbConf);
