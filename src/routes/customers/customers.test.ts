@@ -3,7 +3,7 @@ import request from 'supertest';
 import app from '../../app';
 
 describe('GET /api/customers', () => {
-  it('JSON でカスタマー情報の配列を返却', async () => {
+  it('GET /api/customers', async () => {
     await request(app)
       .get('/api/customers')
       .set('Accept', 'application/json')
@@ -16,10 +16,8 @@ describe('GET /api/customers', () => {
         expect(res.body[0]).toHaveProperty('searched_name');
       });
   });
-});
 
-describe('GET /api/customers?size=3', () => {
-  it('JSON で長さ３のカスタマー情報の配列を返却', async () => {
+  it('GET /api/customers?size=3', async () => {
     await request(app)
       .get('/api/customers?size=3')
       .set('Accept', 'application/json')
@@ -30,10 +28,8 @@ describe('GET /api/customers?size=3', () => {
         expect(res.body.length).toBe(3);
       });
   });
-});
 
-describe('GET /api/customers?size=50&page=999999999', () => {
-  it('JSON で長さ０のカスタマー情報の配列を返却', async () => {
+  it('GET /api/customers?size=50&page=999999999', async () => {
     await request(app)
       .get('/api/customers?size=50&page=999999999')
       .set('Accept', 'application/json')
@@ -44,10 +40,8 @@ describe('GET /api/customers?size=50&page=999999999', () => {
         expect(res.body.length).toBe(0);
       });
   });
-});
 
-describe('GET /api/customers?size=50&page=-10', () => {
-  it('JSON で ZodError を返却', async () => {
+  it('GET /api/customers?size=50&page=-10', async () => {
     await request(app)
       .get('/api/customers?size=50&page=-10')
       .set('Accept', 'application/json')
@@ -58,10 +52,8 @@ describe('GET /api/customers?size=50&page=-10', () => {
         expect(res.body.stack).toMatch('ZodError');
       });
   });
-});
 
-describe('GET /api/customers?size=large', () => {
-  it('JSON で ZodError ( 無効な型 ) を返却', async () => {
+  it('GET /api/customers?size=large', async () => {
     await request(app)
       .get('/api/customers?size=large')
       .set('Accept', 'application/json')
