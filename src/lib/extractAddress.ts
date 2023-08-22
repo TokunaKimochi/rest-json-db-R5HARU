@@ -14,14 +14,14 @@ export default function extractAddress(orgAddress: string): string {
   address = address.replace(/[0-9０-９]+[階|F].*?/g, '');
 
   const allNumber = '([0-9０-９]+|[一二三四五六七八九十百千]+)';
-  const ary = address.match(
+  const arr = address.match(
     new RegExp(`${allNumber}+(${allNumber}|(番町|丁目|丁|番地|番|号|-|の))*(${allNumber}|(丁目|丁|番地|番|号))`, 'g')
   );
-  if (ary !== null) {
+  if (arr !== null) {
     let addressLike = '';
-    const len = ary.length;
+    const len = arr.length;
     for (let i = 0; i < len; i += 1) {
-      const tempAddress = ary[i];
+      const tempAddress = arr[i];
       if (tempAddress.length >= addressLike.length) {
         addressLike = tempAddress;
       }
