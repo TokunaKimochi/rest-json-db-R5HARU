@@ -1,6 +1,6 @@
 import jaconv from 'jaconv';
 
-export default function fixCorporateNameVariants(orgName: string, isOneWord = true) {
+export default function fixCorporateNameVariants(orgName: string, isOneWord = true): string {
   let name = orgName;
 
   /* https://blog.foresta.me/posts/replace-hyphen-for-js */
