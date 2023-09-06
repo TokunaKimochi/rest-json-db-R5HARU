@@ -1,6 +1,13 @@
 import pgPromise, { IDatabase, IMain } from 'pg-promise';
 import { IConnectionParameters } from 'pg-promise/typescript/pg-subset';
 
+export class DataBaseError extends Error {
+  constructor(message: Error) {
+    super(`🐘 - DB Error - ${message}`);
+    this.name = 'DataBaseError';
+  }
+}
+
 export const pgp: IMain = pgPromise();
 
 const dbConf: IConnectionParameters = {

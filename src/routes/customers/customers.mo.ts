@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { db } from '../../db';
+import { DataBaseError, db } from '../../db';
 
 export const customersTbSchema = z
   .object({
@@ -45,6 +45,6 @@ export const findAllCustomers = async (q: FilterQuery): Promise<CustomersTb[]> =
   const offset = limit * (q.page || 1) - limit;
   const result: CustomersTb[] = await db
     .manyOrNone(`SELECT * FROM customers ORDER BY updated_at DESC LIMIT ${limit} OFFSET ${offset}`)
-    .catch((err: string) => Promise.reject(new Error(`🐘 - DB Error - ${err}`)));
+    .catch((err: Error) => Promise.reject(new DataBaseError(err)));
   return result;
 };
