@@ -49,7 +49,7 @@ describe('GET /api/customers', () => {
       .expect(422)
       .then((res) => {
         expect(res.body).toHaveProperty('message');
-        expect(res.body.stack).toMatch('ZodError');
+        expect(res.body.stack[0]).toMatch('ZodError');
       });
   });
 
@@ -61,8 +61,8 @@ describe('GET /api/customers', () => {
       .expect(422)
       .then((res) => {
         expect(res.body).toHaveProperty('message');
-        expect(res.body.stack).toMatch('ZodError');
-        expect(res.body.stack).toMatch('invalid_type');
+        expect(res.body.stack[0]).toMatch('ZodError');
+        expect(res.body.stack[2]).toMatch('invalid_type');
       });
   });
 });
