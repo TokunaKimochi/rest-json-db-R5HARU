@@ -57,6 +57,7 @@
     "jaconv": "github:TokunaKimochi/jaconv",
     "morgan": "^1.10.0",
     "pg-promise": "^11.5.0",
+    "sql-bricks": "^3.0.1",
     "symlink-dir": "^5.1.1",
     "zod": "^3.21.4"
   }
