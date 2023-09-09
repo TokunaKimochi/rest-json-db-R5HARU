@@ -1,5 +1,21 @@
 import extractSemanticAddress from './extractSemanticAddress';
 
+describe('有り触れた入力', () => {
+  it('大田区平和島６丁目１番１号東京流通センター', async () => {
+    const result = await extractSemanticAddress('大田区平和島６丁目１番１号東京流通センター');
+    expect(result).toStrictEqual({
+      nja_pref: '東京都',
+      nja_city: '大田区',
+      nja_town: '平和島六丁目',
+      nja_addr: '1-1',
+      nja_lat: '35.579188',
+      nja_lng: '139.749429',
+      nja_level: 3,
+      address_sha1: '4001330a9795f59ff788fe7c8b89220c939bc5ec',
+    });
+  });
+});
+
 describe('丁目を「-」に省略するケース', () => {
   it('北海道札幌市西区二十四軒二条2丁目3番3号メゾンコーポ２０１号室', async () => {
     const result = await extractSemanticAddress('北海道札幌市西区24-2-2-3-3メゾンコーポ２０１号室');

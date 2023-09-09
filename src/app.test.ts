@@ -5,7 +5,7 @@ import app from './app';
 describe('NOT FOUND', () => {
   it('存在しない API へのアクセス', (done) => {
     request(app)
-      .get('/hoge-fuga-boko')
+      .get('/hoge-fuga-piyo')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(404, done);
