@@ -19,6 +19,7 @@
     "format": "prettier --write \"**/*.+(js|json|yml|ts)\"",
     "test": "jest --watch",
     "test:full": "set INSERT_ENABLED=true && jest",
+    "test:cov:full": "set INSERT_ENABLED=true && jest --coverage",
     "api:geoUp": "node dist\\scripts\\geoJpApiUpdate.js"
   },
   "keywords": [],
