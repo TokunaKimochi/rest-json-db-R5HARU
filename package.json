@@ -18,6 +18,7 @@
     "lint": "eslint src/ --ext .js,.ts --fix",
     "format": "prettier --write \"**/*.+(js|json|yml|ts)\"",
     "test": "jest --watch",
+    "test:full": "set INSERT_ENABLED=true && jest",
     "api:geoUp": "node dist\\scripts\\geoJpApiUpdate.js"
   },
   "keywords": [],

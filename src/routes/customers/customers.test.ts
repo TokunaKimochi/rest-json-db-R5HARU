@@ -1,5 +1,4 @@
 import request from 'supertest';
-
 import app from '../../app';
 
 describe('GET /api/customers', () => {
@@ -66,3 +65,60 @@ describe('GET /api/customers', () => {
       });
   });
 });
+
+describe('POST /api/customers', () => {
+  it('外部キー制約違反 POST /api/customers', async () => {
+    await request(app)
+      .post('/api/customers')
+      .set('Accept', 'application/json')
+      .send({
+        tel: '0565-28-2121',
+        zip_code: '471-8571',
+        address1: '豊田市トヨタ町1番地',
+        address2: '',
+        address3: '',
+        name1: 'てすと',
+        name2: '',
+        alias: 'test',
+        // invoices テーブルの id は 1 から始まる
+        invoice_id: 0,
+      })
+      .expect('Content-Type', /json/)
+      .expect(500)
+      .then((res) => {
+        expect(res.body).toHaveProperty('message');
+        expect(res.body.stack[0]).toMatch('🐘');
+      });
+  });
+});
+
+if (process.env.INSERT_ENABLED) {
+  describe('POST /api/customers', () => {
+    it('POST /api/customers', async () => {
+      await request(app)
+        .post('/api/customers')
+        .set('Accept', 'application/json')
+        .send({
+          tel: '0565-28-2121',
+          zip_code: '471-8571',
+          address1: '豊田市トヨタ町1番地',
+          address2: '',
+          address3: '',
+          name1: 'てすと',
+          name2: '',
+          alias: 'test',
+          invoice_id: 1,
+        })
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then((res) => {
+          expect(res.body).toHaveProperty('id');
+          expect(res.body.id).toBeGreaterThan(0);
+        });
+    });
+  });
+} else {
+  console.log(
+    'ℹ データベースに副作用を起こすテストはスキップされました\n\t➥ 環境変数で INSERT_ENABLED=true とすれば動作を変えられます'
+  );
+}
