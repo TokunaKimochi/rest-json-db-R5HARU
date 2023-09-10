@@ -64,6 +64,19 @@ describe('GET /api/customers', () => {
         expect(res.body.stack[2]).toMatch('invalid_type');
       });
   });
+
+  it('GET /api/customers/0', async () => {
+    await request(app)
+      .get('/api/customers/0')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(422)
+      .then((res) => {
+        expect(res.body).toHaveProperty('message');
+        expect(res.body.stack[0]).toMatch('ZodError');
+        expect(res.body.stack[2]).toMatch('too_small');
+      });
+  });
 });
 
 describe('POST /api/customers', () => {
@@ -93,7 +106,8 @@ describe('POST /api/customers', () => {
 });
 
 if (process.env.INSERT_ENABLED) {
-  describe('POST /api/customers', () => {
+  describe('順番固定 POST -> GET /:id', () => {
+    let newId: number;
     it('POST /api/customers', async () => {
       await request(app)
         .post('/api/customers')
@@ -113,7 +127,20 @@ if (process.env.INSERT_ENABLED) {
         .expect(201)
         .then((res) => {
           expect(res.body).toHaveProperty('id');
+          newId = res.body.id;
           expect(res.body.id).toBeGreaterThan(0);
+        });
+    });
+
+    it('GET /api/customers/:id', async () => {
+      await request(app)
+        .get(`/api/customers/${newId}`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toHaveProperty('id');
+          expect(res.body).toHaveProperty('searched_name');
         });
     });
   });

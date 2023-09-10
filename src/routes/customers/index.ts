@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { validateRequest } from '../../middleWares';
 import * as controllers from './customers.co';
-import { createCustomerInputSchema, filterQuerySchema } from './customers.mo';
+import { createCustomerInputSchema, filterQuerySchema, paramsWithIdSchema } from './customers.mo';
 
 const router = Router();
 
@@ -19,5 +19,11 @@ router
     }),
     controllers.createOne
   );
+router.route('/:id').get(
+  validateRequest({
+    params: paramsWithIdSchema,
+  }),
+  controllers.findOne
+);
 
 export default router;

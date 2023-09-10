@@ -42,6 +42,8 @@ export const customersTbSchema = z
   })
   .partial();
 
+export const customersTbRowSchema = customersTbSchema.required();
+
 export const createCustomerInputSchema = customersTbSchema
   .pick({
     tel: true,
@@ -63,15 +65,27 @@ export const filterQuerySchema = z
   })
   .partial();
 
-export type CustomersTb = z.infer<typeof customersTbSchema>;
+export const paramsWithIdSchema = z.object({
+  id: z.coerce.number().int().positive().optional(),
+});
+
+export type CustomersTbRow = z.infer<typeof customersTbRowSchema>;
 export type CreateCustomerInput = z.infer<typeof createCustomerInputSchema>;
 export type FilterQuery = z.infer<typeof filterQuerySchema>;
+export type ParamsWithId = z.infer<typeof paramsWithIdSchema>;
 
-export const findAllCustomers = async (q: FilterQuery): Promise<CustomersTb[]> => {
+export const findAllCustomers = async (q: FilterQuery): Promise<CustomersTbRow[] | []> => {
   const limit = q.size || 10;
   const offset = limit * (q.page || 1) - limit;
-  const result: CustomersTb[] = await db
+  const result: CustomersTbRow[] = await db
     .manyOrNone(`SELECT * FROM customers ORDER BY updated_at DESC LIMIT ${limit} OFFSET ${offset}`)
+    .catch((err: Error) => Promise.reject(new DataBaseError(err)));
+  return result;
+};
+
+export const findOneCustomer = async (p: ParamsWithId): Promise<CustomersTbRow | null> => {
+  const result: CustomersTbRow = await db
+    .oneOrNone(`SELECT * FROM customers WHERE id = ${p.id}`)
     .catch((err: Error) => Promise.reject(new DataBaseError(err)));
   return result;
 };
@@ -95,7 +109,7 @@ export const createOneCustomer = async (body: CreateCustomerInput): Promise<{ id
     sha1_same_val: sha1SameVal,
   }).toString();
   // データベースに登録を試み、成功したら自動採番の id を返却
-  const newIdObj = await db
+  const newIdObj: { id: number } = await db
     .one(`${insertStatement} RETURNING id`)
     .catch((err: Error) => Promise.reject(new DataBaseError(err)));
   return newIdObj;

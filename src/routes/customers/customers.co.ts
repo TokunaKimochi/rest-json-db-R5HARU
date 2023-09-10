@@ -1,10 +1,27 @@
 import { NextFunction, Request, Response } from 'express';
-import { CreateCustomerInput, FilterQuery, createOneCustomer, findAllCustomers } from './customers.mo';
+import {
+  CreateCustomerInput,
+  FilterQuery,
+  ParamsWithId,
+  createOneCustomer,
+  findAllCustomers,
+  findOneCustomer,
+} from './customers.mo';
 
 export const findAll = async (req: Request<FilterQuery>, res: Response, next: NextFunction): Promise<void> => {
   try {
     const customers = await findAllCustomers(req.query);
     res.status(200).json(customers);
+  } catch (err: unknown) {
+    res.status(500);
+    next(err);
+  }
+};
+
+export const findOne = async (req: Request<ParamsWithId>, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const customer = await findOneCustomer(req.params);
+    res.status(200).json(customer);
   } catch (err: unknown) {
     res.status(500);
     next(err);
