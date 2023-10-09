@@ -3,15 +3,10 @@ import { insert } from 'sql-bricks';
 import { DataBaseError, db } from '../../db';
 import extractSemanticAddress from '../../lib/extractSemanticAddress';
 import fixCorporateNameVariants from '../../lib/fixCorporateNameVariants';
-import {
-  customersTbRowSchema,
-  createCustomerInputSchema,
-  filterQuerySchema,
-  paramsWithIdSchema,
-} from './customers.schemas';
+import { customersTbRowSchema, customerInputsSchema, filterQuerySchema, paramsWithIdSchema } from './customers.schemas';
 
 export type CustomersTbRow = z.infer<typeof customersTbRowSchema>;
-export type CreateCustomerInput = z.infer<typeof createCustomerInputSchema>;
+export type CustomerInputs = z.infer<typeof customerInputsSchema>;
 export type FilterQuery = z.infer<typeof filterQuerySchema>;
 export type ParamsWithId = z.infer<typeof paramsWithIdSchema>;
 
@@ -31,7 +26,7 @@ export const findOneCustomer = async (p: ParamsWithId): Promise<CustomersTbRow |
   return result;
 };
 
-export const createOneCustomer = async (body: CreateCustomerInput): Promise<{ id: number }> => {
+export const createOneCustomer = async (body: CustomerInputs): Promise<{ id: number }> => {
   const inputObj = body;
   // バリデーションで許した郵便番号のハイフンを消す
   inputObj.zip_code = inputObj.zip_code.replace(/\D/g, '');

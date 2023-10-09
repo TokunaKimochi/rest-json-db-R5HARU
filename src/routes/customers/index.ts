@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { validateRequest } from '../../middleWares';
 import * as controllers from './customers.co';
-import { createCustomerInputSchema, filterQuerySchema, paramsWithIdSchema } from './customers.schemas';
+import { customerInputsSchema, filterQuerySchema, paramsWithIdSchema } from './customers.schemas';
 
 const router = Router();
 
@@ -15,7 +15,7 @@ router
   )
   .post(
     validateRequest({
-      body: createCustomerInputSchema,
+      body: customerInputsSchema,
     }),
     controllers.createOne
   );

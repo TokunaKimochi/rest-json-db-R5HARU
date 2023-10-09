@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import {
-  CreateCustomerInput,
+  CustomerInputs,
   FilterQuery,
   ParamsWithId,
   createOneCustomer,
@@ -28,11 +28,7 @@ export const findOne = async (req: Request<ParamsWithId>, res: Response, next: N
   }
 };
 
-export const createOne = async (
-  req: Request<{}, CreateCustomerInput>,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const createOne = async (req: Request<{}, CustomerInputs>, res: Response, next: NextFunction): Promise<void> => {
   try {
     const newIdObj = await createOneCustomer(req.body);
     res.status(201).json(newIdObj);

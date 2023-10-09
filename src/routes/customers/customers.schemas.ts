@@ -38,7 +38,7 @@ export const customersTbSchema = z
 
 export const customersTbRowSchema = customersTbSchema.required();
 
-export const createCustomerInputSchema = customersTbSchema
+export const customerInputsSchema = customersTbSchema
   .pick({
     tel: true,
     zip_code: true,
