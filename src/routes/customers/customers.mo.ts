@@ -3,11 +3,10 @@ import { insert } from 'sql-bricks';
 import { DataBaseError, db } from '../../db';
 import extractSemanticAddress from '../../lib/extractSemanticAddress';
 import fixCorporateNameVariants from '../../lib/fixCorporateNameVariants';
-import findMaxSha1SameVal from '../../private-sql-functions/findMaxSha1SameVal';
 
 export const customersTbSchema = z
   .object({
-    id: z.number().int().nonnegative(),
+    id: z.number().int().positive(),
     tel: z
       .string()
       .min(3)
@@ -26,17 +25,16 @@ export const customersTbSchema = z
     alias: z.string().max(30),
     searched_name: z.string().min(1).max(90),
     address_sha1: z.string().length(40),
-    sha1_same_val: z.number().int().nonnegative().default(0),
     nja_pref: z.string().max(4),
     nja_city: z.string().max(12),
     nja_town: z.string().max(16),
     nja_addr: z.string().max(32),
-    nja_lat: z.string().max(16),
-    nja_lng: z.string().max(16),
+    nja_lat: z.number().positive().nullable(),
+    nja_lng: z.number().positive().nullable(),
     nja_level: z.number().int().gte(0).lte(3),
     notes: z.number().int().nonnegative().default(0),
     times: z.number().int().nonnegative().default(0),
-    invoice_id: z.number().int().nonnegative(),
+    invoice_type_id: z.number().int().positive(),
     created_at: z.string().max(40),
     updated_at: z.string().max(40),
   })
@@ -54,7 +52,7 @@ export const createCustomerInputSchema = customersTbSchema
     name1: true,
     name2: true,
     alias: true,
-    invoice_id: true,
+    invoice_type_id: true,
   })
   .required();
 
@@ -98,15 +96,11 @@ export const createOneCustomer = async (body: CreateCustomerInput): Promise<{ id
   const searchedName = fixCorporateNameVariants(inputObj.name1 + inputObj.name2 + inputObj.alias);
   // 住所から分析しやすい情報を生成
   const semanticAddressObj = await extractSemanticAddress(inputObj.address1 + inputObj.address2 + inputObj.address3);
-  // 同一住所が（最大）いくつ存在するか
-  const sameAddress = await findMaxSha1SameVal(semanticAddressObj.address_sha1);
-  const sha1SameVal = sameAddress === null ? 0 : sameAddress + 1;
   // INSERT 文を生成
   const insertStatement = insert('customers', {
     ...inputObj,
     searched_name: searchedName,
     ...semanticAddressObj,
-    sha1_same_val: sha1SameVal,
   }).toString();
   // データベースに登録を試み、成功したら自動採番の id を返却
   const newIdObj: { id: number } = await db

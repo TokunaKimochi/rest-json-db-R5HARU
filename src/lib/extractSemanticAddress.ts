@@ -7,8 +7,8 @@ interface MetaAddress {
   nja_city: string;
   nja_town: string;
   nja_addr: string;
-  nja_lat: string | null;
-  nja_lng: string | null;
+  nja_lat: number | null;
+  nja_lng: number | null;
   nja_level: number;
   address_sha1: string;
 }
@@ -22,8 +22,8 @@ export default async function extractSemanticAddress(orgAddress: string): Promis
     nja_city: city,
     nja_town: town,
     nja_addr: addr,
-    nja_lat: lat?.toString(10) || null,
-    nja_lng: lng?.toString(10) || null,
+    nja_lat: lat,
+    nja_lng: lng,
     nja_level: level,
     address_sha1: addressSha1,
   };

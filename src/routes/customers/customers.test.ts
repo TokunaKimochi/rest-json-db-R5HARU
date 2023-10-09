@@ -93,8 +93,8 @@ describe('POST /api/customers', () => {
         name1: 'てすと',
         name2: '',
         alias: 'test',
-        // invoices テーブルの id は 1 から始まる
-        invoice_id: 0,
+        // invoice_types テーブルの id は 1 から始まる
+        invoice_type_id: 0,
       })
       .expect('Content-Type', /json/)
       .expect(500)
@@ -121,7 +121,7 @@ if (process.env.INSERT_ENABLED) {
           name1: 'てすと',
           name2: '',
           alias: 'test',
-          invoice_id: 1,
+          invoice_type_id: 1,
         })
         .expect('Content-Type', /json/)
         .expect(201)
