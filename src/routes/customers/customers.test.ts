@@ -80,7 +80,7 @@ describe('GET /api/customers', () => {
 });
 
 describe('POST /api/customers', () => {
-  it('外部キー制約違反 POST /api/customers', async () => {
+  it('invoice_type_id: 0 POST /api/customers', async () => {
     await request(app)
       .post('/api/customers')
       .set('Accept', 'application/json')
@@ -95,6 +95,31 @@ describe('POST /api/customers', () => {
         alias: 'test',
         // invoice_types テーブルの id は 1 から始まる
         invoice_type_id: 0,
+      })
+      .expect('Content-Type', /json/)
+      .expect(422)
+      .then((res) => {
+        expect(res.body).toHaveProperty('message');
+        expect(res.body.stack[0]).toMatch('ZodError');
+        expect(res.body.stack[2]).toMatch('too_small');
+      });
+  });
+
+  it('外部キー制約違反 POST /api/customers', async () => {
+    await request(app)
+      .post('/api/customers')
+      .set('Accept', 'application/json')
+      .send({
+        tel: '0565-28-2121',
+        zip_code: '471-8571',
+        address1: '豊田市トヨタ町1番地',
+        address2: '',
+        address3: '',
+        name1: 'てすと',
+        name2: '',
+        alias: 'test',
+        // invoice_types テーブルの id に無さそうな大きな数字
+        invoice_type_id: 888,
       })
       .expect('Content-Type', /json/)
       .expect(500)
