@@ -96,15 +96,15 @@ export const createOneCustomer = async (body: CreateCustomerInput): Promise<{ id
   const searchedName = fixCorporateNameVariants(inputObj.name1 + inputObj.name2 + inputObj.alias);
   // 住所から分析しやすい情報を生成
   const semanticAddressObj = await extractSemanticAddress(inputObj.address1 + inputObj.address2 + inputObj.address3);
-  // INSERT 文を生成
-  const insertStatement = insert('customers', {
+  // INSERT クエリを生成
+  const { text, values } = insert('customers', {
     ...inputObj,
     searched_name: searchedName,
     ...semanticAddressObj,
-  }).toString();
+  }).toParams();
   // データベースに登録を試み、成功したら自動採番の id を返却
   const newIdObj: { id: number } = await db
-    .one(`${insertStatement} RETURNING id`)
+    .one(`${text} RETURNING id`, values)
     .catch((err: Error) => Promise.reject(new DataBaseError(err)));
   return newIdObj;
 };
