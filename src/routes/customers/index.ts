@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { validateRequest } from '../../middleWares';
 import * as controllers from './customers.co';
-import { createCustomerInputSchema, filterQuerySchema, paramsWithIdSchema } from './customers.mo';
+import { createCustomerInputSchema, filterQuerySchema, paramsWithIdSchema } from './customers.schemas';
 
 const router = Router();
 
