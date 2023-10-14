@@ -26,20 +26,26 @@ export const findOneCustomer = async (p: ParamsWithId): Promise<CustomersTbRow |
   return result;
 };
 
-export const createOneCustomer = async (body: CustomerInputs): Promise<{ id: number }> => {
-  const inputObj = body;
+type RegistrationData = Omit<CustomersTbRow, 'id' | 'notes' | 'times' | 'created_at' | 'updated_at'>;
+
+const generateRegistrationData = async (customerInputs: CustomerInputs): Promise<RegistrationData> => {
+  const inputObj = customerInputs;
   // バリデーションで許した郵便番号のハイフンを消す
   inputObj.zip_code = inputObj.zip_code.replace(/\D/g, '');
   // 検索対象とする表記揺れを抑制した文字列を生成
   const searchedName = fixCorporateNameVariants(inputObj.name1 + inputObj.name2 + inputObj.alias);
   // 住所から分析しやすい情報を生成
   const semanticAddressObj = await extractSemanticAddress(inputObj.address1 + inputObj.address2 + inputObj.address3);
-  // INSERT クエリを生成
-  const { text, values } = insert('customers', {
+  return {
     ...inputObj,
     searched_name: searchedName,
     ...semanticAddressObj,
-  }).toParams();
+  };
+};
+
+export const createOneCustomer = async (body: CustomerInputs): Promise<{ id: number }> => {
+  const registrationData = await generateRegistrationData(body);
+  const { text, values } = insert('customers', { ...registrationData }).toParams();
   // データベースに登録を試み、成功したら自動採番の id を返却
   const newIdObj: { id: number } = await db
     .one(`${text} RETURNING id`, values)
