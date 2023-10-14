@@ -41,6 +41,6 @@ export function errorHandler(
   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
   res.status(statusCode).json({
     message: err.message,
-    stack: err.stack?.split('\n'),
+    stack: err.stack?.split(/\r\n|\n/),
   });
 }

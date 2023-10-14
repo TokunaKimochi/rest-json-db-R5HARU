@@ -6,6 +6,7 @@ import {
   createOneCustomer,
   findAllCustomers,
   findOneCustomer,
+  updateOneCustomer,
 } from './customers.mo';
 
 export const findAll = async (req: Request<FilterQuery>, res: Response, next: NextFunction): Promise<void> => {
@@ -32,6 +33,20 @@ export const createOne = async (req: Request<{}, CustomerInputs>, res: Response,
   try {
     const newIdObj = await createOneCustomer(req.body);
     res.status(201).json(newIdObj);
+  } catch (err: unknown) {
+    res.status(500);
+    next(err);
+  }
+};
+
+export const updateOne = async (
+  req: Request<ParamsWithId, CustomerInputs>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const newIdObj = await updateOneCustomer(req.params, req.body);
+    res.status(200).json(newIdObj);
   } catch (err: unknown) {
     res.status(500);
     next(err);

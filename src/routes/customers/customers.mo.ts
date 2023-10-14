@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insert } from 'sql-bricks';
+import { insert, update } from 'sql-bricks';
 import { DataBaseError, db } from '../../db';
 import extractSemanticAddress from '../../lib/extractSemanticAddress';
 import fixCorporateNameVariants from '../../lib/fixCorporateNameVariants';
@@ -47,6 +47,18 @@ export const createOneCustomer = async (body: CustomerInputs): Promise<{ id: num
   const registrationData = await generateRegistrationData(body);
   const { text, values } = insert('customers', { ...registrationData }).toParams();
   // データベースに登録を試み、成功したら自動採番の id を返却
+  const newIdObj: { id: number } = await db
+    .one(`${text} RETURNING id`, values)
+    .catch((err: Error) => Promise.reject(new DataBaseError(err)));
+  return newIdObj;
+};
+
+export const updateOneCustomer = async (p: ParamsWithId, body: CustomerInputs): Promise<{ id: number }> => {
+  const registrationData = await generateRegistrationData(body);
+  const { text, values } = update('customers', { ...registrationData })
+    .where('id', p.id)
+    .toParams();
+  // データベースの更新を試み、成功したら自動採番の id を返却
   const newIdObj: { id: number } = await db
     .one(`${text} RETURNING id`, values)
     .catch((err: Error) => Promise.reject(new DataBaseError(err)));

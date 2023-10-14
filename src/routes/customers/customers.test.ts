@@ -130,8 +130,33 @@ describe('POST /api/customers', () => {
   });
 });
 
+describe('PUT /api/customers/:id', () => {
+  it('無さそうな大きな id PUT /api/customers/:id', async () => {
+    await request(app)
+      .put('/api/customers/888888888')
+      .set('Accept', 'application/json')
+      .send({
+        tel: '0565-28-2121',
+        zip_code: '471-8571',
+        address1: '豊田市トヨタ町1番地',
+        address2: '更新試行',
+        address3: 'アップデートテスト',
+        name1: '更新テスト',
+        name2: '',
+        alias: 'testTEST',
+        invoice_type_id: 3,
+      })
+      .expect('Content-Type', /json/)
+      .expect(500)
+      .then((res) => {
+        expect(res.body).toHaveProperty('message');
+        expect(res.body.stack[0]).toMatch('🐘');
+      });
+  });
+});
+
 if (process.env.INSERT_ENABLED) {
-  describe('順番固定 POST -> GET /:id', () => {
+  describe('順番固定 POST -> GET /:id -> PUT /:id', () => {
     let newId: number;
     it('POST /api/customers', async () => {
       await request(app)
@@ -166,6 +191,29 @@ if (process.env.INSERT_ENABLED) {
         .then((res) => {
           expect(res.body).toHaveProperty('id');
           expect(res.body).toHaveProperty('searched_name');
+        });
+    });
+
+    it('PUT /api/customers/:id', async () => {
+      await request(app)
+        .put(`/api/customers/${newId}`)
+        .set('Accept', 'application/json')
+        .send({
+          tel: '0565-28-2121',
+          zip_code: '471-8571',
+          address1: '豊田市トヨタ町1番地',
+          address2: '更新試行',
+          address3: 'アップデートテスト',
+          name1: '更新テスト',
+          name2: '',
+          alias: 'testTEST',
+          invoice_type_id: 3,
+        })
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toHaveProperty('id');
+          expect(res.body.id).toEqual(newId);
         });
     });
   });

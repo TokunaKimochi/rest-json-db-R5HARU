@@ -19,11 +19,20 @@ router
     }),
     controllers.createOne
   );
-router.route('/:id').get(
-  validateRequest({
-    params: paramsWithIdSchema,
-  }),
-  controllers.findOne
-);
+router
+  .route('/:id')
+  .get(
+    validateRequest({
+      params: paramsWithIdSchema,
+    }),
+    controllers.findOne
+  )
+  .put(
+    validateRequest({
+      params: paramsWithIdSchema,
+      body: customerInputsSchema,
+    }),
+    controllers.updateOne
+  );
 
 export default router;
