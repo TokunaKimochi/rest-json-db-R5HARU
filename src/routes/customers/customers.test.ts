@@ -155,8 +155,22 @@ describe('PUT /api/customers/:id', () => {
   });
 });
 
+describe('DELETE /api/customers/:id', () => {
+  it('無さそうな大きな id DELETE /api/customers/:id', async () => {
+    await request(app)
+      .delete('/api/customers/888888888')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(404)
+      .then((res) => {
+        expect(res.body).toHaveProperty('message');
+        expect(res.body.stack[0]).toMatch('🐘🔍');
+      });
+  });
+});
+
 if (process.env.INSERT_ENABLED) {
-  describe('順番固定 POST -> GET /:id -> PUT /:id', () => {
+  describe('順番固定 POST -> GET /:id -> PUT /:id -> DELETE /:id', () => {
     let newId: number;
     it('POST /api/customers', async () => {
       await request(app)
@@ -214,6 +228,19 @@ if (process.env.INSERT_ENABLED) {
         .then((res) => {
           expect(res.body).toHaveProperty('id');
           expect(res.body.id).toEqual(newId);
+        });
+    });
+
+    it('DELETE /api/customers/:id', async () => {
+      await request(app)
+        .delete(`/api/customers/${newId}`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toHaveProperty('command');
+          expect(res.body.command).toEqual('DELETE');
+          expect(res.body.rowCount).toEqual(1);
         });
     });
   });

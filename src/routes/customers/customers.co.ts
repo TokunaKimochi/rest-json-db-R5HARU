@@ -4,6 +4,7 @@ import {
   FilterQuery,
   ParamsWithId,
   createOneCustomer,
+  deleteOneCustomer,
   findAllCustomers,
   findOneCustomer,
   updateOneCustomer,
@@ -49,6 +50,20 @@ export const updateOne = async (
     res.status(200).json(newIdObj);
   } catch (err: unknown) {
     res.status(500);
+    next(err);
+  }
+};
+
+export const deleteOne = async (req: Request<ParamsWithId>, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const result = await deleteOneCustomer(req.params);
+    if (result.rowCount === 0) {
+      res.status(404);
+      throw new Error(`🐘🔍 - DB: Row not found - Customer with id "${req.params.id}" not found.`);
+    }
+    res.status(200).json(result);
+  } catch (err: unknown) {
+    res.status(res.statusCode !== 404 ? 500 : 404);
     next(err);
   }
 };

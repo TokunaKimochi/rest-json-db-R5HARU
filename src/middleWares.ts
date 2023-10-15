@@ -38,8 +38,7 @@ export function errorHandler(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction
 ): void {
-  const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
-  res.status(statusCode).json({
+  res.status(res.statusCode).json({
     message: err.message,
     stack: err.stack?.split(/\r\n|\n/),
   });

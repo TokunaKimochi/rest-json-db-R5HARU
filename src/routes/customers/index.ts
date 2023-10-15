@@ -33,6 +33,12 @@ router
       body: customerInputsSchema,
     }),
     controllers.updateOne
+  )
+  .delete(
+    validateRequest({
+      params: paramsWithIdSchema,
+    }),
+    controllers.deleteOne
   );
 
 export default router;

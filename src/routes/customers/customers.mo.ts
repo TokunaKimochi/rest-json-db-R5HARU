@@ -64,3 +64,10 @@ export const updateOneCustomer = async (p: ParamsWithId, body: CustomerInputs): 
     .catch((err: Error) => Promise.reject(new DataBaseError(err)));
   return newIdObj;
 };
+
+export const deleteOneCustomer = async (p: ParamsWithId): Promise<{ command: string; rowCount: number }> => {
+  const result: { command: string; rowCount: number } = await db
+    .result('DELETE FROM customers WHERE id = $1', [p.id], (r) => ({ command: r.command, rowCount: r.rowCount }))
+    .catch((err: Error) => Promise.reject(new DataBaseError(err)));
+  return result;
+};
