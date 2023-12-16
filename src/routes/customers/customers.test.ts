@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import request from 'supertest';
 import app from '../../app';
 
@@ -191,7 +192,7 @@ if (process.env.INSERT_ENABLED) {
         .expect(201)
         .then((res) => {
           expect(res.body).toHaveProperty('id');
-          newId = res.body.id;
+          newId = res.body.id as number;
           expect(res.body.id).toBeGreaterThan(0);
         });
     });

@@ -4,6 +4,9 @@ env:
 extends:
   - airbnb-base
   - airbnb-typescript/base
+  - eslint:recommended
+  - plugin:@typescript-eslint/recommended-type-checked
+  - plugin:@typescript-eslint/stylistic-type-checked
   - prettier
 parserOptions:
   ecmaVersion: latest

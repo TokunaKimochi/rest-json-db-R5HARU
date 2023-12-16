@@ -6,13 +6,13 @@ const geoJpApiUpdate = async () => {
 
   const [archive, exPath] =
     (await gitly('geolonia/japanese-addresses', `./vendor/japanese-addresses/${date}`, { throw: true }).catch(
-      (e: unknown) => console.error(`  >>>> ✘ ${e}`)
+      (e: string) => console.error(`  >>>> ✘ ${e}`)
     )) || [];
   if (!archive || !exPath) throw new Error('gitly() の戻り値が想定外です');
 
   console.log(`●工程1/2: 成功✨ ${archive} を ${exPath} に展開しました`);
 
-  const resultObj = (await symlinkDir(`${exPath}/api`, './vendor/japanese-addresses/api').catch((e) =>
+  const resultObj = (await symlinkDir(`${exPath}/api`, './vendor/japanese-addresses/api').catch((e: string) =>
     console.error(`  >>>> ✘ ${e}`)
   )) || { warn: '' };
   if (resultObj.warn) throw new Error(`symlinkDir().warn: ${resultObj.warn}`);
@@ -21,7 +21,7 @@ const geoJpApiUpdate = async () => {
 };
 
 try {
-  geoJpApiUpdate();
+  geoJpApiUpdate().catch((e: string) => console.error(`  >>>> ✘ ${e}`));
 } catch (e: unknown) {
-  console.error(`  >>>> ✘ ${e}`);
+  if (typeof e === 'string') console.error(`  >>>> ✘ ${e}`);
 }

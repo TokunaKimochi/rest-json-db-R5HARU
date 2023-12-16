@@ -30,9 +30,9 @@ export const findOne = async (req: Request<ParamsWithId>, res: Response, next: N
   }
 };
 
-export const createOne = async (req: Request<{}, CustomerInputs>, res: Response, next: NextFunction): Promise<void> => {
+export const createOne = async (req: Request<CustomerInputs>, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const newIdObj = await createOneCustomer(req.body);
+    const newIdObj = await createOneCustomer(req.body as CustomerInputs);
     res.status(201).json(newIdObj);
   } catch (err: unknown) {
     res.status(500);
@@ -46,7 +46,7 @@ export const updateOne = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const newIdObj = await updateOneCustomer(req.params, req.body);
+    const newIdObj = await updateOneCustomer(req.params, req.body as CustomerInputs);
     res.status(200).json(newIdObj);
   } catch (err: unknown) {
     res.status(500);

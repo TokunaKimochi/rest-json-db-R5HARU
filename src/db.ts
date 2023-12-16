@@ -2,7 +2,7 @@ import pgPromise, { IDatabase, IMain } from 'pg-promise';
 import { IConnectionParameters } from 'pg-promise/typescript/pg-subset';
 
 export class DataBaseError extends Error {
-  constructor(message: Error) {
+  constructor(message: string) {
     super(`🐘 - DB Error - ${message}`);
     this.name = 'DataBaseError';
   }
@@ -19,4 +19,4 @@ const dbConf: IConnectionParameters = {
   allowExitOnIdle: true,
 };
 
-export const db: IDatabase<{}> = pgp(dbConf);
+export const db: IDatabase<object> = pgp(dbConf);

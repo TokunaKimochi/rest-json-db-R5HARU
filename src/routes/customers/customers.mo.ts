@@ -11,18 +11,19 @@ export type FilterQuery = z.infer<typeof filterQuerySchema>;
 export type ParamsWithId = z.infer<typeof paramsWithIdSchema>;
 
 export const findAllCustomers = async (q: FilterQuery): Promise<CustomersTbRow[] | []> => {
-  const limit = q.size || 10;
-  const offset = limit * (q.page || 1) - limit;
+  const limit = q.size ?? 10;
+  const offset = limit * (q.page ?? 1) - limit;
   const result: CustomersTbRow[] = await db
     .manyOrNone(`SELECT * FROM customers ORDER BY updated_at DESC LIMIT ${limit} OFFSET ${offset}`)
-    .catch((err: Error) => Promise.reject(new DataBaseError(err)));
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
   return result;
 };
 
 export const findOneCustomer = async (p: ParamsWithId): Promise<CustomersTbRow | null> => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const result: CustomersTbRow = await db
     .oneOrNone(`SELECT * FROM customers WHERE id = ${p.id}`)
-    .catch((err: Error) => Promise.reject(new DataBaseError(err)));
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
   return result;
 };
 
@@ -47,9 +48,10 @@ export const createOneCustomer = async (body: CustomerInputs): Promise<{ id: num
   const registrationData = await generateRegistrationData(body);
   const { text, values } = insert('customers', { ...registrationData }).toParams();
   // データベースに登録を試み、成功したら自動採番の id を返却
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const newIdObj: { id: number } = await db
     .one(`${text} RETURNING id`, values)
-    .catch((err: Error) => Promise.reject(new DataBaseError(err)));
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
   return newIdObj;
 };
 
@@ -59,15 +61,16 @@ export const updateOneCustomer = async (p: ParamsWithId, body: CustomerInputs): 
     .where('id', p.id)
     .toParams();
   // データベースの更新を試み、成功したら自動採番の id を返却
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const newIdObj: { id: number } = await db
     .one(`${text} RETURNING id`, values)
-    .catch((err: Error) => Promise.reject(new DataBaseError(err)));
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
   return newIdObj;
 };
 
 export const deleteOneCustomer = async (p: ParamsWithId): Promise<{ command: string; rowCount: number }> => {
   const result: { command: string; rowCount: number } = await db
     .result('DELETE FROM customers WHERE id = $1', [p.id], (r) => ({ command: r.command, rowCount: r.rowCount }))
-    .catch((err: Error) => Promise.reject(new DataBaseError(err)));
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
   return result;
 };
