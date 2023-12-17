@@ -5,14 +5,14 @@ import {
   ParamsWithId,
   createOneCustomer,
   deleteOneCustomer,
-  findAllCustomers,
+  searchCustomers,
   findOneCustomer,
   updateOneCustomer,
 } from './customers.mo';
 
-export const findAll = async (req: Request<FilterQuery>, res: Response, next: NextFunction): Promise<void> => {
+export const searchAny = async (req: Request<FilterQuery>, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const customers = await findAllCustomers(req.query);
+    const customers = await searchCustomers(req.query);
     res.status(200).json(customers);
   } catch (err: unknown) {
     res.status(500);

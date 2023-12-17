@@ -56,6 +56,7 @@ export const filterQuerySchema = z
   .object({
     size: z.coerce.number().int().gte(1).lte(50).default(10),
     page: z.coerce.number().int().positive().default(1),
+    search_name: z.coerce.string().trim().min(1),
   })
   .partial();
 

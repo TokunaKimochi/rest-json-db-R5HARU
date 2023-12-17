@@ -10,11 +10,31 @@ export type CustomerInputs = z.infer<typeof customerInputsSchema>;
 export type FilterQuery = z.infer<typeof filterQuerySchema>;
 export type ParamsWithId = z.infer<typeof paramsWithIdSchema>;
 
-export const findAllCustomers = async (q: FilterQuery): Promise<CustomersTbRow[] | []> => {
+export const searchCustomers = async (q: FilterQuery): Promise<CustomersTbRow[] | []> => {
   const limit = q.size ?? 10;
   const offset = limit * (q.page ?? 1) - limit;
+
+  // WHERE 句の組み立て
+  let whereClause = '';
+  // LIMIT 句と OFFSET 句は検索文字列が無ければ組み立て
+  let limitAndOffsetClauses = '';
+  if (q.search_name) {
+    whereClause = ' WHERE ';
+    const names = q.search_name.split(/\s+/);
+    for (let i = 0; i < names.length; i += 1) {
+      if (i > 0) whereClause += ' AND ';
+      const normalizedName = fixCorporateNameVariants(names[i]);
+      if (normalizedName) {
+        whereClause += `searched_name LIKE '%${normalizedName}%'`;
+      } else {
+        whereClause += `name1 LIKE '%${names[i]}%'`;
+      }
+    }
+  } else {
+    limitAndOffsetClauses = ` LIMIT ${limit} OFFSET ${offset}`;
+  }
   const result: CustomersTbRow[] = await db
-    .manyOrNone(`SELECT * FROM customers ORDER BY updated_at DESC LIMIT ${limit} OFFSET ${offset}`)
+    .manyOrNone(`SELECT * FROM customers${whereClause} ORDER BY updated_at DESC${limitAndOffsetClauses}`)
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
   return result;
 };
