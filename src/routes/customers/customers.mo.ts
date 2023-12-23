@@ -10,7 +10,7 @@ export type CustomerInputs = z.infer<typeof customerInputsSchema>;
 export type FilterQuery = z.infer<typeof filterQuerySchema>;
 export type ParamsWithId = z.infer<typeof paramsWithIdSchema>;
 
-export const searchCustomers = async (q: FilterQuery): Promise<CustomersTbRow[] | []> => {
+export const findAllCustomersOrSearch = async (q: FilterQuery): Promise<CustomersTbRow[] | []> => {
   const limit = q.size ?? 10;
   const offset = limit * (q.page ?? 1) - limit;
 
@@ -21,6 +21,26 @@ export const searchCustomers = async (q: FilterQuery): Promise<CustomersTbRow[] 
   if (q.search_name) {
     whereClause = ' WHERE ';
     const names = q.search_name.split(/\s+/);
+    // 検索文字列の末尾に `:都道府県' もしくは `::市区町村' を指定
+    let optionalCondition = '';
+    const optionalWords = names.at(-1)?.match(/^([:：][:：]?)([^:：]+)$/);
+    if (optionalWords !== null && optionalWords !== undefined) {
+      names.pop();
+      // 都道府県・市区町村以外に検索文字列が指定されていれば後ほどその後ろに `AND' で連結
+      if (names.length) {
+        optionalCondition = ' AND ';
+      }
+      if (
+        optionalWords[1] === ':：' ||
+        optionalWords[1] === '：:' ||
+        optionalWords[1] === '::' ||
+        optionalWords[1] === '：：'
+      ) {
+        optionalCondition += `nja_city LIKE '%${optionalWords[2]}%'`;
+      } else if (optionalWords[1] === ':' || optionalWords[1] === '：') {
+        optionalCondition += `nja_pref LIKE '%${optionalWords[2]}%'`;
+      }
+    }
     for (let i = 0; i < names.length; i += 1) {
       if (i > 0) whereClause += ' AND ';
       const normalizedName = fixCorporateNameVariants(names[i]);
@@ -30,6 +50,7 @@ export const searchCustomers = async (q: FilterQuery): Promise<CustomersTbRow[] 
         whereClause += `name1 LIKE '%${names[i]}%'`;
       }
     }
+    whereClause += optionalCondition;
   } else {
     limitAndOffsetClauses = ` LIMIT ${limit} OFFSET ${offset}`;
   }
