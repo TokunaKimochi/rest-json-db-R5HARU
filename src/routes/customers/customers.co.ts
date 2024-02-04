@@ -1,8 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import {
+  CheckingOverlapCustomersQuery,
   CustomerInputs,
   FilterQuery,
   ParamsWithId,
+  checkingOverlapCustomers,
   createOneCustomer,
   deleteOneCustomer,
   findAllCustomersOrSearch,
@@ -64,6 +66,20 @@ export const deleteOne = async (req: Request<ParamsWithId>, res: Response, next:
     res.status(200).json(result);
   } catch (err: unknown) {
     res.status(res.statusCode !== 404 ? 500 : 404);
+    next(err);
+  }
+};
+
+export const checkingOverlap = async (
+  req: Request<ParamsWithId, CheckingOverlapCustomersQuery>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const customers = await checkingOverlapCustomers(req.params, req.query as CheckingOverlapCustomersQuery);
+    res.status(200).json(customers);
+  } catch (err: unknown) {
+    res.status(500);
     next(err);
   }
 };

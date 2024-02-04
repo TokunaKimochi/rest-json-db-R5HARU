@@ -290,8 +290,68 @@ describe('DELETE /api/customers/:id', () => {
   });
 });
 
+describe('GET /api/customers/:id/checkingOverlap', () => {
+  it('Get /api/customers/非数値/checkingOverlap?name1=名前(1)&name2=名前(2)&address_sha1=桁足らず住所ハッシュ値&nja_pref=都道府県&searched_name=名前(1)名前(2)', async () => {
+    await request(app)
+      .get(
+        '/api/customers/NotNumber/checkingOverlap?name1=NAME(1)&name2=NAME(2)&address_sha1=888&nja_pref=tokyo&searched_name=NAME1NAME2'
+      )
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(422)
+      .then((res) => {
+        expect(res.body).toHaveProperty('message');
+        expect(res.body.stack[0]).toMatch('ZodError');
+        expect(res.body.stack[2]).toMatch('invalid_type');
+      });
+  });
+
+  it('Get /api/customers/:id/checkingOverlap?name1=名前(1)&name2=名前(2)&address_sha1=桁足らず住所ハッシュ値&nja_pref=都道府県&searched_name=名前(1)名前(2)', async () => {
+    await request(app)
+      .get(
+        '/api/customers/1/checkingOverlap?name1=NAME(1)&name2=NAME(2)&address_sha1=888&nja_pref=tokyo&searched_name=NAME1NAME2'
+      )
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(422)
+      .then((res) => {
+        expect(res.body).toHaveProperty('message');
+        expect(res.body.stack[0]).toMatch('ZodError');
+        expect(res.body.stack[2]).toMatch('too_small');
+      });
+  });
+
+  it('Get /api/customers/無関係のid/checkingOverlap?name1=静香園&name2=無し&address_sha1=平和島東京流通センター住所ハッシュ値&nja_pref=千葉県&searched_name=静香園', async () => {
+    await request(app)
+      .get(
+        '/api/customers/777/checkingOverlap?name1=%E9%9D%99%E9%A6%99%E5%9C%92&name2&address_sha1=4001330a9795f59ff788fe7c8b89220c939bc5ec&nja_pref=%E5%8D%83%E8%91%89%E7%9C%8C&searched_name=%E9%9D%99%E9%A6%99%E5%9C%92'
+      )
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(500)
+      .then((res) => {
+        expect(res.body).toHaveProperty('message');
+        expect(res.body.stack[0]).toMatch('🐘');
+      });
+  });
+
+  it('Get /api/customers/静香園のid/checkingOverlap?name1=静香園&name2=無し&address_sha1=平和島東京流通センター住所ハッシュ値&nja_pref=千葉県&searched_name=静香園', async () => {
+    await request(app)
+      .get(
+        '/api/customers/26131/checkingOverlap?name1=%E9%9D%99%E9%A6%99%E5%9C%92&name2&address_sha1=4001330a9795f59ff788fe7c8b89220c939bc5ec&nja_pref=%E5%8D%83%E8%91%89%E7%9C%8C&searched_name=%E9%9D%99%E9%A6%99%E5%9C%92'
+      )
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty('length');
+        expect(res.body.length).toBeGreaterThanOrEqual(10);
+      });
+  });
+});
+
 if (process.env.INSERT_ENABLED) {
-  describe('順番固定 POST -> GET /:id -> PUT /:id -> DELETE /:id', () => {
+  describe('順番固定 POST -> GET /:id/checkingOverlap -> GET /:id -> PUT /:id -> DELETE /:id', () => {
     let newId: number;
     it('POST /api/customers', async () => {
       await request(app)
@@ -303,7 +363,7 @@ if (process.env.INSERT_ENABLED) {
           address1: '豊田市トヨタ町1番地',
           address2: '',
           address3: '',
-          name1: 'てすと',
+          name1: 'てすと㈲ じぇすと支店',
           name2: '',
           alias: 'test',
           invoice_type_id: 1,
@@ -314,6 +374,20 @@ if (process.env.INSERT_ENABLED) {
           expect(res.body).toHaveProperty('id');
           newId = res.body.id as number;
           expect(res.body.id).toBeGreaterThan(0);
+        });
+    });
+
+    it('Get /api/customers/:id/checkingOverlap?name1=てすと㈲ じぇすと支店&name2=無し&address_sha1=平和島東京流通センター住所ハッシュ値&nja_pref=愛知県&searched_name=使われないことを期待したおかしな文字列', async () => {
+      await request(app)
+        .get(
+          `/api/customers/${newId}/checkingOverlap?name1=%E3%81%A6%E3%81%99%E3%81%A8%E3%88%B2%20%E3%81%98%E3%81%87%E3%81%99%E3%81%A8%E6%94%AF%E5%BA%97&name2&address_sha1=4001330a9795f59ff788fe7c8b89220c939bc5ec&nja_pref=%E6%84%9B%E7%9F%A5%E7%9C%8C&searched_name=ZZZ`
+        )
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toHaveProperty('length');
+          expect(res.body.length).toBeGreaterThanOrEqual(10);
         });
     });
 
@@ -365,7 +439,9 @@ if (process.env.INSERT_ENABLED) {
         });
     });
   });
-} else {
+}
+
+if (!process.env.INSERT_ENABLED) {
   console.log(
     'ℹ データベースに副作用を起こすテストはスキップされました\n\t➥ 環境変数で INSERT_ENABLED=true とすれば動作を変えられます'
   );

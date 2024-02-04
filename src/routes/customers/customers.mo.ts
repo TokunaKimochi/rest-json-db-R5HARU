@@ -3,12 +3,19 @@ import { insert, update } from 'sql-bricks';
 import { DataBaseError, db } from '../../db';
 import extractSemanticAddress from '../../lib/extractSemanticAddress';
 import fixCorporateNameVariants from '../../lib/fixCorporateNameVariants';
-import { customersTbRowSchema, customerInputsSchema, filterQuerySchema, paramsWithIdSchema } from './customers.schemas';
+import {
+  customersTbRowSchema,
+  customerInputsSchema,
+  filterQuerySchema,
+  paramsWithIdSchema,
+  checkingOverlapCustomersQuerySchema,
+} from './customers.schemas';
 
 export type CustomersTbRow = z.infer<typeof customersTbRowSchema>;
 export type CustomerInputs = z.infer<typeof customerInputsSchema>;
 export type FilterQuery = z.infer<typeof filterQuerySchema>;
 export type ParamsWithId = z.infer<typeof paramsWithIdSchema>;
+export type CheckingOverlapCustomersQuery = z.infer<typeof checkingOverlapCustomersQuerySchema>;
 
 export const findAllCustomersOrSearch = async (q: FilterQuery): Promise<CustomersTbRow[] | []> => {
   const limit = q.size ?? 10;
@@ -112,6 +119,35 @@ export const updateOneCustomer = async (p: ParamsWithId, body: CustomerInputs): 
 export const deleteOneCustomer = async (p: ParamsWithId): Promise<{ command: string; rowCount: number }> => {
   const result: { command: string; rowCount: number } = await db
     .result('DELETE FROM customers WHERE id = $1', [p.id], (r) => ({ command: r.command, rowCount: r.rowCount }))
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
+  return result;
+};
+
+export const checkingOverlapCustomers = async (
+  p: ParamsWithId,
+  q: CheckingOverlapCustomersQuery
+): Promise<CustomersTbRow[]> => {
+  let searchedNameLikePattern = `${q.searched_name}%`;
+  const name1Elements = q.name1.match(/^\s*(\S+[\s・㈱㈲㈹]+\S{2})/);
+  // e.g. 会社名 支店名, 会社名㈱支店名 => 会社名と支店名の最初の２文字
+  if (name1Elements !== null && name1Elements !== undefined) {
+    searchedNameLikePattern = `${fixCorporateNameVariants(name1Elements[1])}%`;
+  }
+  // name1 にスペースは含まれないが name2 がある => name1
+  else if (/\S/.test(q.name2)) {
+    searchedNameLikePattern = `${fixCorporateNameVariants(q.name1)}%`;
+  }
+  const result: CustomersTbRow[] = await db
+    .many(
+      'SELECT * FROM customers WHERE address_sha1 = $1 OR (nja_pref = $2 AND searched_name LIKE $3) ORDER BY updated_at DESC',
+      [q.address_sha1, q.nja_pref, searchedNameLikePattern]
+    )
+    .then((customers: CustomersTbRow[]) => {
+      // パスパラメータの id とデータベースからの返却配列に矛盾がないか
+      const customerIdExists = customers.some((customer) => customer.id === p.id);
+      if (!customerIdExists) throw new Error('Detected request(s) made in an illegal manner.');
+      return customers;
+    })
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
   return result;
 };

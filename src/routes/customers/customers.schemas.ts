@@ -61,5 +61,15 @@ export const filterQuerySchema = z
   .partial();
 
 export const paramsWithIdSchema = z.object({
-  id: z.coerce.number().int().positive().optional(),
+  id: z.coerce.number().int().positive(),
 });
+
+export const checkingOverlapCustomersQuerySchema = customersTbSchema
+  .pick({
+    name1: true,
+    name2: true,
+    searched_name: true,
+    address_sha1: true,
+    nja_pref: true,
+  })
+  .required();
