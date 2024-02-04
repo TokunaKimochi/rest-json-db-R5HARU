@@ -31,10 +31,14 @@ export default function fixCorporateNameVariants(orgName: string, isOneWord = tr
   name = name.replace(/[之乃]/g, 'ノ');
   name = name.replace(/支店/g, '店');
   name = name.replace(/センタ/g, 'C');
+  name = name.replace(/DC/g, 'C');
   name = name.replace(/物流ステション|物流ステイション|デリバリステション|デリバリステイション/g, 'DS');
   name = name.replace(/フルフィルメントC|流通C|物流C|配送C|共同配送C|共配C|商品C|食品C/g, 'C');
   name = name.replace(/常温C|冷温C|冷蔵冷凍C|冷凍冷蔵C|冷蔵C|冷凍C|ドライC/g, 'C');
-  name = name.replace(/FC|DC|SC/g, 'C');
+  // DDC -> DC になっている
+  name = name.replace(/FLC|DC|FC|RC|SC/g, 'C');
+  name = name.replace(/屋商店/g, '商店');
+  name = name.replace(/園茶舗/g, '園');
   name = name.replace(/オ茶ノ|茶ノ|C&C/g, '');
 
   return name;
