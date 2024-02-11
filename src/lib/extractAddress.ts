@@ -11,7 +11,8 @@ export default function extractAddress(orgAddress: string): string {
   address = address.replace(/^[0-9０-９]{3}-?[0-9０-９]{4}/g, '');
   address = address.replace(/\(.*?\)/g, '');
   address = address.replace(/（.*?）/g, '');
-  address = address.replace(/[0-9０-９]+[階|F].*?/g, '');
+  // 全角のＦを追加
+  address = address.replace(/[0-9０-９]+[階ＦF].*?/g, '');
 
   const allNumber = '([0-9０-９]+|[一二三四五六七八九十百千]+)';
   const arr = address.match(
