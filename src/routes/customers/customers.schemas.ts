@@ -5,20 +5,40 @@ export const customersTbSchema = z
     id: z.number().int().positive(),
     tel: z
       .string()
-      .min(3)
-      .max(15)
-      .regex(/^[0-9-]+$/),
+      .min(1, { message: '電話番号は必須項目です' })
+      .min(3, { message: '電話番号として短すぎます' })
+      .max(13)
+      .regex(/^[0-9-]+$/, { message: '半角数字と半角ハイフンのみ使用できます' })
+      .refine(
+        (val: string) => {
+          const phoneNumber = val.replace(/\D/g, '');
+          if (/104/.test(phoneNumber)) return true;
+          if (phoneNumber.length === 10) return true;
+          if (phoneNumber.length === 11) return true;
+          return false;
+        },
+        { message: '電話番号として不適当です' }
+      ),
     zip_code: z
       .string()
-      .min(3)
+      .min(1, { message: '郵便番号は必須項目です' })
+      .min(7, { message: '現在、郵便番号の桁数は７桁です（ハイフンを除く）' })
       .max(8)
-      .regex(/^[0-9-]+$/),
-    address1: z.string().min(1).max(32),
-    address2: z.string().max(32),
-    address3: z.string().max(32),
-    name1: z.string().min(1).max(30),
-    name2: z.string().max(30),
-    alias: z.string().max(30),
+      .regex(/^[0-9-]+$/, { message: '半角数字と半角ハイフンのみ使用できます' })
+      .refine(
+        (val: string) => {
+          const zipCode = val.replace(/\D/g, '');
+          if (zipCode.length === 7) return true;
+          return false;
+        },
+        { message: '郵便番号として不適当です' }
+      ),
+    address1: z.string().min(1, { message: '住所１は必須項目です' }).max(32, { message: '３２文字まで登録できます' }),
+    address2: z.string().max(32, { message: '３２文字まで登録できます' }),
+    address3: z.string().max(32, { message: '３２文字まで登録できます' }),
+    name1: z.string().min(1, { message: '名称１は必須項目です' }).max(30, { message: '３０文字まで登録できます' }),
+    name2: z.string().max(30, { message: '３０文字まで登録できます' }),
+    alias: z.string().max(30, { message: '３０文字まで登録できます' }),
     searched_name: z.string().min(1).max(90),
     address_sha1: z.string().length(40),
     nja_pref: z.string().max(4),

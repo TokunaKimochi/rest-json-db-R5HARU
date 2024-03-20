@@ -372,6 +372,7 @@ if (process.env.INSERT_ENABLED) {
         .expect(201)
         .then((res) => {
           expect(res.body).toHaveProperty('id');
+          expect(res.body).toHaveProperty('created_at');
           newId = res.body.id as number;
           expect(res.body.id).toBeGreaterThan(0);
         });
@@ -422,6 +423,7 @@ if (process.env.INSERT_ENABLED) {
         .expect(200)
         .then((res) => {
           expect(res.body).toHaveProperty('id');
+          expect(res.body).toHaveProperty('updated_at');
           expect(res.body.id).toEqual(newId);
         });
     });

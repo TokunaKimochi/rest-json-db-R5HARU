@@ -92,28 +92,28 @@ const generateRegistrationData = async (customerInputs: CustomerInputs): Promise
   };
 };
 
-export const createOneCustomer = async (body: CustomerInputs): Promise<{ id: number }> => {
+export const createOneCustomer = async (body: CustomerInputs): Promise<CustomersTbRow> => {
   const registrationData = await generateRegistrationData(body);
   const { text, values } = insert('customers', { ...registrationData }).toParams();
-  // データベースに登録を試み、成功したら自動採番の id を返却
+  // データベースに登録を試み、成功したら登録されたデータを全て返却
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const newIdObj: { id: number } = await db
-    .one(`${text} RETURNING id`, values)
+  const customer: CustomersTbRow = await db
+    .one(`${text} RETURNING *`, values)
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
-  return newIdObj;
+  return customer;
 };
 
-export const updateOneCustomer = async (p: ParamsWithId, body: CustomerInputs): Promise<{ id: number }> => {
+export const updateOneCustomer = async (p: ParamsWithId, body: CustomerInputs): Promise<CustomersTbRow> => {
   const registrationData = await generateRegistrationData(body);
   const { text, values } = update('customers', { ...registrationData })
     .where('id', p.id)
     .toParams();
-  // データベースの更新を試み、成功したら自動採番の id を返却
+  // データベースの更新を試み、成功したら登録されたデータを全て返却
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const newIdObj: { id: number } = await db
-    .one(`${text} RETURNING id`, values)
+  const customer: CustomersTbRow = await db
+    .one(`${text} RETURNING *`, values)
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
-  return newIdObj;
+  return customer;
 };
 
 export const deleteOneCustomer = async (p: ParamsWithId): Promise<{ command: string; rowCount: number }> => {
