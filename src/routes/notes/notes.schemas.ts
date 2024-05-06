@@ -12,6 +12,14 @@ export const notesTbSchemas = z
 
 export const notesTbRowSchemas = notesTbSchemas.required();
 
+export const noteInputsSchema = notesTbSchemas
+  .pick({
+    customer_id: true,
+    rank: true,
+    body: true,
+  })
+  .required();
+
 export const paramsWithCustomerIdSchema = z.object({
   // リクエストボディではなくパスパラメータ（e.g. /123）なのでキャメルケース
   customerId: z.coerce.number().int().positive(),

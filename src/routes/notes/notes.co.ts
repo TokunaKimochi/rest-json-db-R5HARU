@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import { ParamsWithCustomerId, findAllNotesAboutCustomer } from './notes.mo';
+import { NoteInputs, ParamsWithCustomerId, createOneNote, findAllNotesAboutCustomer } from './notes.mo';
 
-const findAllAboutCustomer = async (
+export const findAllAboutCustomer = async (
   req: Request<ParamsWithCustomerId>,
   res: Response,
   next: NextFunction
@@ -15,4 +15,23 @@ const findAllAboutCustomer = async (
   }
 };
 
-export default findAllAboutCustomer;
+export const createOne = async (
+  req: Request<ParamsWithCustomerId, NoteInputs>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { customer_id } = req.body as NoteInputs;
+    if (req.params.customerId !== customer_id) {
+      throw new Error(
+        `Illegal call detection: params.customerId is ${req.params.customerId}, body.customer_id is ${customer_id}`
+      );
+    }
+    const note = await createOneNote(req.params, req.body as NoteInputs);
+    res.status(200).json(note);
+  } catch (err: unknown) {
+    res.status(500);
+    next(err);
+  }
+};
