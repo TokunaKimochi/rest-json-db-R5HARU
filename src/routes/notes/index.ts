@@ -1,7 +1,7 @@
 import { RequestHandler, Router } from 'express';
 import { validateRequest } from '../../middleWares';
 import * as controllers from './notes.co';
-import { noteInputsSchema, paramsWithCustomerIdSchema } from './notes.schemas';
+import { noteInputsSchema, paramsWithCustomerIdAndRankSchema, paramsWithCustomerIdSchema } from './notes.schemas';
 
 const router = Router();
 
@@ -20,5 +20,12 @@ router
     }) as RequestHandler,
     controllers.createOne as unknown as RequestHandler
   );
+router.route('/:customerId/rank/:rank').put(
+  validateRequest({
+    params: paramsWithCustomerIdAndRankSchema,
+    body: noteInputsSchema,
+  }) as RequestHandler,
+  controllers.updateOne as unknown as RequestHandler
+);
 
 export default router;

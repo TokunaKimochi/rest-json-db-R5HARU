@@ -24,3 +24,9 @@ export const paramsWithCustomerIdSchema = z.object({
   // リクエストボディではなくパスパラメータ（e.g. /123）なのでキャメルケース
   customerId: z.coerce.number().int().positive(),
 });
+
+export const paramsWithCustomerIdAndRankSchema = z.object({
+  // リクエストボディではなくパスパラメータ（e.g. /123/rank/1）なのでキャメルケース
+  customerId: z.coerce.number().int().positive(),
+  rank: z.coerce.number().int().positive(),
+});
