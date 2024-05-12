@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { insert, update } from 'sql-bricks';
-import pgPromise from 'pg-promise';
 import { DataBaseError, db } from '../../db';
 import {
   noteInputsSchema,
@@ -8,53 +7,12 @@ import {
   paramsWithCustomerIdAndRankSchema,
   paramsWithCustomerIdSchema,
 } from './notes.schemas';
-import { deleteOneNoteInTx } from './notes.txAtoms';
+import { deleteOneNoteInTx, pushAsideRankersInTx, slideOverRankingInTx } from './notes.txAtoms';
 
 export type ParamsWithCustomerId = z.infer<typeof paramsWithCustomerIdSchema>;
 export type ParamsWithCustomerIdAndRank = z.infer<typeof paramsWithCustomerIdAndRankSchema>;
 export type NotesTbRow = z.infer<typeof notesTbRowSchemas>;
 export type NoteInputs = z.infer<typeof noteInputsSchema>;
-
-// トランザクション中にランキングカラムのデータが歯抜けになっていたら前に詰めて整える
-const slideOverRankingInTx = async (t: pgPromise.ITask<object>, customerId: number) => {
-  const currentRanks: { rank: string }[] = await t
-    .many('SELECT rank FROM notes WHERE customer_id = $1 ORDER BY rank ASC', [customerId])
-    .catch((err: string) => Promise.reject(new DataBaseError(err)));
-
-  for (let i = 0; i < currentRanks.length; i += 1) {
-    const j = i + 1;
-
-    if (j !== parseInt(currentRanks[i].rank, 10)) {
-      const { text, values } = update('notes', { rank: j })
-        .where('customer_id', customerId)
-        .and('rank', currentRanks[i].rank)
-        .toParams();
-
-      // eslint-disable-next-line no-await-in-loop
-      await t.none(text, values).catch((err: string) => Promise.reject(new DataBaseError(err)));
-    }
-  }
-};
-
-// トランザクション中に挿入したいランクが埋まっていたら一つずつ後ろにずらして席を空ける
-const pushAsideRankersInTx = async (t: pgPromise.ITask<object>, customerId: number, ranked: number) => {
-  const reverseRanks: { rank: string }[] = await t
-    .many('SELECT rank FROM notes WHERE customer_id = $1 ORDER BY rank DESC', [customerId])
-    .catch((err: string) => Promise.reject(new DataBaseError(err)));
-
-  for (const currentRanker of reverseRanks) {
-    const currentNo = parseInt(currentRanker.rank, 10);
-    if (ranked <= currentNo) {
-      const { text, values } = update('notes', { rank: currentNo + 1 })
-        .where('customer_id', customerId)
-        .and('rank', currentNo)
-        .toParams();
-
-      // eslint-disable-next-line no-await-in-loop
-      await t.none(text, values).catch((err: string) => Promise.reject(new DataBaseError(err)));
-    }
-  }
-};
 
 export const findAllNotesAboutCustomer = async (p: ParamsWithCustomerId): Promise<NotesTbRow[] | []> => {
   const result: NotesTbRow[] = await db
@@ -115,7 +73,7 @@ export const updateOneNote = async (p: ParamsWithCustomerIdAndRank, body: NoteIn
         await slideOverRankingInTx(t, body.customer_id);
         await pushAsideRankersInTx(t, body.customer_id, body.rank);
 
-        // 改めて編集内容を新規ノートとしてインサートし直す
+        // 改めて編集内容を「新規」ノートとしてインサートし直す
         const { text, values } = insert('notes', { ...body }).toParams();
         // データベースに登録を試み、成功したら登録されたデータを全て返却
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
