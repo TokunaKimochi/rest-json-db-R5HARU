@@ -46,7 +46,9 @@ export const pushAsideRankersInTx = async (t: pgPromise.ITask<object>, customerI
 
 // 単独ノート削除のトランザクションパーツバージョン
 export const deleteOneNoteInTx = async (t: pgPromise.ITask<object>, customerId: number, rank: number) => {
-  const result: IResult = await t.result('DELETE FROM notes WHERE customer_id = $1 AND rank = $2', [customerId, rank]);
+  const result: IResult = await t
+    .result('DELETE FROM notes WHERE customer_id = $1 AND rank = $2', [customerId, rank])
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
   if (result.rowCount !== 1) {
     throw new DataBaseError(`result.rowCount is ${result.rowCount}, not 1 as expected`);
   }

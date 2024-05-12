@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { insert, update } from 'sql-bricks';
+import { IResult } from 'pg-promise/typescript/pg-subset';
 import { DataBaseError, db } from '../../db';
 import {
   noteInputsSchema,
@@ -94,4 +95,18 @@ export const updateOneNote = async (p: ParamsWithCustomerIdAndRank, body: NoteIn
     note = await db.one(`${text} RETURNING *`, values).catch((err: string) => Promise.reject(new DataBaseError(err)));
   }
   return note;
+};
+
+export const deleteOneNote = async (p: ParamsWithCustomerIdAndRank): Promise<{ command: string; rowCount: number }> => {
+  const result: { command: string; rowCount: number } = await db
+    .result('DELETE FROM notes WHERE customer_id = $1 AND rank = $2', [p.customerId, p.rank], (r: IResult) => ({
+      command: r.command,
+      rowCount: r.rowCount,
+    }))
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
+
+  if (result.rowCount !== 1) {
+    throw new DataBaseError(`result.rowCount is ${result.rowCount}, not 1 as expected`);
+  }
+  return result;
 };

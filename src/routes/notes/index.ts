@@ -20,12 +20,20 @@ router
     }) as RequestHandler,
     controllers.createOne as unknown as RequestHandler
   );
-router.route('/:customerId/rank/:rank').put(
-  validateRequest({
-    params: paramsWithCustomerIdAndRankSchema,
-    body: noteInputsSchema,
-  }) as RequestHandler,
-  controllers.updateOne as unknown as RequestHandler
-);
+router
+  .route('/:customerId/rank/:rank')
+  .put(
+    validateRequest({
+      params: paramsWithCustomerIdAndRankSchema,
+      body: noteInputsSchema,
+    }) as RequestHandler,
+    controllers.updateOne as unknown as RequestHandler
+  )
+  .delete(
+    validateRequest({
+      params: paramsWithCustomerIdAndRankSchema,
+    }) as RequestHandler,
+    controllers.deleteOne as unknown as RequestHandler
+  );
 
 export default router;

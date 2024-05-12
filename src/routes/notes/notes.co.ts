@@ -4,6 +4,7 @@ import {
   ParamsWithCustomerId,
   ParamsWithCustomerIdAndRank,
   createOneNote,
+  deleteOneNote,
   findAllNotesAboutCustomer,
   updateOneNote,
 } from './notes.mo';
@@ -60,6 +61,26 @@ export const updateOne = async (
     res.status(200).json(note);
   } catch (err: unknown) {
     res.status(500);
+    next(err);
+  }
+};
+
+export const deleteOne = async (
+  req: Request<ParamsWithCustomerIdAndRank>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const result = await deleteOneNote(req.params);
+    if (result.rowCount === 0) {
+      res.status(404);
+      throw new Error(
+        `🐘🔍 - DB: Record not found - Note with customer_id "${req.params.customerId}" and rank "${req.params.rank}" not found.`
+      );
+    }
+    res.status(200).json(result);
+  } catch (err: unknown) {
+    res.status(res.statusCode !== 404 ? 500 : 404);
     next(err);
   }
 };
