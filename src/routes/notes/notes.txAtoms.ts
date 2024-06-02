@@ -6,7 +6,7 @@ import { DataBaseError } from '../../db';
 // トランザクション中にランキングカラムのデータが歯抜けになっていたら前に詰めて整える
 export const slideOverRankingInTx = async (t: pgPromise.ITask<object>, customerId: number) => {
   const currentRanks: { rank: string }[] = await t
-    .many('SELECT rank FROM notes WHERE customer_id = $1 ORDER BY rank ASC', [customerId])
+    .manyOrNone('SELECT rank FROM notes WHERE customer_id = $1 ORDER BY rank ASC', [customerId])
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
 
   for (let i = 0; i < currentRanks.length; i += 1) {
@@ -27,7 +27,7 @@ export const slideOverRankingInTx = async (t: pgPromise.ITask<object>, customerI
 // トランザクション中に挿入したいランクが埋まっていたら一つずつ後ろにずらして席を空ける
 export const pushAsideRankersInTx = async (t: pgPromise.ITask<object>, customerId: number, ranked: number) => {
   const reverseRanks: { rank: string }[] = await t
-    .many('SELECT rank FROM notes WHERE customer_id = $1 ORDER BY rank DESC', [customerId])
+    .manyOrNone('SELECT rank FROM notes WHERE customer_id = $1 ORDER BY rank DESC', [customerId])
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
 
   for (const currentRanker of reverseRanks) {

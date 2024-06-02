@@ -17,6 +17,7 @@ export const findAllOrSearch = async (req: Request<FilterQuery>, res: Response, 
     const customers = await findAllCustomersOrSearch(req.query);
     res.status(200).json(customers);
   } catch (err: unknown) {
+    console.error(err);
     res.status(500);
     next(err);
   }
@@ -27,6 +28,7 @@ export const findOne = async (req: Request<ParamsWithId>, res: Response, next: N
     const customer = await findOneCustomer(req.params);
     res.status(200).json(customer);
   } catch (err: unknown) {
+    console.error(err);
     res.status(500);
     next(err);
   }
@@ -37,6 +39,7 @@ export const createOne = async (req: Request<CustomerInputs>, res: Response, nex
     const customer = await createOneCustomer(req.body as CustomerInputs);
     res.status(201).json(customer);
   } catch (err: unknown) {
+    console.error(err);
     res.status(500);
     next(err);
   }
@@ -51,6 +54,7 @@ export const updateOne = async (
     const customer = await updateOneCustomer(req.params, req.body as CustomerInputs);
     res.status(200).json(customer);
   } catch (err: unknown) {
+    console.error(err);
     res.status(500);
     next(err);
   }
@@ -79,6 +83,7 @@ export const checkingOverlap = async (
     const customers = await checkingOverlapCustomers(req.params, req.query as CheckingOverlapCustomersQuery);
     res.status(200).json(customers);
   } catch (err: unknown) {
+    console.error(err);
     res.status(500);
     next(err);
   }

@@ -18,6 +18,7 @@ export const findAllAboutCustomer = async (
     const notes = await findAllNotesAboutCustomer(req.params);
     res.status(200).json(notes);
   } catch (err: unknown) {
+    console.error(err);
     res.status(500);
     next(err);
   }
@@ -37,8 +38,9 @@ export const createOne = async (
       );
     }
     const note = await createOneNote(req.params, req.body as NoteInputs);
-    res.status(200).json(note);
+    res.status(201).json(note);
   } catch (err: unknown) {
+    console.error(err);
     res.status(500);
     next(err);
   }
@@ -60,6 +62,7 @@ export const updateOne = async (
     const note = await updateOneNote(req.params, req.body as NoteInputs);
     res.status(200).json(note);
   } catch (err: unknown) {
+    console.error(err);
     res.status(500);
     next(err);
   }
