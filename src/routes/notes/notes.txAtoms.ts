@@ -53,3 +53,24 @@ export const deleteOneNoteInTx = async (t: pgPromise.ITask<object>, customerId: 
     throw new DataBaseError(`result.rowCount is ${result.rowCount}, not 1 as expected`);
   }
 };
+
+// 指定した顧客に関するメモを全て削除トランザクションパーツバージョン
+export const deleteAllNotes4SpecificCustomerInTx = async (t: pgPromise.ITask<object>, customerId: number) => {
+  // 現在処理中の顧客に対してメモがいくつあるか取得する
+  // SQL の世界から返ってくるオブジェクトなのでキャメルケースは使えない
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/naming-convention
+  const { total_notes }: { total_notes: string } = await t
+    .one('SELECT COUNT(*) AS total_notes FROM notes WHERE customer_id = $1', [customerId])
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
+
+  const notesNum = parseInt(total_notes, 10);
+
+  if (notesNum > 0) {
+    const result: IResult = await t
+      .result('DELETE FROM notes WHERE customer_id = $1', [customerId])
+      .catch((err: string) => Promise.reject(new DataBaseError(err)));
+    if (result.rowCount !== notesNum) {
+      throw new DataBaseError(`result.rowCount is ${result.rowCount}, not ${notesNum} as expected`);
+    }
+  }
+};

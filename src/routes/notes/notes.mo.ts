@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { insert, update } from 'sql-bricks';
 import { IResult } from 'pg-promise/typescript/pg-subset';
+import { CustomersTbRow } from 'routes/customers/customers.mo';
 import { DataBaseError, db } from '../../db';
 import {
   noteInputsSchema,
@@ -22,24 +23,18 @@ export const findAllNotesAboutCustomer = async (p: ParamsWithCustomerId): Promis
   return result;
 };
 
-export const createOneNote = async (p: ParamsWithCustomerId, body: NoteInputs): Promise<NotesTbRow> => {
-  // customers テーブルの notes カラムや他のランクのノートが連動する必要があるのでトランザクションを使用
-  const note: NotesTbRow = await db
+export const createOneNote = async (
+  p: ParamsWithCustomerId,
+  body: NoteInputs
+): Promise<{ customer: CustomersTbRow; note: NotesTbRow }> => {
+  // customers テーブルの notes カラムや他のランクのノートが連動する必要があるのでトランザクション
+  const result: { customer: CustomersTbRow; note: NotesTbRow } = await db
     .tx('add-a-note-to-the-customer', async (t) => {
       // 現在処理中の顧客に対してメモがいくつあるか取得する
       // SQL の世界から返ってくるオブジェクトなのでキャメルケースは使えない
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/naming-convention
       const { total_notes }: { total_notes: string } = await t
         .one('SELECT COUNT(*) AS total_notes FROM notes WHERE customer_id = $1', [p.customerId])
-        .catch((err: string) => Promise.reject(new DataBaseError(err)));
-
-      // customers テーブルを先にアップデート
-      const notes = { notes: parseInt(total_notes, 10) + 1 };
-      const { text: updateCustomersText, values: updateCustomersValues } = update('customers', notes)
-        .where('id', p.customerId)
-        .toParams();
-      await t
-        .none(updateCustomersText, updateCustomersValues)
         .catch((err: string) => Promise.reject(new DataBaseError(err)));
 
       // ランク（表示順）を整える
@@ -50,17 +45,31 @@ export const createOneNote = async (p: ParamsWithCustomerId, body: NoteInputs): 
       const { text, values } = insert('notes', { ...body }).toParams();
       // データベースに登録を試み、成功したら登録されたデータを全て返却
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const result: NotesTbRow = await t
+      const createdNote: NotesTbRow = await t
         .one(`${text} RETURNING *`, values)
         .catch((err: string) => Promise.reject(new DataBaseError(err)));
-      return result;
+
+      // メモのインサート成功を受けて customers テーブルをアップデート
+      const notes = { notes: parseInt(total_notes, 10) + 1 };
+      const { text: updateCustomersText, values: updateCustomersValues } = update('customers', notes)
+        .where('id', p.customerId)
+        .toParams();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const updatedCustomer: CustomersTbRow = await t
+        .one(`${updateCustomersText} RETURNING *`, updateCustomersValues)
+        .catch((err: string) => Promise.reject(new DataBaseError(err)));
+
+      return { customer: updatedCustomer, note: createdNote };
     })
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
 
-  return note;
+  return result;
 };
 
-export const updateOneNote = async (p: ParamsWithCustomerIdAndRank, body: NoteInputs): Promise<NotesTbRow> => {
+export const updateOneNote = async (
+  p: ParamsWithCustomerIdAndRank,
+  body: NoteInputs
+): Promise<{ customer: CustomersTbRow; note: NotesTbRow }> => {
   let note: NotesTbRow;
   // 現状からランクを変えるか？
   if (p.rank !== body.rank) {
@@ -94,16 +103,50 @@ export const updateOneNote = async (p: ParamsWithCustomerIdAndRank, body: NoteIn
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     note = await db.one(`${text} RETURNING *`, values).catch((err: string) => Promise.reject(new DataBaseError(err)));
   }
-  return note;
+
+  // ノートの更新が済んだら当該カスタマーのレコードをセレクト
+  // セレクトなのでトランザクション外で良しとする
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const customer: CustomersTbRow = await db
+    .one('SELECT * FROM customers WHERE id = $1', [p.customerId])
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
+  return { customer, note };
 };
 
 export const deleteOneNote = async (p: ParamsWithCustomerIdAndRank): Promise<{ command: string; rowCount: number }> => {
-  const result: { command: string; rowCount: number } = await db
-    .result('DELETE FROM notes WHERE customer_id = $1 AND rank = $2', [p.customerId, p.rank], (r: IResult) => ({
-      command: r.command,
-      rowCount: r.rowCount,
-    }))
-    .catch((err: string) => Promise.reject(new DataBaseError(err)));
+  const result = await db.tx('delete-a-note-to-the-customer', async (t) => {
+    // 汚い保険
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    const db = 'shadowing';
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`This output is variable ${db} to prevent accidents`);
+    }
+    // 現在処理中の顧客に対してメモがいくつあるか取得する
+    // SQL の世界から返ってくるオブジェクトなのでキャメルケースは使えない
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/naming-convention
+    const { total_notes }: { total_notes: string } = await t
+      .one('SELECT COUNT(*) AS total_notes FROM notes WHERE customer_id = $1', [p.customerId])
+      .catch((err: string) => Promise.reject(new DataBaseError(err)));
+
+    // 本題。メモを削除
+    const deleteResult: { command: string; rowCount: number } = await t
+      .result('DELETE FROM notes WHERE customer_id = $1 AND rank = $2', [p.customerId, p.rank], (r: IResult) => ({
+        command: r.command,
+        rowCount: r.rowCount,
+      }))
+      .catch((err: string) => Promise.reject(new DataBaseError(err)));
+
+    // メモの削除成功を受けて customers テーブルをアップデート
+    const notes = { notes: parseInt(total_notes, 10) - 1 };
+    const { text: updateCustomersText, values: updateCustomersValues } = update('customers', notes)
+      .where('id', p.customerId)
+      .toParams();
+    await t
+      .none(updateCustomersText, updateCustomersValues)
+      .catch((err: string) => Promise.reject(new DataBaseError(err)));
+
+    return deleteResult;
+  });
 
   if (result.rowCount !== 1) {
     throw new DataBaseError(`result.rowCount is ${result.rowCount}, not 1 as expected`);

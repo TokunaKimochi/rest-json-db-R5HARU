@@ -93,9 +93,27 @@ if (process.env.INSERT_ENABLED) {
         .expect('Content-Type', /json/)
         .expect(201)
         .then((res) => {
-          expect(res.body).toHaveProperty('customer_id');
-          expect(res.body).toHaveProperty('created_at');
-          expect(res.body.rank).toEqual(1);
+          expect(res.body).toHaveProperty('customer');
+          expect(res.body).toHaveProperty('note');
+          expect(res.body.note.rank).toEqual(1);
+        });
+    });
+
+    it('POST /api/notes/:customerId', async () => {
+      await request(app)
+        .post(`/api/notes/${newId}`)
+        .set('Accept', 'application/json')
+        .send({
+          customer_id: newId,
+          rank: 2,
+          body: 'note_02',
+        })
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then((res) => {
+          expect(res.body.customer).toHaveProperty('created_at');
+          expect(res.body).toHaveProperty('note');
+          expect(res.body.note.body).toEqual('note_02');
         });
     });
 
@@ -111,6 +129,7 @@ if (process.env.INSERT_ENABLED) {
         });
     });
 
+    // メモが残った状態の顧客を削除。200 を期待
     it('DELETE /api/customers/:id', async () => {
       await request(app)
         .delete(`/api/customers/${newId}`)
