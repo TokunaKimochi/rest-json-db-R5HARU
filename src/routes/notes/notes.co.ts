@@ -37,8 +37,8 @@ export const createOne = async (
         `Illegal call detection: params.customerId is ${req.params.customerId}, body.customer_id is ${customer_id}`
       );
     }
-    const note = await createOneNote(req.params, req.body as NoteInputs);
-    res.status(201).json(note);
+    const customerAndCurrentNote = await createOneNote(req.params, req.body as NoteInputs);
+    res.status(201).json(customerAndCurrentNote);
   } catch (err: unknown) {
     console.error(err);
     res.status(500);
@@ -59,8 +59,8 @@ export const updateOne = async (
         `Illegal call detection: params.customerId is ${req.params.customerId}, body.customer_id is ${customer_id}`
       );
     }
-    const note = await updateOneNote(req.params, req.body as NoteInputs);
-    res.status(200).json(note);
+    const customerAndCurrentNote = await updateOneNote(req.params, req.body as NoteInputs);
+    res.status(200).json(customerAndCurrentNote);
   } catch (err: unknown) {
     console.error(err);
     res.status(500);

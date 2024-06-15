@@ -119,12 +119,6 @@ export const updateOneCustomer = async (p: ParamsWithId, body: CustomerInputs): 
 
 export const deleteOneCustomer = async (p: ParamsWithId): Promise<{ command: string; rowCount: number }> => {
   const result = await db.tx('delete-a-customer', async (t) => {
-    // 汚い保険
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    const db = 'shadowing';
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`This output is variable ${db} to prevent accidents`);
-    }
     // id キーを外部キーとして参照してきているノートのレコードを先に削除
     await deleteAllNotes4SpecificCustomerInTx(t, p.id);
     const deleteResult: { command: string; rowCount: number } = await t

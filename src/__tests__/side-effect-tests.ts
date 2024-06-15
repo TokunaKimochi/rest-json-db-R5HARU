@@ -117,6 +117,95 @@ if (process.env.INSERT_ENABLED) {
         });
     });
 
+    it('POST /api/notes/:customerId', async () => {
+      await request(app)
+        .post(`/api/notes/${newId}`)
+        .set('Accept', 'application/json')
+        .send({
+          customer_id: newId,
+          rank: 3,
+          body: 'note_03',
+        })
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then((res) => {
+          expect(res.body.customer).toHaveProperty('created_at');
+          expect(res.body).toHaveProperty('note');
+          expect(res.body.note.body).toEqual('note_03');
+        });
+    });
+
+    it('ランク２を奪う POST /api/notes/:customerId', async () => {
+      await request(app)
+        .post(`/api/notes/${newId}`)
+        .set('Accept', 'application/json')
+        .send({
+          customer_id: newId,
+          rank: 2,
+          body: 'new note_02',
+        })
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then((res) => {
+          expect(res.body.customer).toHaveProperty('created_at');
+          expect(res.body).toHaveProperty('note');
+          expect(res.body.note.body).toEqual('new note_02');
+        });
+    });
+
+    it('GET /api/notes/:customerId', async () => {
+      await request(app)
+        .get(`/api/notes/${newId}`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then((res) => {
+          expect(res.body.length).toBe(4);
+          expect(res.body[1].rank).toEqual(2);
+          expect(res.body[1].body).toEqual('new note_02');
+          expect(res.body[2].rank).toEqual(3);
+          expect(res.body[2].body).toEqual('note_02');
+          expect(res.body[3].rank).toEqual(4);
+          expect(res.body[3].body).toEqual('note_03');
+        });
+    });
+
+    it('PUT /api/notes/:customerId/rank/:rank', async () => {
+      await request(app)
+        .put(`/api/notes/${newId}/rank/3`)
+        .set('Accept', 'application/json')
+        .send({
+          customer_id: newId,
+          rank: 3,
+          body: 'new note_03',
+        })
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then((res) => {
+          expect(res.body.customer.id).toEqual(newId);
+          expect(res.body).toHaveProperty('note');
+          expect(res.body.note.body).toEqual('new note_03');
+        });
+    });
+
+    it('PUT /api/notes/:customerId/rank/:rank', async () => {
+      await request(app)
+        .put(`/api/notes/${newId}/rank/4`)
+        .set('Accept', 'application/json')
+        .send({
+          customer_id: newId,
+          rank: 3,
+          body: 'new new note_03',
+        })
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then((res) => {
+          expect(res.body.customer.id).toEqual(newId);
+          expect(res.body).toHaveProperty('note');
+          expect(res.body.note.body).toEqual('new new note_03');
+        });
+    });
+
     it('DELETE /api/notes/:customerId/rank/:rank', async () => {
       await request(app)
         .delete(`/api/notes/${newId}/rank/1`)
@@ -126,6 +215,25 @@ if (process.env.INSERT_ENABLED) {
           expect(res.body).toHaveProperty('command');
           expect(res.body.command).toEqual('DELETE');
           expect(res.body.rowCount).toEqual(1);
+        });
+    });
+
+    // 存在しないランクのメモに対してアップデートリクエスト
+    it('PUT /api/notes/:customerId/rank/:rank', async () => {
+      await request(app)
+        .put(`/api/notes/${newId}/rank/1`)
+        .set('Accept', 'application/json')
+        .send({
+          customer_id: newId,
+          rank: 1,
+          body: 'Error ??',
+        })
+        .expect('Content-Type', /json/)
+        .expect(500)
+        .then((res) => {
+          expect(res.body).toHaveProperty('message');
+          expect(res.body.stack[0]).toMatch('DataBaseError');
+          expect(res.body.stack[0]).toMatch('🐘');
         });
     });
 
@@ -140,6 +248,19 @@ if (process.env.INSERT_ENABLED) {
           expect(res.body).toHaveProperty('command');
           expect(res.body.command).toEqual('DELETE');
           expect(res.body.rowCount).toEqual(1);
+        });
+    });
+
+    // 顧客情報ごと全てのメモを削除したのでセレクトの結果は空配列
+    it('GET /api/notes/:customerId', async () => {
+      await request(app)
+        .get(`/api/notes/${newId}`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toHaveProperty('length');
+          expect(res.body.length).toBe(0);
         });
     });
   });

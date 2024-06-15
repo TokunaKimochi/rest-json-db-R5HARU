@@ -115,12 +115,6 @@ export const updateOneNote = async (
 
 export const deleteOneNote = async (p: ParamsWithCustomerIdAndRank): Promise<{ command: string; rowCount: number }> => {
   const result = await db.tx('delete-a-note-to-the-customer', async (t) => {
-    // 汚い保険
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    const db = 'shadowing';
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`This output is variable ${db} to prevent accidents`);
-    }
     // 現在処理中の顧客に対してメモがいくつあるか取得する
     // SQL の世界から返ってくるオブジェクトなのでキャメルケースは使えない
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/naming-convention
