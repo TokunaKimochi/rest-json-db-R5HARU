@@ -19,7 +19,7 @@ dependencies:
     version: 16.3.1
   easy-ja-postal-code-search-address:
     specifier: github:TokunaKimochi/easy-ja-postal-code-search-address#cjs
-    version: github.com/TokunaKimochi/easy-ja-postal-code-search-address/b425be2adb9260cf3a37fbf6a676ce1a9c857554
+    version: github.com/TokunaKimochi/easy-ja-postal-code-search-address/1d4f2defe9a1cbd4adc61334512b590531994a38
   express:
     specifier: ^4.18.2
     version: 4.18.2
@@ -5104,8 +5104,8 @@ packages:
     resolution: {integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==}
     dev: false
 
-  github.com/TokunaKimochi/easy-ja-postal-code-search-address/b425be2adb9260cf3a37fbf6a676ce1a9c857554:
-    resolution: {tarball: https://codeload.github.com/TokunaKimochi/easy-ja-postal-code-search-address/tar.gz/b425be2adb9260cf3a37fbf6a676ce1a9c857554}
+  github.com/TokunaKimochi/easy-ja-postal-code-search-address/1d4f2defe9a1cbd4adc61334512b590531994a38:
+    resolution: {tarball: https://codeload.github.com/TokunaKimochi/easy-ja-postal-code-search-address/tar.gz/1d4f2defe9a1cbd4adc61334512b590531994a38}
     name: easy-ja-postal-code-search-address
     version: 1.0.4
     dev: false

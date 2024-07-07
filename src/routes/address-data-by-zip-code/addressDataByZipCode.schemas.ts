@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const zipCodeInputSchema = z.object({
+const zipCodeQuerySchema = z.object({
   zip_code: z
     .string()
     .min(7, { message: '現在、郵便番号の桁数は７桁です（ハイフンを除く）' })
@@ -16,4 +16,4 @@ const zipCodeInputSchema = z.object({
     ),
 });
 
-export default zipCodeInputSchema;
+export default zipCodeQuerySchema;

@@ -1,11 +1,10 @@
 import { z } from 'zod';
 import { ReturnDataType, SearchAddress, SucceessDataType as SuccessDataType } from 'easy-ja-postal-code-search-address';
-import zipCodeInputSchema from './zipData.schemas';
+import zipCodeQuerySchema from './addressDataByZipCode.schemas';
 
-export type ZipCodeInput = z.infer<typeof zipCodeInputSchema>;
+export type ZipCodeQuery = z.infer<typeof zipCodeQuerySchema>;
 
-export const createZipData = async (body: ZipCodeInput): Promise<SuccessDataType> => {
-  // TODO 名前を適切なものに変更
+export const createAddressData = async (q: ZipCodeQuery): Promise<SuccessDataType> => {
   const port = process.env.PORT ?? '3001';
   const ejpc = await SearchAddress.init({
     baseUrl: `http://localhost:${port}/vendor/easy-ja-postal-code/api/`,
@@ -13,12 +12,13 @@ export const createZipData = async (body: ZipCodeInput): Promise<SuccessDataType
       throw new Error('初期化に失敗しました');
     },
   });
-  if (!ejpc) throw new Error('error !!');
-  const zipCode = body.zip_code.replace(/\D/g, '');
+  if (!q) throw new Error('q: ZipCodeQuery is error !!');
+  if (!ejpc) throw new Error('ejpc: SearchAddress is error !!');
+  const zipCode = q.zip_code.replace(/\D/g, '');
   const result: ReturnDataType = await ejpc.search({ zipInput: zipCode });
   if (result.error) {
     console.error(result.error);
-    throw new Error('zip-data api error !!');
+    throw new Error('address-data-by-zip-code api error !!');
   }
 
   return result;
