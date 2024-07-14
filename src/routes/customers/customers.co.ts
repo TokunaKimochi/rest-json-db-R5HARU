@@ -2,10 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 import {
   CheckingOverlapCustomersQuery,
   CustomerInputs,
+  CustomersTbRow,
   FilterQuery,
   ParamsWithId,
   checkingOverlapCustomers,
   createOneCustomer,
+  createOneCustomerTsv,
   deleteOneCustomer,
   findAllCustomersOrSearch,
   findOneCustomer,
@@ -82,6 +84,21 @@ export const checkingOverlap = async (
   try {
     const customers = await checkingOverlapCustomers(req.params, req.query as CheckingOverlapCustomersQuery);
     res.status(200).json(customers);
+  } catch (err: unknown) {
+    console.error(err);
+    res.status(500);
+    next(err);
+  }
+};
+
+export const createOneTsv = async (
+  req: Request<object, object, CustomersTbRow>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    await createOneCustomerTsv(req.body);
+    res.status(201).json({ message: `${Date.now()} -- customer.tsv 作成` });
   } catch (err: unknown) {
     console.error(err);
     res.status(500);

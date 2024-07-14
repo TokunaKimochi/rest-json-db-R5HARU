@@ -4,6 +4,7 @@ import { deleteAllNotes4SpecificCustomerInTx } from '../notes/notes.txAtoms';
 import { DataBaseError, db } from '../../db';
 import extractSemanticAddress from '../../lib/extractSemanticAddress';
 import fixCorporateNameVariants from '../../lib/fixCorporateNameVariants';
+import writeOutTsvAboutCustomer from '../../lib/writeOutTsvAboutCustomer';
 import {
   customersTbRowSchema,
   customerInputsSchema,
@@ -70,10 +71,10 @@ export const findAllCustomersOrSearch = async (q: FilterQuery): Promise<Customer
 
 export const findOneCustomer = async (p: ParamsWithId): Promise<CustomersTbRow | null> => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const result: CustomersTbRow = await db
+  const customer: CustomersTbRow = await db
     .oneOrNone(`SELECT * FROM customers WHERE id = ${p.id}`)
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
-  return result;
+  return customer;
 };
 
 type RegistrationData = Omit<CustomersTbRow, 'id' | 'notes' | 'times' | 'created_at' | 'updated_at'>;
@@ -157,4 +158,8 @@ export const checkingOverlapCustomers = async (
     })
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
   return result;
+};
+
+export const createOneCustomerTsv = async (body: CustomersTbRow): Promise<void> => {
+  await writeOutTsvAboutCustomer(body);
 };

@@ -4,6 +4,7 @@ import * as controllers from './customers.co';
 import {
   checkingOverlapCustomersQuerySchema,
   customerInputsSchema,
+  customersTbRowSchema,
   filterQuerySchema,
   paramsWithIdSchema,
 } from './customers.schemas';
@@ -51,6 +52,12 @@ router.route('/:id/checkingOverlap').get(
     query: checkingOverlapCustomersQuerySchema,
   }) as RequestHandler,
   controllers.checkingOverlap as unknown as RequestHandler
+);
+router.route('/output').post(
+  validateRequest({
+    body: customersTbRowSchema,
+  }) as RequestHandler,
+  controllers.createOneTsv as unknown as RequestHandler
 );
 
 export default router;
