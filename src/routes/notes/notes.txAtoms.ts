@@ -1,10 +1,10 @@
-import pgPromise from 'pg-promise';
-import { IResult } from 'pg-promise/typescript/pg-subset';
+import type { ITask } from 'pg-promise';
+import type { IResult } from 'pg-promise/typescript/pg-subset';
 import { update } from 'sql-bricks';
 import { DataBaseError } from '../../db';
 
 // トランザクション中にランキングカラムのデータが歯抜けになっていたら前に詰めて整える
-export const slideOverRankingInTx = async (t: pgPromise.ITask<object>, customerId: number) => {
+export const slideOverRankingInTx = async (t: ITask<object>, customerId: number) => {
   const currentRanks: { rank: string }[] = await t
     .manyOrNone('SELECT rank FROM notes WHERE customer_id = $1 ORDER BY rank ASC', [customerId])
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
@@ -25,7 +25,7 @@ export const slideOverRankingInTx = async (t: pgPromise.ITask<object>, customerI
 };
 
 // トランザクション中に挿入したいランクが埋まっていたら一つずつ後ろにずらして席を空ける
-export const pushAsideRankersInTx = async (t: pgPromise.ITask<object>, customerId: number, ranked: number) => {
+export const pushAsideRankersInTx = async (t: ITask<object>, customerId: number, ranked: number) => {
   const reverseRanks: { rank: string }[] = await t
     .manyOrNone('SELECT rank FROM notes WHERE customer_id = $1 ORDER BY rank DESC', [customerId])
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
@@ -45,7 +45,7 @@ export const pushAsideRankersInTx = async (t: pgPromise.ITask<object>, customerI
 };
 
 // 単独ノート削除のトランザクションパーツバージョン
-export const deleteOneNoteInTx = async (t: pgPromise.ITask<object>, customerId: number, rank: number) => {
+export const deleteOneNoteInTx = async (t: ITask<object>, customerId: number, rank: number) => {
   const result: IResult = await t
     .result('DELETE FROM notes WHERE customer_id = $1 AND rank = $2', [customerId, rank])
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
@@ -55,7 +55,7 @@ export const deleteOneNoteInTx = async (t: pgPromise.ITask<object>, customerId: 
 };
 
 // 指定した顧客に関するメモを全て削除トランザクションパーツバージョン
-export const deleteAllNotes4SpecificCustomerInTx = async (t: pgPromise.ITask<object>, customerId: number) => {
+export const deleteAllNotes4SpecificCustomerInTx = async (t: ITask<object>, customerId: number) => {
   // 現在処理中の顧客に対してメモがいくつあるか取得する
   // SQL の世界から返ってくるオブジェクトなのでキャメルケースは使えない
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/naming-convention

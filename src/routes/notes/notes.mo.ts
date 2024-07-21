@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { insert, update } from 'sql-bricks';
-import { IResult } from 'pg-promise/typescript/pg-subset';
+import type { IResult } from 'pg-promise/typescript/pg-subset';
 import { CustomersTbRow } from 'routes/customers/customers.mo';
 import { DataBaseError, db } from '../../db';
 import {

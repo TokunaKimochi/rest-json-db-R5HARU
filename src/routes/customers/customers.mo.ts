@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { insert, update } from 'sql-bricks';
-import { deleteAllNotes4SpecificCustomerInTx } from '../notes/notes.txAtoms';
 import { DataBaseError, db } from '../../db';
+import { deleteAllNotes4SpecificCustomerInTx } from '../notes/notes.txAtoms';
 import extractSemanticAddress from '../../lib/extractSemanticAddress';
 import fixCorporateNameVariants from '../../lib/fixCorporateNameVariants';
 import writeOutTsvAboutCustomer from '../../lib/writeOutTsvAboutCustomer';

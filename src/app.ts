@@ -24,6 +24,7 @@ app.get('/', (_, res: Response<MessageResponse>): void => {
 
 app.use('/api', routers);
 // 静的ファイルの配信
+console.log(__dirname);
 app.use('/vendor', express.static(path.join(__dirname, '../vendor')));
 
 app.use(middleWares.notFound);

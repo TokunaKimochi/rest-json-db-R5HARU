@@ -1,5 +1,5 @@
 import pgPromise, { IDatabase, IMain } from 'pg-promise';
-import { IConnectionParameters } from 'pg-promise/typescript/pg-subset';
+import type { IConnectionParameters } from 'pg-promise/typescript/pg-subset';
 
 export class DataBaseError extends Error {
   constructor(message: string) {
@@ -8,7 +8,7 @@ export class DataBaseError extends Error {
   }
 }
 
-export const pgp: IMain = pgPromise();
+const pgp: IMain = pgPromise();
 
 const dbConf: IConnectionParameters = {
   host: process.env.PG_HOST,
