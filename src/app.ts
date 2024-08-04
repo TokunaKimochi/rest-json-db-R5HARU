@@ -3,8 +3,6 @@ import path from 'path';
 import morgan from 'morgan';
 import cors from 'cors';
 
-import 'dotenv/config';
-
 import MessageResponse from 'interfaces/MessageResponse';
 import * as middleWares from './middleWares';
 import routers from './routes';

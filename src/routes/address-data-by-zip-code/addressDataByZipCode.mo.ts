@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import env from '@/env';
 import {
   ErrorDataType,
   ReturnDataType,
@@ -10,9 +11,8 @@ import zipCodeQuerySchema from './addressDataByZipCode.schemas';
 export type ZipCodeQuery = z.infer<typeof zipCodeQuerySchema>;
 
 export const createAddressData = async (q: ZipCodeQuery): Promise<SuccessDataType | ErrorDataType> => {
-  const port = process.env.PORT ?? '3001';
   const ejpc = await SearchAddress.init({
-    baseUrl: `http://localhost:${port}/vendor/easy-ja-postal-code/api/`,
+    baseUrl: `${env.BASE_URL}:${env.PORT}/vendor/easy-ja-postal-code/api/`,
     fallback: () => {
       throw new Error('初期化に失敗しました');
     },

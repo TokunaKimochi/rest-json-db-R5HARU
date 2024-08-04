@@ -28,3 +28,6 @@ rules:
         },
       ],
   }
+settings:
+  import/resolver:
+    typescript: true

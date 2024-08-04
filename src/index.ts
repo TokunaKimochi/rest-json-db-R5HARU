@@ -1,8 +1,10 @@
+import 'dotenv/config';
 import { config } from '@geolonia/normalize-japanese-addresses';
+import env from '@/env';
 import app from './app';
 
-const port = process.env.PORT ?? 3001;
-config.japaneseAddressesApi = `http://localhost:${port}/vendor/japanese-addresses/api/ja`;
-app.listen(port, () => {
-  console.log(`⚡Server listening at http://localhost:${port} 👀👂`);
+console.log(env);
+config.japaneseAddressesApi = `${env.BASE_URL}:${env.PORT}/vendor/japanese-addresses/api/ja`;
+app.listen(env.PORT, () => {
+  console.log(`⚡Server listening at ${env.BASE_URL}:${env.PORT} 👀👂`);
 });
