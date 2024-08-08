@@ -4,5 +4,5 @@
     "source.fixAll": "explicit"
   },
   "editor.formatOnSave": true,
-  "cSpell.words": ["kimochi", "tokuna", "hoge", "fuga", "piyo", "geolonia", "gitly", "jaconv", "preinstall"]
+  "cSpell.words": ["kimochi", "tokuna", "dotenvx", "hoge", "fuga", "piyo", "geolonia", "gitly", "jaconv", "preinstall"]
 }

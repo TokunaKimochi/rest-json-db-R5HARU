@@ -12,7 +12,7 @@ export type ZipCodeQuery = z.infer<typeof zipCodeQuerySchema>;
 
 export const createAddressData = async (q: ZipCodeQuery): Promise<SuccessDataType | ErrorDataType> => {
   const ejpc = await SearchAddress.init({
-    baseUrl: `${env.BASE_URL}:${env.PORT}/vendor/easy-ja-postal-code/api/`,
+    baseUrl: `http://${env.API_HOST}:${env.PORT}/vendor/easy-ja-postal-code/api/`,
     fallback: () => {
       throw new Error('初期化に失敗しました');
     },

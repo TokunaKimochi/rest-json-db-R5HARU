@@ -6,6 +6,7 @@ import cors from 'cors';
 import MessageResponse from 'interfaces/MessageResponse';
 import * as middleWares from './middleWares';
 import routers from './routes';
+import env from './env';
 
 const app: Express = express();
 
@@ -22,8 +23,7 @@ app.get('/', (_, res: Response<MessageResponse>): void => {
 
 app.use('/api', routers);
 // 静的ファイルの配信
-console.log(__dirname);
-app.use('/vendor', express.static(path.join(__dirname, '../vendor')));
+app.use('/vendor', express.static(path.join(__dirname, env.VENDOR_RELATIVE_PATH)));
 
 app.use(middleWares.notFound);
 app.use(middleWares.errorHandler);
