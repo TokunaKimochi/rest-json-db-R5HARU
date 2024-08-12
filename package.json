@@ -20,7 +20,9 @@
     "test:full": "set INSERT_ENABLED=true && dotenvx run -f .env.postgresql -f .env.development -- jest",
     "test:cov:full": "set INSERT_ENABLED=true && dotenvx run -f .env.postgresql -f .env.development -- jest --coverage",
     "api:geoUp": "node dist\\scripts\\geoJpApiUpdate.js",
-    "api:postalUp": "ejpc-generate-json -d \"./vendor/easy-ja-postal-code/api\" -t"
+    "api:postalUp": "ejpc-generate-json -d \"./vendor/easy-ja-postal-code/api\" -t",
+    "deploy": "dotenvx run -f .env.postgresql -f .env.production -- node dist\\scripts\\node-windows\\svc-install.js",
+    "withdraw": "dotenvx run -f .env.postgresql -f .env.production -- node dist\\scripts\\node-windows\\svc-uninstall.js"
   },
   "keywords": [],
   "author": "",
@@ -36,6 +38,7 @@
     "@types/jest": "^29.5.12",
     "@types/morgan": "^1.9.4",
     "@types/node": "^20.1.0",
+    "@types/node-windows": "^0.1.6",
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
@@ -68,6 +71,7 @@
     "gitly": "^2.4.4",
     "jaconv": "github:TokunaKimochi/jaconv",
     "morgan": "^1.10.0",
+    "node-windows": "1.0.0-beta.8",
     "pg-promise": "^11.9.1",
     "sql-bricks": "^3.0.1",
     "symlink-dir": "^5.1.1",
