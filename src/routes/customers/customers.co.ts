@@ -14,7 +14,11 @@ import {
   updateOneCustomer,
 } from './customers.mo';
 
-export const findAllOrSearch = async (req: Request<FilterQuery>, res: Response, next: NextFunction): Promise<void> => {
+export const findAllOrSearch = async (
+  req: Request<object, object, object, FilterQuery>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const customers = await findAllCustomersOrSearch(req.query);
     res.status(200).json(customers);
@@ -36,9 +40,13 @@ export const findOne = async (req: Request<ParamsWithId>, res: Response, next: N
   }
 };
 
-export const createOne = async (req: Request<CustomerInputs>, res: Response, next: NextFunction): Promise<void> => {
+export const createOne = async (
+  req: Request<object, object, CustomerInputs>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const customer = await createOneCustomer(req.body as CustomerInputs);
+    const customer = await createOneCustomer(req.body);
     res.status(201).json(customer);
   } catch (err: unknown) {
     console.error(err);
@@ -48,12 +56,12 @@ export const createOne = async (req: Request<CustomerInputs>, res: Response, nex
 };
 
 export const updateOne = async (
-  req: Request<ParamsWithId, CustomerInputs>,
+  req: Request<ParamsWithId, object, CustomerInputs>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const customer = await updateOneCustomer(req.params, req.body as CustomerInputs);
+    const customer = await updateOneCustomer(req.params, req.body);
     res.status(200).json(customer);
   } catch (err: unknown) {
     console.error(err);
@@ -77,12 +85,12 @@ export const deleteOne = async (req: Request<ParamsWithId>, res: Response, next:
 };
 
 export const checkingOverlap = async (
-  req: Request<ParamsWithId, CheckingOverlapCustomersQuery>,
+  req: Request<ParamsWithId, object, object, CheckingOverlapCustomersQuery>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const customers = await checkingOverlapCustomers(req.params, req.query as CheckingOverlapCustomersQuery);
+    const customers = await checkingOverlapCustomers(req.params, req.query);
     res.status(200).json(customers);
   } catch (err: unknown) {
     console.error(err);

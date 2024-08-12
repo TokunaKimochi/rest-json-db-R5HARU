@@ -25,19 +25,19 @@ export const findAllAboutCustomer = async (
 };
 
 export const createOne = async (
-  req: Request<ParamsWithCustomerId, NoteInputs>,
+  req: Request<ParamsWithCustomerId, object, NoteInputs>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { customer_id } = req.body as NoteInputs;
+    const { customer_id } = req.body;
     if (req.params.customerId !== customer_id) {
       throw new Error(
         `Illegal call detection: params.customerId is ${req.params.customerId}, body.customer_id is ${customer_id}`
       );
     }
-    const customerAndCurrentNote = await createOneNote(req.params, req.body as NoteInputs);
+    const customerAndCurrentNote = await createOneNote(req.params, req.body);
     res.status(201).json(customerAndCurrentNote);
   } catch (err: unknown) {
     console.error(err);
@@ -47,19 +47,19 @@ export const createOne = async (
 };
 
 export const updateOne = async (
-  req: Request<ParamsWithCustomerIdAndRank, NoteInputs>,
+  req: Request<ParamsWithCustomerIdAndRank, object, NoteInputs>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { customer_id } = req.body as NoteInputs;
+    const { customer_id } = req.body;
     if (req.params.customerId !== customer_id) {
       throw new Error(
         `Illegal call detection: params.customerId is ${req.params.customerId}, body.customer_id is ${customer_id}`
       );
     }
-    const customerAndCurrentNote = await updateOneNote(req.params, req.body as NoteInputs);
+    const customerAndCurrentNote = await updateOneNote(req.params, req.body);
     res.status(200).json(customerAndCurrentNote);
   } catch (err: unknown) {
     console.error(err);

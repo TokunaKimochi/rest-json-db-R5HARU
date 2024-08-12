@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 const envSchema = z.object({
+  // `http://` or `https://` の部分は今のところハードコード
   API_HOST: z.union([z.string().ip(), z.literal('localhost')]),
   PORT: z.coerce.number().min(1024).max(65535),
   VENDOR_RELATIVE_PATH: z.string().refine((path) => path.startsWith('./') || path.startsWith('../')),
