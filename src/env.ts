@@ -10,6 +10,8 @@ const envSchema = z.object({
   PG_USERNAME: z.string().min(3),
   PG_PASSWORD: z.string().min(7),
   PG_DATABASE: z.string().min(3),
+  // 一時ファイル保存ディレクトリを設定し、使用する
+  TEMP_DIR: z.string().startsWith('./').min(4).optional(),
 });
 
 type Env = z.infer<typeof envSchema>;

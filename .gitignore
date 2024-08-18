@@ -133,3 +133,6 @@ dist
 
 # vendor
 vendor/
+
+# tmp
+tmp/

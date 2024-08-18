@@ -106,10 +106,16 @@ export const createOneTsv = async (
 ): Promise<void> => {
   try {
     await createOneCustomerTsv(req.body);
-    res.status(201).json({ message: `${Date.now()} -- customer.tsv 作成` });
+    res.status(201).json({
+      isSuccess: true,
+      message: `${new Date().toLocaleString('sv', { timeZone: 'Asia/Tokyo' })} -- customer.tsv 作成`,
+    });
   } catch (err: unknown) {
     console.error(err);
-    res.status(500);
+    res.status(500).json({
+      isSuccess: false,
+      message: `customer.tsv 作成失敗 -- ${new Date().toLocaleString('sv', { timeZone: 'Asia/Tokyo' })}`,
+    });
     next(err);
   }
 };

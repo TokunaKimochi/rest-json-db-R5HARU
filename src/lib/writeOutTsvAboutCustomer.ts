@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises';
 import { z } from 'zod';
+import env from '@/env';
 import { customersTbRowSchema } from '../routes/customers/customers.schemas';
+import makeParentDirectory from './makeParentDirectory';
 
 // 無限循環 import を避けるためにここで定義
 type CustomersTbRow = z.infer<typeof customersTbRowSchema>;
@@ -17,7 +19,21 @@ const writeOutTsvAboutCustomer = async (arg: CustomersTbRow) => {
     `\t${arg.tel}\r\n` +
     `\t${zipCodeHyphen}\r\n${arg.nja_pref}${arg.nja_city}\t${arg.address1}${arg.address2}${arg.address3}\r\n${arg.name1}\t${arg.name1}${arg.name2}`;
 
-  await fs.writeFile('./vendor/in-house/api/tsv/customer.tsv', textData);
+  const tsvFilePath = env.TEMP_DIR ? `${env.TEMP_DIR}/customer.tsv` : './vendor/in-house/api/tsv/customer.tsv';
+
+  const result = await fs.writeFile(tsvFilePath, textData).catch((err) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (err && err?.code === 'ENOENT') {
+      return 'RUN makeParentDirectory()';
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    throw new Error(err);
+  });
+
+  if (result === 'RUN makeParentDirectory()') {
+    await makeParentDirectory(tsvFilePath);
+    await writeOutTsvAboutCustomer(arg);
+  }
 };
 
 export default writeOutTsvAboutCustomer;
