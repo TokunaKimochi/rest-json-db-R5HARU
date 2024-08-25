@@ -41,7 +41,7 @@ describe('GET /api/address-data-by-zip-code?zip_code=', () => {
       .get('/api/address-data-by-zip-code?zip_code=000-0000')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(200)
+      .expect(404)
       .then((res) => {
         expect(res.body.error.noFirstThreeDigits).toBe(true);
       });
@@ -52,7 +52,7 @@ describe('GET /api/address-data-by-zip-code?zip_code=', () => {
       .get('/api/address-data-by-zip-code?zip_code=907-8888')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(200)
+      .expect(404)
       .then((res) => {
         expect(res.body.error.notFound).toBe(true);
       });

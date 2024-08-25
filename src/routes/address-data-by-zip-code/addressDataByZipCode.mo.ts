@@ -1,16 +1,11 @@
 import { z } from 'zod';
 import env from '@/env';
-import {
-  ErrorDataType,
-  ReturnDataType,
-  SearchAddress,
-  SucceessDataType as SuccessDataType,
-} from 'easy-ja-postal-code-search-address';
+import { ReturnDataType, SearchAddress } from 'easy-ja-postal-code-search-address';
 import zipCodeQuerySchema from './addressDataByZipCode.schemas';
 
 export type ZipCodeQuery = z.infer<typeof zipCodeQuerySchema>;
 
-export const createAddressData = async (q: ZipCodeQuery): Promise<SuccessDataType | ErrorDataType> => {
+export const createAddressData = async (q: ZipCodeQuery): Promise<ReturnDataType> => {
   const ejpc = await SearchAddress.init({
     baseUrl: `http://${env.API_HOST}:${env.PORT}/vendor/easy-ja-postal-code/api/`,
     fallback: () => {
