@@ -8,7 +8,8 @@ const create = async (
 ): Promise<void> => {
   try {
     const returnData = await createAddressData(req.query);
-    if (returnData.error) {
+    // もし、厳密（？）に HTTP エラーを返したいなら、コメントアウト
+    /* if (returnData.error) {
       const { loading, inValid, noFirstThreeDigits, notFound, notReady } = returnData.error;
       if (loading) {
         res.status(202).json(returnData);
@@ -21,9 +22,8 @@ const create = async (
       } else {
         res.status(500).json(returnData);
       }
-    } else {
-      res.status(200).json(returnData);
-    }
+    } */
+    res.status(200).json(returnData);
   } catch (err: unknown) {
     console.error(err);
     res.status(500);
