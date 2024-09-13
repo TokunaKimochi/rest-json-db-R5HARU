@@ -77,7 +77,7 @@ export const findOneCustomer = async (p: ParamsWithId): Promise<CustomersTbRow |
   return customer;
 };
 
-type RegistrationData = Omit<CustomersTbRow, 'id' | 'notes' | 'times' | 'created_at' | 'updated_at'>;
+type RegistrationData = Omit<CustomersTbRow, 'id' | 'is_individual' | 'notes' | 'times' | 'created_at' | 'updated_at'>;
 
 const generateRegistrationData = async (customerInputs: CustomerInputs): Promise<RegistrationData> => {
   const inputObj = customerInputs;
