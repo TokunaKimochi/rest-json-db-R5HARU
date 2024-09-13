@@ -41,6 +41,7 @@ export const customersTbSchema = z
     alias: z.string().max(30, { message: '３０文字まで登録できます' }),
     searched_name: z.string().min(1).max(90),
     address_sha1: z.string().length(40),
+    is_individual: z.boolean(),
     nja_pref: z.string().max(4),
     nja_city: z.string().max(12),
     nja_town: z.string().max(16),
