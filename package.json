@@ -20,8 +20,7 @@
     "test:full": "set INSERT_ENABLED=true && dotenvx run -f .env.postgresql -f .env.development -- jest",
     "test:cov:full": "set INSERT_ENABLED=true && dotenvx run -f .env.postgresql -f .env.development -- jest --coverage",
     "api:geoUp": "node dist\\scripts\\geoJpApiUpdate.js",
-    "api:postalUp": "ejpc-generate-json -d \"./vendor/easy-ja-postal-code/api\" -t",
-    "hoge": "node dist\\scripts\\ejPostalApiUpdate.js",
+    "api:postalUp": "node dist\\scripts\\ejPostalApiUpdate.js",
     "sql:customersUp": "dotenvx run -f .env.postgresql -f .env.production -- node dist\\scripts\\updateCustomersTable.js",
     "rollout": "dotenvx run -f .env.postgresql -f .env.production -- node dist\\scripts\\node-windows\\svc-install.js",
     "withdraw": "dotenvx run -f .env.postgresql -f .env.production -- node dist\\scripts\\node-windows\\svc-uninstall.js"
