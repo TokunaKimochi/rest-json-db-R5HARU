@@ -54,7 +54,7 @@ export const findAllCustomersOrSearch = async (q: FilterQuery): Promise<Customer
       if (i > 0) whereClause += ' AND ';
       const normalizedName = fixCorporateNameVariants(names[i]);
       if (normalizedName) {
-        whereClause += `searched_name LIKE '%${normalizedName}%'`;
+        whereClause += `(searched_name LIKE '%${normalizedName}%' OR name1 LIKE '%${names[i]}%')`;
       } else {
         whereClause += `name1 LIKE '%${names[i]}%'`;
       }
