@@ -22,6 +22,7 @@ const runEjpcGenerateJson = () =>
       resolve();
     });
   });
+
 async function main() {
   await runEjpcGenerateJson();
   console.log('●工程1/2: 成功✨ JSON を作成しました');
@@ -36,7 +37,7 @@ async function main() {
 
 try {
   main().catch((err: string) => {
-    console.error(err);
+    console.error(`  >>>> ✘ ${err}`);
   });
 } catch (err: unknown) {
   if (typeof err === 'string') throw new Error(err);
