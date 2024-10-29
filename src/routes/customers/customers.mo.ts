@@ -56,7 +56,7 @@ export const findAllCustomersOrSearch = async (q: FilterQuery): Promise<Customer
       if (normalizedName) {
         whereClause += `(searched_name LIKE '%${normalizedName}%' OR name1 LIKE '%${names[i]}%')`;
       } else {
-        whereClause += `name1 LIKE '%${names[i]}%'`;
+        whereClause += `(name1 LIKE '%${names[i]}%' OR alias LIKE '%${names[i]}%')`;
       }
     }
     whereClause += optionalCondition;
