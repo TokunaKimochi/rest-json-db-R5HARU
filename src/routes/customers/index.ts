@@ -5,6 +5,7 @@ import {
   checkingOverlapCustomersQuerySchema,
   customerInputsSchema,
   customersTbRowSchema,
+  deleteIdsSchema,
   filterQuerySchema,
   paramsWithIdSchema,
 } from './customers.schemas';
@@ -59,5 +60,13 @@ router.route('/output').post(
   }) as RequestHandler,
   controllers.createOneTsv as unknown as RequestHandler
 );
+// HTTP の DELETE リクエストメソッドはボディをあえて使わないのが業界の空気らしい、、、
+// https://scrapbox.io/heguro/REST_APIにおける複数削除の設計をどうするか
+router
+  .route('/delete')
+  .post(
+    validateRequest({ body: deleteIdsSchema }) as RequestHandler,
+    controllers.deleteAny as unknown as RequestHandler
+  );
 
 export default router;

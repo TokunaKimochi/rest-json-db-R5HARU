@@ -85,6 +85,10 @@ export const paramsWithIdSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
 
+export const deleteIdsSchema = z.object({
+  deleteIds: z.number().array(),
+});
+
 export const checkingOverlapCustomersQuerySchema = customersTbSchema
   .pick({
     name1: true,
