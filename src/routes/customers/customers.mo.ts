@@ -11,12 +11,14 @@ import {
   filterQuerySchema,
   paramsWithIdSchema,
   checkingOverlapCustomersQuerySchema,
+  deleteIdsSchema,
 } from './customers.schemas';
 
 export type CustomersTbRow = z.infer<typeof customersTbRowSchema>;
 export type CustomerInputs = z.infer<typeof customerInputsSchema>;
 export type FilterQuery = z.infer<typeof filterQuerySchema>;
 export type ParamsWithId = z.infer<typeof paramsWithIdSchema>;
+export type DeleteIds = z.infer<typeof deleteIdsSchema>;
 export type CheckingOverlapCustomersQuery = z.infer<typeof checkingOverlapCustomersQuerySchema>;
 
 export const findAllCustomersOrSearch = async (q: FilterQuery): Promise<CustomersTbRow[] | []> => {
@@ -162,4 +164,34 @@ export const checkingOverlapCustomers = async (
 
 export const createOneCustomerTsv = async (body: CustomersTbRow): Promise<void> => {
   await writeOutTsvAboutCustomer(body);
+};
+
+export const deleteAnyCustomers = async (body: DeleteIds): Promise<{ command: string; rowCount: number }> => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { existing_customers }: { existing_customers: string } = await db.one(
+    // `$1:csv` is https://github.com/vitaly-t/pg-promise?tab=readme-ov-file#csv-filter
+    'SELECT COUNT(*) AS existing_customers FROM customers WHERE id IN ($1:csv)',
+    [body.deleteIds]
+  );
+  if (body.deleteIds.length !== parseInt(existing_customers, 10)) {
+    throw new DataBaseError('存在しない顧客レコードの削除が要求されました');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { existing_customers_notes }: { existing_customers_notes: string } = await db.one(
+    'SELECT COUNT(*) AS existing_customers_notes FROM notes WHERE customer_id IN ($1:csv)',
+    [body.deleteIds]
+  );
+  if (parseInt(existing_customers_notes, 10) !== 0) {
+    throw new DataBaseError('関連メモを１件でも持っている顧客レコードは削除できません');
+  }
+
+  const deleteResult: { command: string; rowCount: number } = await db
+    .result('DELETE FROM customers WHERE id IN ($1:csv)', [body.deleteIds], (r) => ({
+      command: r.command,
+      rowCount: r.rowCount,
+    }))
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
+
+  return deleteResult;
 };

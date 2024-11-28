@@ -3,11 +3,13 @@ import {
   CheckingOverlapCustomersQuery,
   CustomerInputs,
   CustomersTbRow,
+  DeleteIds,
   FilterQuery,
   ParamsWithId,
   checkingOverlapCustomers,
   createOneCustomer,
   createOneCustomerTsv,
+  deleteAnyCustomers,
   deleteOneCustomer,
   findAllCustomersOrSearch,
   findOneCustomer,
@@ -116,6 +118,24 @@ export const createOneTsv = async (
       isSuccess: false,
       message: `customer.tsv 作成失敗 -- ${new Date().toLocaleString('sv', { timeZone: 'Asia/Tokyo' })}`,
     });
+    next(err);
+  }
+};
+
+export const deleteAny = async (
+  req: Request<object, object, DeleteIds>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const result = await deleteAnyCustomers(req.body);
+    if (result.rowCount === 0) {
+      res.status(404);
+      throw new Error('🐘🔍 - DB: Row not found - Customer with id is not found.');
+    }
+    res.status(200).json(result);
+  } catch (err: unknown) {
+    res.status(res.statusCode !== 404 ? 500 : 404);
     next(err);
   }
 };
