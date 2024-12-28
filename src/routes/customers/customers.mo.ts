@@ -166,7 +166,7 @@ export const createOneCustomerTsv = async (body: CustomersTbRow): Promise<void> 
   await writeOutTsvAboutCustomer(body);
 };
 
-export const deleteAnyCustomers = async (body: DeleteIds): Promise<{ command: string; rowCount: number }> => {
+export const deleteCustomersInBulk = async (body: DeleteIds): Promise<{ command: string; rowCount: number }> => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { existing_customers }: { existing_customers: string } = await db.one(
     // `$1:csv` is https://github.com/vitaly-t/pg-promise?tab=readme-ov-file#csv-filter

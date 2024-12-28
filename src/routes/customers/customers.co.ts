@@ -9,7 +9,7 @@ import {
   checkingOverlapCustomers,
   createOneCustomer,
   createOneCustomerTsv,
-  deleteAnyCustomers,
+  deleteCustomersInBulk,
   deleteOneCustomer,
   findAllCustomersOrSearch,
   findOneCustomer,
@@ -122,13 +122,13 @@ export const createOneTsv = async (
   }
 };
 
-export const deleteAny = async (
+export const deleteInBulk = async (
   req: Request<object, object, DeleteIds>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const result = await deleteAnyCustomers(req.body);
+    const result = await deleteCustomersInBulk(req.body);
     if (result.rowCount === 0) {
       res.status(404);
       throw new Error('🐘🔍 - DB: Row not found - Customer with id is not found.');

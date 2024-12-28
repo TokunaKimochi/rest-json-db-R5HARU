@@ -66,7 +66,7 @@ router
   .route('/delete')
   .post(
     validateRequest({ body: deleteIdsSchema }) as RequestHandler,
-    controllers.deleteAny as unknown as RequestHandler
+    controllers.deleteInBulk as unknown as RequestHandler
   );
 
 export default router;
