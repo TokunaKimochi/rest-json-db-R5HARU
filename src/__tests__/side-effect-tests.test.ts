@@ -264,6 +264,103 @@ if (process.env.INSERT_ENABLED) {
         });
     });
   });
+
+  // まとめて削除関連
+  const idsArr: number[] = [];
+  // ５件登録
+  for (let i = 0; i < 5; i += 1) {
+    // eslint-disable-next-line @typescript-eslint/no-loop-func
+    it('POST /api/customers', async () => {
+      await request(app)
+        .post('/api/customers')
+        .set('Accept', 'application/json')
+        .send({
+          tel: '0565-28-2121',
+          zip_code: '471-8571',
+          address1: '豊田市トヨタ町1番地',
+          address2: '',
+          address3: '',
+          name1: `「まとめて削除」テスト用に登録 ${i}`,
+          name2: '',
+          alias: 'test',
+          invoice_type_id: 1,
+        })
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then((res) => {
+          expect(res.body.id).toBeGreaterThan(0);
+          idsArr.push(res.body.id as number);
+        });
+    });
+  }
+  // メモを登録して、、
+  it('POST /api/notes/:customerId', async () => {
+    await request(app)
+      .post(`/api/notes/${idsArr[0]}`)
+      .set('Accept', 'application/json')
+      .send({
+        customer_id: idsArr[0],
+        rank: 1,
+        body: 'note_01',
+      })
+      .expect('Content-Type', /json/)
+      .expect(201);
+  });
+  // メモ有りの状態でまとめて削除
+  it('POST /api/customers/delete', async () => {
+    await request(app)
+      .post('/api/customers/delete')
+      .set('Accept', 'application/json')
+      .send({
+        deleteIds: idsArr,
+      })
+      .expect('Content-Type', /json/)
+      .expect(500)
+      .then((res) => {
+        expect(res.body.message).toMatch('関連メモを１件でも持っている顧客レコードは削除できません');
+      });
+  });
+  // メモ有りの顧客を個別に削除（これは成功）
+  it('DELETE /api/customers/:id', async () => {
+    await request(app)
+      .delete(`/api/customers/${idsArr[0]}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty('command');
+        expect(res.body.command).toEqual('DELETE');
+        expect(res.body.rowCount).toEqual(1);
+      });
+  });
+  // 削除済みの id が配列にある状態でまとめて削除
+  it('POST /api/customers/delete', async () => {
+    await request(app)
+      .post('/api/customers/delete')
+      .set('Accept', 'application/json')
+      .send({
+        deleteIds: idsArr,
+      })
+      .expect('Content-Type', /json/)
+      .expect(500)
+      .then((res) => {
+        expect(res.body.message).toMatch('存在しない顧客レコードの削除が要求されました');
+      });
+  });
+  // 上で登録した顧客をまとめて削除
+  it('POST /api/customers/delete', async () => {
+    await request(app)
+      .post('/api/customers/delete')
+      .set('Accept', 'application/json')
+      .send({
+        deleteIds: idsArr.slice(1),
+      })
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body.rowCount).toEqual(4);
+      });
+  });
 }
 if (!process.env.INSERT_ENABLED) {
   describe('PUT /api/customers/0', () => {
