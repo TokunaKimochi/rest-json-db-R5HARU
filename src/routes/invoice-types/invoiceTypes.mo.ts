@@ -1,9 +1,7 @@
-import { z } from 'zod';
 import { DataBaseError, db } from '../../db';
-import { invoiceTypesIdAndNameSchemas } from './invoiceTypes.schemas';
+import { InvoiceTypesIdAndName } from './invoiceTypes.types';
 
-export type InvoiceTypesIdAndName = z.infer<typeof invoiceTypesIdAndNameSchemas>;
-
+// eslint-disable-next-line import/prefer-default-export
 export const findAllInvoiceTypes = async (): Promise<InvoiceTypesIdAndName[]> => {
   const result: InvoiceTypesIdAndName[] = await db
     .manyOrNone('SELECT id, name FROM invoice_types ORDER BY id')

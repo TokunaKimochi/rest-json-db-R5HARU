@@ -1,11 +1,7 @@
 import fs from 'node:fs/promises';
-import { z } from 'zod';
 import env from '@/env';
-import { customersTbRowSchema } from '../routes/customers/customers.schemas';
+import { CustomersTbRow } from '@/routes/customers/customers.types';
 import makeParentDirectory from './makeParentDirectory';
-
-// 無限循環 import を避けるためにここで定義
-type CustomersTbRow = z.infer<typeof customersTbRowSchema>;
 
 const writeOutTsvAboutCustomer = async (arg: CustomersTbRow) => {
   const zipCodeHyphen = `${arg.zip_code.slice(0, 3)}-${arg.zip_code.slice(3)}`;

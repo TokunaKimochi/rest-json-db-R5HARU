@@ -1,7 +1,8 @@
 import pathNix from 'node:path/posix';
 import { config } from '@geolonia/normalize-japanese-addresses';
 import { DataBaseError, db } from '@/db';
-import { CustomerInputs, updateOneCustomer } from '@/routes/customers/customers.mo';
+import { updateOneCustomer } from '@/routes/customers/customers.mo';
+import { CustomerInputs } from '@/routes/customers/customers.types';
 
 type Merge<T> = {
   [K in keyof T]: T[K];

@@ -1,6 +1,6 @@
 import { DataBaseError, db } from '@/db';
+import { CustomerInputs } from '@/routes/customers/customers.types';
 import { customerInputsSchema } from '../routes/customers/customers.schemas';
-import { CustomerInputs } from '../routes/customers/customers.mo';
 
 type Merge<T> = {
   [K in keyof T]: T[K];

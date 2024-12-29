@@ -1,10 +1,8 @@
-import { z } from 'zod';
 import env from '@/env';
 import { ReturnDataType, SearchAddress } from 'easy-ja-postal-code-search-address';
-import zipCodeQuerySchema from './addressDataByZipCode.schemas';
+import { ZipCodeQuery } from './addressDataByZipCode.types';
 
-export type ZipCodeQuery = z.infer<typeof zipCodeQuerySchema>;
-
+// eslint-disable-next-line import/prefer-default-export
 export const createAddressData = async (q: ZipCodeQuery): Promise<ReturnDataType> => {
   const ejpc = await SearchAddress.init({
     baseUrl: `http://${env.API_HOST}:${env.PORT}/vendor/easy-ja-postal-code/api/`,

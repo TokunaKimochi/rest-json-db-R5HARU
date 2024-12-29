@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { ZipCodeQuery, createAddressData } from './addressDataByZipCode.mo';
+import { createAddressData } from './addressDataByZipCode.mo';
+import { ZipCodeQuery } from './addressDataByZipCode.types';
 
 const create = async (
   req: Request<object, object, object, ZipCodeQuery>,

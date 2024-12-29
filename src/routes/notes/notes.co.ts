@@ -1,13 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import {
-  NoteInputs,
-  ParamsWithCustomerId,
-  ParamsWithCustomerIdAndRank,
-  createOneNote,
-  deleteOneNote,
-  findAllNotesAboutCustomer,
-  updateOneNote,
-} from './notes.mo';
+import { createOneNote, deleteOneNote, findAllNotesAboutCustomer, updateOneNote } from './notes.mo';
+import { NoteInputs, ParamsWithCustomerId, ParamsWithCustomerIdAndRank } from './notes.types';
 
 export const findAllAboutCustomer = async (
   req: Request<ParamsWithCustomerId>,

@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { insert, update } from 'sql-bricks';
 import { DataBaseError, db } from '../../db';
 import { deleteAllNotes4SpecificCustomerInTx } from '../notes/notes.txAtoms';
@@ -6,20 +5,13 @@ import extractSemanticAddress from '../../lib/extractSemanticAddress';
 import fixCorporateNameVariants from '../../lib/fixCorporateNameVariants';
 import writeOutTsvAboutCustomer from '../../lib/writeOutTsvAboutCustomer';
 import {
-  customersTbRowSchema,
-  customerInputsSchema,
-  filterQuerySchema,
-  paramsWithIdSchema,
-  checkingOverlapCustomersQuerySchema,
-  deleteIdsSchema,
-} from './customers.schemas';
-
-export type CustomersTbRow = z.infer<typeof customersTbRowSchema>;
-export type CustomerInputs = z.infer<typeof customerInputsSchema>;
-export type FilterQuery = z.infer<typeof filterQuerySchema>;
-export type ParamsWithId = z.infer<typeof paramsWithIdSchema>;
-export type DeleteIds = z.infer<typeof deleteIdsSchema>;
-export type CheckingOverlapCustomersQuery = z.infer<typeof checkingOverlapCustomersQuerySchema>;
+  CheckingOverlapCustomersQuery,
+  CustomerInputs,
+  CustomersTbRow,
+  DeleteIds,
+  FilterQuery,
+  ParamsWithId,
+} from './customers.types';
 
 export const findAllCustomersOrSearch = async (q: FilterQuery): Promise<CustomersTbRow[] | []> => {
   const limit = q.size ?? 10;

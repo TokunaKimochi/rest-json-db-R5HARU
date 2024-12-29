@@ -1,20 +1,9 @@
-import { z } from 'zod';
 import { insert, update } from 'sql-bricks';
 import type { IResult } from 'pg-promise/typescript/pg-subset';
-import { CustomersTbRow } from 'routes/customers/customers.mo';
 import { DataBaseError, db } from '../../db';
-import {
-  noteInputsSchema,
-  notesTbRowSchemas,
-  paramsWithCustomerIdAndRankSchema,
-  paramsWithCustomerIdSchema,
-} from './notes.schemas';
 import { deleteOneNoteInTx, pushAsideRankersInTx, slideOverRankingInTx } from './notes.txAtoms';
-
-export type ParamsWithCustomerId = z.infer<typeof paramsWithCustomerIdSchema>;
-export type ParamsWithCustomerIdAndRank = z.infer<typeof paramsWithCustomerIdAndRankSchema>;
-export type NotesTbRow = z.infer<typeof notesTbRowSchemas>;
-export type NoteInputs = z.infer<typeof noteInputsSchema>;
+import { CustomersTbRow } from '../customers/customers.types';
+import { NoteInputs, NotesTbRow, ParamsWithCustomerId, ParamsWithCustomerIdAndRank } from './notes.types';
 
 export const findAllNotesAboutCustomer = async (p: ParamsWithCustomerId): Promise<NotesTbRow[] | []> => {
   const result: NotesTbRow[] = await db

@@ -1,11 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import {
-  CheckingOverlapCustomersQuery,
-  CustomerInputs,
-  CustomersTbRow,
-  DeleteIds,
-  FilterQuery,
-  ParamsWithId,
   checkingOverlapCustomers,
   createOneCustomer,
   createOneCustomerTsv,
@@ -15,6 +9,14 @@ import {
   findOneCustomer,
   updateOneCustomer,
 } from './customers.mo';
+import {
+  CheckingOverlapCustomersQuery,
+  CustomerInputs,
+  CustomersTbRow,
+  DeleteIds,
+  FilterQuery,
+  ParamsWithId,
+} from './customers.types';
 
 export const findAllOrSearch = async (
   req: Request<object, object, object, FilterQuery>,
