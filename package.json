@@ -7,7 +7,7 @@
     "node": ">=18.20.4",
     "pnpm": ">=8.4.0"
   },
-  "packageManager": "pnpm@8.6.12",
+  "packageManager": "pnpm@9.15.2",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "start": "dotenvx run -f .env.postgresql -f .env.production -- node dist\\assets\\bundle.js",
@@ -39,11 +39,11 @@
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.12",
     "@types/morgan": "^1.9.4",
-    "@types/node": "^20.1.0",
+    "@types/node": "^22.10.2",
     "@types/node-windows": "^0.1.6",
     "@types/supertest": "^6.0.2",
-    "@typescript-eslint/eslint-plugin": "^6.14.0",
-    "@typescript-eslint/parser": "^6.14.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "easy-ja-postal-code-generate-json": "^1.0.5",
     "eslint": "^8.56.0",
     "eslint-config-airbnb-base": "^15.0.0",
@@ -61,7 +61,7 @@
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.10",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.7.2"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.6.4",
