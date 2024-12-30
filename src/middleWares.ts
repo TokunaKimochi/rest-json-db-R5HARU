@@ -8,12 +8,15 @@ export const validateRequest =
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       if (schema.params) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         req.params = await schema.params.parseAsync(req.params);
       }
       if (schema.body) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         req.body = await schema.body.parseAsync(req.body);
       }
       if (schema.query) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         req.query = await schema.query.parseAsync(req.query);
       }
       next();

@@ -57,7 +57,7 @@ export const customersTbSchema = z
   })
   .partial();
 
-export const customersTbRowSchema = customersTbSchema.required();
+export const customersTbRowSchema = customersTbSchema.required().brand<'CustomersTbRow'>();
 
 export const customerInputsSchema = customersTbSchema
   .pick({
@@ -71,7 +71,8 @@ export const customerInputsSchema = customersTbSchema
     alias: true,
     invoice_type_id: true,
   })
-  .required();
+  .required()
+  .brand<'CustomerInputs'>();
 
 export const filterQuerySchema = z
   .object({
@@ -79,15 +80,20 @@ export const filterQuerySchema = z
     page: z.coerce.number().int().positive().default(1),
     search_name: z.coerce.string().trim().min(1),
   })
-  .partial();
+  .partial()
+  .brand<'FilterQuery'>();
 
-export const paramsWithIdSchema = z.object({
-  id: z.coerce.number().int().positive(),
-});
+export const paramsWithIdSchema = z
+  .object({
+    id: z.coerce.number().int().positive(),
+  })
+  .brand<'ParamsWithId'>();
 
-export const deleteIdsSchema = z.object({
-  deleteIds: z.number().array(),
-});
+export const deleteIdsSchema = z
+  .object({
+    deleteIds: z.number().array(),
+  })
+  .brand<'DeleteIds'>();
 
 export const checkingOverlapCustomersQuerySchema = customersTbSchema
   .pick({
@@ -97,4 +103,5 @@ export const checkingOverlapCustomersQuerySchema = customersTbSchema
     address_sha1: true,
     nja_pref: true,
   })
-  .required();
+  .required()
+  .brand<'CheckingOverlapCustomersQuery'>();

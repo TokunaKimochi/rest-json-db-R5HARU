@@ -1,4 +1,5 @@
 import { insert, update } from 'sql-bricks';
+import { z } from 'zod';
 import { DataBaseError, db } from '../../db';
 import { deleteAllNotes4SpecificCustomerInTx } from '../notes/notes.txAtoms';
 import extractSemanticAddress from '../../lib/extractSemanticAddress';
@@ -71,7 +72,12 @@ export const findOneCustomer = async (p: ParamsWithId): Promise<CustomersTbRow |
   return customer;
 };
 
-type RegistrationData = Omit<CustomersTbRow, 'id' | 'is_individual' | 'notes' | 'times' | 'created_at' | 'updated_at'>;
+// branded types を含めた不要なプロパティを削ぎ落とす
+// https://github.com/colinhacks/zod/discussions/1994#discussioncomment-4894241
+type RegistrationData = Omit<
+  CustomersTbRow,
+  typeof z.BRAND | 'id' | 'is_individual' | 'notes' | 'times' | 'created_at' | 'updated_at'
+>;
 
 const generateRegistrationData = async (customerInputs: CustomerInputs): Promise<RegistrationData> => {
   const inputObj = customerInputs;

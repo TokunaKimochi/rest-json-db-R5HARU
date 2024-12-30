@@ -18,7 +18,7 @@ router
     validateRequest({
       query: filterQuerySchema,
     }) as RequestHandler,
-    controllers.findAllOrSearch as RequestHandler
+    controllers.findAllOrSearch as unknown as RequestHandler
   )
   .post(
     validateRequest({

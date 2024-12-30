@@ -10,7 +10,7 @@ export const notesTbSchemas = z
   })
   .partial();
 
-export const notesTbRowSchemas = notesTbSchemas.required();
+export const notesTbRowSchemas = notesTbSchemas.required().brand<'NotesTbRow'>();
 
 export const noteInputsSchema = notesTbSchemas
   .pick({
@@ -18,15 +18,20 @@ export const noteInputsSchema = notesTbSchemas
     rank: true,
     body: true,
   })
-  .required();
+  .required()
+  .brand<'NoteInputs'>();
 
-export const paramsWithCustomerIdSchema = z.object({
-  // リクエストボディではなくパスパラメータ（e.g. /123）なのでキャメルケース
-  customerId: z.coerce.number().int().positive(),
-});
+export const paramsWithCustomerIdSchema = z
+  .object({
+    // リクエストボディではなくパスパラメータ（e.g. /123）なのでキャメルケース
+    customerId: z.coerce.number().int().positive(),
+  })
+  .brand<'ParamsWithCustomerId'>();
 
-export const paramsWithCustomerIdAndRankSchema = z.object({
-  // リクエストボディではなくパスパラメータ（e.g. /123/rank/1）なのでキャメルケース
-  customerId: z.coerce.number().int().positive(),
-  rank: z.coerce.number().int().positive(),
-});
+export const paramsWithCustomerIdAndRankSchema = z
+  .object({
+    // リクエストボディではなくパスパラメータ（e.g. /123/rank/1）なのでキャメルケース
+    customerId: z.coerce.number().int().positive(),
+    rank: z.coerce.number().int().positive(),
+  })
+  .brand<'ParamsWithCustomerIdAndRank'>();

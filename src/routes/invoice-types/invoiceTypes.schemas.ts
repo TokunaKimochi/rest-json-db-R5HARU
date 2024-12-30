@@ -12,4 +12,5 @@ export const invoiceTypesIdAndNameSchemas = invoiceTypesTbSchemas
     id: true,
     name: true,
   })
-  .required();
+  .required()
+  .brand<'InvoiceTypesIdAndName'>();

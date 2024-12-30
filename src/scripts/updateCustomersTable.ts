@@ -3,6 +3,7 @@ import { config } from '@geolonia/normalize-japanese-addresses';
 import { DataBaseError, db } from '@/db';
 import { updateOneCustomer } from '@/routes/customers/customers.mo';
 import { CustomerInputs } from '@/routes/customers/customers.types';
+import { customerInputsSchema, paramsWithIdSchema } from '@/routes/customers/customers.schemas';
 
 type Merge<T> = {
   [K in keyof T]: T[K];
@@ -32,8 +33,9 @@ const main = async () => {
 
     // eslint-disable-next-line no-await-in-loop
     const customer = await updateOneCustomer(
-      { id },
-      { tel, zip_code, address1, address2, address3, name1, name2, alias, invoice_type_id }
+      // バッチ処理内でいちいちパースしてたら無視できない遅さになるかも？
+      paramsWithIdSchema.parse({ id }),
+      customerInputsSchema.parse({ tel, zip_code, address1, address2, address3, name1, name2, alias, invoice_type_id })
     );
     console.log(`(${i + 1}/${count})`, customer.searched_name, customer.nja_town, customer.nja_level);
   }
