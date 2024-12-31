@@ -15,7 +15,7 @@
     "build": "dotenvx run -f .env.postgresql -f .env.production -- rollup -c",
     "tsc": "dotenvx run -f .env.postgresql -f .env.production -- tsc && tsc-alias",
     "lint": "eslint src/ --ext .js,.ts --fix",
-    "format": "prettier --write \"**/*.+(js|json|yml|ts)\"",
+    "format": "prettier --check \"**/*.+(js|json|yml|ts)\" || prettier --write \"**/*.+(js|json|yml|ts)\"",
     "test": "dotenvx run -f .env.postgresql -f .env.development -- jest --watch",
     "test:full": "set INSERT_ENABLED=true && dotenvx run -f .env.postgresql -f .env.development -- jest",
     "test:cov:full": "set INSERT_ENABLED=true && dotenvx run -f .env.postgresql -f .env.development -- jest --coverage",
@@ -42,12 +42,12 @@
     "@types/node": "^22.10.2",
     "@types/node-windows": "^0.1.6",
     "@types/supertest": "^6.0.2",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "easy-ja-postal-code-generate-json": "^1.0.5",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-airbnb-typescript": "^17.1.0",
+    "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
@@ -60,8 +60,7 @@
     "ts-jest": "^29.1.4",
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.10",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.2"
+    "tsconfig-paths": "^4.2.0"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.6.4",
@@ -77,6 +76,7 @@
     "pg-promise": "^11.9.1",
     "sql-bricks": "^3.0.1",
     "symlink-dir": "^5.1.1",
+    "typescript": "5.5.4",
     "zod": "^3.21.4"
   }
 }
