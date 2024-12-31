@@ -5,7 +5,7 @@ import { ZipCodeQuery } from './addressDataByZipCode.types';
 // eslint-disable-next-line import/prefer-default-export
 export const createAddressData = async (q: ZipCodeQuery): Promise<ReturnDataType> => {
   const ejpc = await SearchAddress.init({
-    baseUrl: `http://${env.API_HOST}:${env.PORT}/vendor/easy-ja-postal-code/api/`,
+    baseUrl: `${env.BASE_URL}/vendor/easy-ja-postal-code/api/`,
     fallback: () => {
       throw new Error('初期化に失敗しました');
     },

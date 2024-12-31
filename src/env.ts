@@ -4,6 +4,7 @@ const envSchema = z.object({
   // `http://` or `https://` の部分は今のところハードコード
   API_HOST: z.union([z.string().ip(), z.literal('localhost')]),
   PORT: z.coerce.number().min(1024).max(65535),
+  BASE_URL: z.string().startsWith('http').min(15),
   // ポスグレ
   PG_HOST: z.union([z.string().ip(), z.literal('localhost')]),
   PG_PORT: z.coerce.number().min(1024).max(65535),
