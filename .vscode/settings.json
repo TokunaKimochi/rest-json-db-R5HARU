@@ -4,5 +4,24 @@
     "source.fixAll": "explicit"
   },
   "editor.formatOnSave": true,
-  "cSpell.words": ["kimochi", "tokuna", "dotenvx", "hoge", "fuga", "piyo", "geolonia", "gitly", "jaconv", "preinstall"]
+  "cSpell.words": [
+    "kimochi",
+    "smallint",
+    "timestamptz",
+    "tokuna",
+    "dotenvx",
+    "hoge",
+    "fuga",
+    "piyo",
+    "plpgsql",
+    "psql",
+    "geolonia",
+    "gitly",
+    "jaconv",
+    "preinstall",
+    "varchar"
+  ],
+  "[postgres]": {
+    "editor.defaultFormatter": "ReneSaarsoo.sql-formatter-vsc"
+  }
 }
