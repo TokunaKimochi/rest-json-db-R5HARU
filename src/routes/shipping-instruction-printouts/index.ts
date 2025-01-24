@@ -1,5 +1,6 @@
 import { RequestHandler, Router } from 'express';
 import { validateRequest } from '../../middleWares';
+import * as controllers from './shippingInstructionPrintouts.co';
 import shippingInstructionPrintHistoryTbRowSchema from './shippingInstructionPrintouts.schemas';
 
 const router = Router();
@@ -7,8 +8,8 @@ const router = Router();
 router.route('/').post(
   validateRequest({
     body: shippingInstructionPrintHistoryTbRowSchema,
-  }) as RequestHandler
-  // TODO コントローラーに引き継ぎ
+  }) as RequestHandler,
+  controllers.default as RequestHandler
 );
 
 export default router;
