@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
-import { ShippingInstructionPrintHistoryTbRow } from './shippingInstructionPrintouts.types';
+import { ShippingInstructionPrintHistoryInput } from './shippingInstructionPrintouts.types';
 import createOneShippingInstructionPrintout from './shippingInstructionPrintouts.mo';
 
 const createOne = async (
-  req: Request<object, object, ShippingInstructionPrintHistoryTbRow>,
+  req: Request<object, object, ShippingInstructionPrintHistoryInput>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {

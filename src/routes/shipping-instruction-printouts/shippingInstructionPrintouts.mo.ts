@@ -1,9 +1,12 @@
 import { DataBaseError, db } from '@/db';
 import { insert } from 'sql-bricks';
-import { ShippingInstructionPrintHistoryTbRow } from './shippingInstructionPrintouts.types';
+import {
+  ShippingInstructionPrintHistoryInput,
+  ShippingInstructionPrintHistoryInputWithOptionalShippingDate,
+} from './shippingInstructionPrintouts.types';
 
 const createOneShippingInstructionPrintout = async (
-  body: ShippingInstructionPrintHistoryTbRow
+  body: ShippingInstructionPrintHistoryInput
 ): Promise<null | string> => {
   if (
     body.delivery_date === '' ||
@@ -18,9 +21,9 @@ const createOneShippingInstructionPrintout = async (
       .proc('create_year_range_partition_by_date', ['shipping_instruction_print_history', body.delivery_date])
       .catch((err: string) => Promise.reject(new DataBaseError(err)));
 
-    let record = { ...body };
+    let record: ShippingInstructionPrintHistoryInputWithOptionalShippingDate = { ...body };
     if (body.shipping_date === '') {
-      // 分割代入引数で shipping_date を捨てる🗑️
+      // 即時関数の分割代入引数で shipping_date を捨てる🗑️
       record = (({ shipping_date, ..._rest }) => _rest)(record);
     }
 
