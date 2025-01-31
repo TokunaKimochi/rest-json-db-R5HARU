@@ -23,5 +23,8 @@
   ],
   "[postgres]": {
     "editor.defaultFormatter": "ReneSaarsoo.sql-formatter-vsc"
+  },
+  "[vb]": {
+    "editor.defaultFormatter": "local-smart.excel-live-server"
   }
 }
