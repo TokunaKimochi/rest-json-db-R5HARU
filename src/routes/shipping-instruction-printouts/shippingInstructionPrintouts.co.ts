@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { ShippingInstructionPrintHistoryInput } from './shippingInstructionPrintouts.types';
-import createOneShippingInstructionPrintout from './shippingInstructionPrintouts.mo';
+import { createOneShippingInstructionPrintout } from './shippingInstructionPrintouts.mo';
 
 const createOne = async (
   req: Request<object, object, ShippingInstructionPrintHistoryInput>,
