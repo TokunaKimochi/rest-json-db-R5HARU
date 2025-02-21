@@ -12,23 +12,30 @@ export const shippingInstructionPrintHistoryInputSchema = z.object({
   customer_address: z.string().max(96),
   wholesaler: z.string().max(32),
   order_number: z.string().max(64),
-  shipping_date: z.union([
-    // ただし、DB側はDATE型で固定なのでデフォルトになるように
-    // shipping_date 自体を削る処理をする
-    z.string().length(0),
-    z.coerce.date().transform((val) => val.toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo', dateStyle: 'short' })),
-  ]),
+  shipping_date: z
+    .union([
+      // ただし、DB側はDATE型で固定なのでデフォルトになるように
+      // shipping_date 自体を削る処理をする
+      z.string().length(0),
+      z.coerce.date().transform((val) => val.toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo', dateStyle: 'short' })),
+    ])
+    .optional(),
   carrier: z.string().max(32),
   package_count: z.coerce.number().int().nonnegative().optional(),
   items_of_order: z.string(),
 });
-
-export const shippingInstructionPrintHistoryInputWithOptionalShippingDateSchema =
-  shippingInstructionPrintHistoryInputSchema.partial({ shipping_date: true });
-
+// .extend ここでは上書き
 export const shippingInstructionPrintHistoryTbRowSchema = shippingInstructionPrintHistoryInputSchema.required().extend({
   shipping_date: z.coerce
     .date()
     .transform((val) => val.toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo', dateStyle: 'short' })),
   package_count: z.coerce.number().int().nonnegative().nullable(),
 });
+
+export const findShippingInstructionsQuerySchema = z
+  .object({
+    category: z.enum(['delivery_date', 'printed_at', 'shipping_date']),
+    dateA: z.coerce.date().optional(),
+    dateB: z.coerce.date().optional(),
+  })
+  .brand<'FindShippingInstructionsQuery'>();
