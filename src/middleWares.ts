@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import ErrorResponse from 'interfaces/ErrorResponse';
 import ValidatedRequest from 'interfaces/ValidatedRequest';
 import { ZodError } from 'zod';
+import { DataBaseError } from './db';
 
 export const validateRequest =
   (schema: ValidatedRequest) =>
@@ -35,14 +36,21 @@ export function notFound(req: Request, res: Response, next: NextFunction): void 
 }
 
 export function errorHandler(
-  err: Error,
+  err: Error | DataBaseError,
   _req: Request,
   res: Response<ErrorResponse>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction
 ): void {
-  res.status(res.statusCode).json({
-    message: err.message,
-    stack: err.stack?.split(/\r\n|\n/),
-  });
+  if (err instanceof DataBaseError) {
+    res.status(err.status).json({
+      message: err.message,
+      stack: err.stack?.split(/\r\n|\n/),
+    });
+  } else {
+    res.status(res.statusCode).json({
+      message: err.message,
+      stack: err.stack?.split(/\r\n|\n/),
+    });
+  }
 }

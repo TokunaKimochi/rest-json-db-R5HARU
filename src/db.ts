@@ -3,9 +3,12 @@ import type { IConnectionParameters } from 'pg-promise/typescript/pg-subset';
 import env from '@/env';
 
 export class DataBaseError extends Error {
-  constructor(message: string) {
+  status: number;
+
+  constructor(message: string, status?: number) {
     super(`🐘 - DB Error - ${message}`);
     this.name = 'DataBaseError';
+    this.status = status ?? 500;
   }
 }
 
