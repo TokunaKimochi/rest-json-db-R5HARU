@@ -39,3 +39,15 @@ export const findShippingInstructionsQuerySchema = z
     dateB: z.coerce.date().optional(),
   })
   .brand<'FindShippingInstructionsQuery'>();
+
+export const shippingInstructionPrintHistoryIDSchema = z
+  .object({
+    delivery_date: z.coerce
+      .date()
+      .transform((val) => val.toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo', dateStyle: 'short' })),
+    printed_at: z
+      .string()
+      .min(22)
+      .regex(/[0-9:.+ -]+/),
+  })
+  .brand<'ShippingInstructionPrintHistoryID'>();

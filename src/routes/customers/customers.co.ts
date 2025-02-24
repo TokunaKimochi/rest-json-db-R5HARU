@@ -53,7 +53,7 @@ export const createOne = async (
     const customer = await createOneCustomer(req.body);
     res.status(201).json(customer);
   } catch (err: unknown) {
-    console.error(err);
+    // console.error(err);
     res.status(500);
     next(err);
   }
@@ -68,7 +68,7 @@ export const updateOne = async (
     const customer = await updateOneCustomer(req.params, req.body);
     res.status(200).json(customer);
   } catch (err: unknown) {
-    console.error(err);
+    // console.error(err);
     res.status(500);
     next(err);
   }
@@ -97,7 +97,7 @@ export const checkingOverlap = async (
     const customers = await checkingOverlapCustomers(req.params, req.query);
     res.status(200).json(customers);
   } catch (err: unknown) {
-    console.error(err);
+    // console.error(err);
     res.status(500);
     next(err);
   }

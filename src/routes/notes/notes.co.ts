@@ -55,7 +55,7 @@ export const updateOne = async (
     const customerAndCurrentNote = await updateOneNote(req.params, req.body);
     res.status(200).json(customerAndCurrentNote);
   } catch (err: unknown) {
-    console.error(err);
+    // console.error(err);
     res.status(500);
     next(err);
   }
