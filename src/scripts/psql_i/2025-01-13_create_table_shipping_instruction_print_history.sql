@@ -5,7 +5,7 @@ CREATE TABLE shipping_instruction_print_history (
   delivery_time_str VARCHAR(32) NOT NULL DEFAULT '',
   printed_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
   page_num_str VARCHAR(8) NOT NULL DEFAULT '',
-  non_fk_customer_id INTEGER,
+  non_fk_customer_id INTEGER NOT NULL,
   customer_name VARCHAR(60) NOT NULL,
   customer_address VARCHAR(96) NOT NULL,
   -- âµîÑã∆é“ÅAí†çáêÊ
