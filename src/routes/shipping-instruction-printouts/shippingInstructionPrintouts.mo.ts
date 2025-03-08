@@ -95,6 +95,7 @@ export const createOneShippingInstructionPrintout = async (
 ): Promise<ShippingInstructionPrintHistoryIDWithoutBrand | string> => {
   if (
     body.delivery_date === '' ||
+    body.non_fk_customer_id === 0 ||
     body.customer_name === '' ||
     body.customer_address === '' ||
     body.items_of_order === ''

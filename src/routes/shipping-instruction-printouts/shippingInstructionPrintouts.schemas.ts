@@ -8,6 +8,7 @@ export const shippingInstructionPrintHistoryInputSchema = z.object({
   // タイムスタンプ with Timezone
   printed_at: z.string().datetime({ offset: true }).optional(),
   page_num_str: z.string().max(8),
+  non_fk_customer_id: z.coerce.number().int().positive(),
   customer_name: z.string().max(60),
   customer_address: z.string().max(96),
   wholesaler: z.string().max(32),
