@@ -59,7 +59,7 @@ export const findSomeShippingInstructions = async ({
 
   // ::text キャストを使いたいので地道にカラムを列挙
   const columns =
-    'delivery_date::text, delivery_time_str, printed_at::text, page_num_str, customer_name, customer_address, wholesaler, order_number, shipping_date::text, carrier, package_count, items_of_order';
+    'delivery_date::text, delivery_time_str, printed_at::text, page_num_str, non_fk_customer_id, customer_name, customer_address, wholesaler, order_number, shipping_date::text, carrier, package_count, items_of_order';
 
   // 印刷日時（これだけ DB ではタイムスタンプをデートと比較）で検索
   if (category === 'printed_at') {

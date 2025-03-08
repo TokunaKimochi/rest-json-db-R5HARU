@@ -14,6 +14,7 @@ if (process.env.INSERT_ENABLED) {
           delivery_date: '2024/2/29',
           delivery_time_str: 'AM必着',
           page_num_str: '',
+          non_fk_customer_id: '1234',
           customer_name: '🧪テスト🎭️',
           customer_address: '東京都千代田区',
           wholesaler: '',
@@ -40,6 +41,7 @@ if (process.env.INSERT_ENABLED) {
           delivery_date: '2024/3/1',
           delivery_time_str: 'AM必着',
           page_num_str: '',
+          non_fk_customer_id: '1234',
           customer_name: '🧪テスト🎭️',
           customer_address: '東京都千代田区',
           wholesaler: '',
@@ -68,6 +70,7 @@ if (process.env.INSERT_ENABLED) {
         .expect(200)
         .then((res) => {
           expect(res.body).toHaveProperty('length');
+          expect(res.body[0]).toHaveProperty('non_fk_customer_id');
           expect(res.body.length).toEqual(2);
         });
     });
