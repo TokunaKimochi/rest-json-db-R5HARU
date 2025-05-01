@@ -3,8 +3,9 @@ import { validateRequest } from '../../middleWares';
 import * as controllers from './shippingInstructionPrintouts.co';
 import {
   findShippingInstructionsQuerySchema,
-  shippingInstructionPrintHistoryIDSchema,
-  shippingInstructionPrintHistoryInputSchema,
+  shippingInstructionModificationSchema,
+  shippingInstructionPrintIDSchema,
+  shippingInstructionPrintInputSchema,
 } from './shippingInstructionPrintouts.schemas';
 
 const router = Router();
@@ -19,13 +20,20 @@ router
   )
   .post(
     validateRequest({
-      body: shippingInstructionPrintHistoryInputSchema,
+      body: shippingInstructionPrintInputSchema,
     }) as RequestHandler,
     controllers.createOne as RequestHandler
   )
+  .put(
+    validateRequest({
+      body: shippingInstructionModificationSchema,
+      query: shippingInstructionPrintIDSchema,
+    }) as RequestHandler,
+    controllers.updateOne as unknown as RequestHandler
+  )
   .delete(
     validateRequest({
-      query: shippingInstructionPrintHistoryIDSchema,
+      query: shippingInstructionPrintIDSchema,
     }) as RequestHandler,
     controllers.deleteOne as unknown as RequestHandler
   );

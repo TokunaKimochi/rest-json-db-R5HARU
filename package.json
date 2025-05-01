@@ -19,6 +19,7 @@
     "test": "dotenvx run -f .env.postgresql -f .env.development -- jest --watch",
     "test:full": "set INSERT_ENABLED=true && dotenvx run -f .env.postgresql -f .env.development -- jest",
     "test:cov:full": "set INSERT_ENABLED=true && dotenvx run -f .env.postgresql -f .env.development -- jest --coverage",
+    "test:db:ship": "set INSERT_ENABLED=true && dotenvx run -f .env.postgresql -f .env.development -- jest src/routes/shipping-instruction-printouts/shippingInstructionPrintouts.test.ts",
     "api:geoUp": "node dist\\scripts\\geoJpApiUpdate.js",
     "api:postalUp": "node dist\\scripts\\ejPostalApiUpdate.js",
     "sql:customersUp": "dotenvx run -f .env.postgresql -f .env.production -- node dist\\scripts\\updateCustomersTable.js",

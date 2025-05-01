@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const shippingInstructionPrintHistoryInputSchema = z.object({
+export const shippingInstructionPrintInputSchema = z.object({
   delivery_date: z.coerce
     .date()
     .transform((val) => val.toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo', dateStyle: 'short' })),
@@ -25,8 +25,18 @@ export const shippingInstructionPrintHistoryInputSchema = z.object({
   package_count: z.coerce.number().int().nonnegative().optional(),
   items_of_order: z.string(),
 });
+export const shippingInstructionModificationSchema = shippingInstructionPrintInputSchema
+  .omit({
+    printed_at: true,
+    non_fk_customer_id: true,
+  })
+  .required({
+    shipping_date: true,
+  })
+  .strict()
+  .brand<'ShippingInstructionModification'>();
 // .extend ここでは上書き
-export const shippingInstructionPrintHistoryTbRowSchema = shippingInstructionPrintHistoryInputSchema.required().extend({
+export const shippingInstructionHistoryTbRowSchema = shippingInstructionPrintInputSchema.required().extend({
   shipping_date: z.coerce
     .date()
     .transform((val) => val.toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo', dateStyle: 'short' })),
@@ -41,7 +51,7 @@ export const findShippingInstructionsQuerySchema = z
   })
   .brand<'FindShippingInstructionsQuery'>();
 
-export const shippingInstructionPrintHistoryIDSchema = z
+export const shippingInstructionPrintIDSchema = z
   .object({
     delivery_date: z.coerce
       .date()
@@ -51,4 +61,4 @@ export const shippingInstructionPrintHistoryIDSchema = z
       .min(22)
       .regex(/[0-9:.+ -]+/),
   })
-  .brand<'ShippingInstructionPrintHistoryID'>();
+  .brand<'ShippingInstructionPrintID'>();
