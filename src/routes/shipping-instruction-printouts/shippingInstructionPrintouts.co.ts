@@ -1,13 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import {
   FindShippingInstructionsQuery,
-  ShippingInstructionPrintHistoryID,
-  ShippingInstructionPrintHistoryInput,
+  ShippingInstructionModification,
+  ShippingInstructionPrintID,
+  ShippingInstructionPrintInput,
 } from './shippingInstructionPrintouts.types';
 import {
   createOneShippingInstructionPrintout,
   deleteOneHistory,
   findSomeShippingInstructions,
+  updateOneShippingInstructionPrintout,
 } from './shippingInstructionPrintouts.mo';
 
 export const findSome = async (
@@ -26,7 +28,7 @@ export const findSome = async (
 };
 
 export const createOne = async (
-  req: Request<object, object, ShippingInstructionPrintHistoryInput>,
+  req: Request<object, object, ShippingInstructionPrintInput>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -54,8 +56,22 @@ export const createOne = async (
   }
 };
 
+export const updateOne = async (
+  req: Request<object, object, ShippingInstructionModification, ShippingInstructionPrintID>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const aPrintRecord = await updateOneShippingInstructionPrintout(req.body, req.query);
+    res.status(200).json(aPrintRecord);
+  } catch (err: unknown) {
+    res.status(500);
+    next(err);
+  }
+};
+
 export const deleteOne = async (
-  req: Request<object, object, object, ShippingInstructionPrintHistoryID>,
+  req: Request<object, object, object, ShippingInstructionPrintID>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
