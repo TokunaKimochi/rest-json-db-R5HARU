@@ -1,5 +1,6 @@
 -- シフトJIS CRLF で保存してコマンドプロンプトで実行
 -- psql> \i <FULL_PATH(unix like)>.sql
+CREATE TYPE expiration_unit_enum AS ENUM('d', 'm', 'y');
 
 CREATE TABLE unit_types (
     id SMALLSERIAL PRIMARY KEY,
@@ -40,11 +41,23 @@ CREATE TABLE basic_products (
     sourcing_type_id SMALLINT NOT NULL DEFAULT 1, -- 1 は自社製造自社製品
     category_id SMALLINT NOT NULL DEFAULT 1, -- 1 は未分類
     packaging_type_id SMALLINT NOT NULL DEFAULT 1, -- 1 は未分類
-    -- 賞味期限（日間）
-    expiration_days INTEGER,
+    -- 賞味期限
+    expiration_value INTEGER,
+    expiration_unit expiration_unit_enum, -- 'd', 'm', 'y'
+    -- 先代商品の id
+    predecessor_id INTEGER,
+    -- 後で（同時ではない）画像などを関連付ける際に使用するユニークキーとして
+    ulid_str VARCHAR(26) UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
-    CONSTRAINT valid_jan_format CHECK (jan_code IS NULL OR jan_code ~ '^[0-9]{8}$|^[0-9]{13}$'),
+    CONSTRAINT valid_jan_format CHECK (
+        jan_code IS NULL
+        OR jan_code ~ '^[0-9]{8}$|^[0-9]{13}$'
+    ),
+    CONSTRAINT not_self_predecessor CHECK (
+        predecessor_id IS NULL
+        OR predecessor_id <> id
+    ),
     FOREIGN KEY (sourcing_type_id) REFERENCES product_sourcing_types (id),
     FOREIGN KEY (category_id) REFERENCES product_categories (id),
     FOREIGN KEY (packaging_type_id) REFERENCES product_packaging_types (id)

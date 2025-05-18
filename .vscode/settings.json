@@ -26,5 +26,8 @@
   },
   "[vb]": {
     "editor.defaultFormatter": "local-smart.excel-live-server"
+  },
+  "[sql]": {
+    "editor.defaultFormatter": "ReneSaarsoo.sql-formatter-vsc"
   }
 }
