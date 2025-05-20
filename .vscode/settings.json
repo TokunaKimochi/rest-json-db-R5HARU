@@ -29,5 +29,6 @@
   },
   "[sql]": {
     "editor.defaultFormatter": "ReneSaarsoo.sql-formatter-vsc"
-  }
+  },
+  "SQL-Formatter-VSCode.dialect": "postgresql"
 }
