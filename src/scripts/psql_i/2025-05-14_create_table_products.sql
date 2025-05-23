@@ -96,6 +96,29 @@ CREATE TRIGGER updated_at_3_product_packaging_types BEFORE
 UPDATE ON product_packaging_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
+CREATE TABLE product_inner_packaging_types (
+    id SMALLSERIAL PRIMARY KEY,
+    -- 缶とかペットボトルとか
+    name VARCHAR(32) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
+);
+
+-- まず１つ目の関数を実行
+CREATE TRIGGER updated_at_1_product_inner_packaging_types BEFORE
+UPDATE ON product_inner_packaging_types FOR EACH ROW
+EXECUTE PROCEDURE trg_updated_at_1 ();
+
+-- updated_at カラムが更新された時、２つ目の関数を実行
+CREATE TRIGGER updated_at_2_product_inner_packaging_types BEFORE
+UPDATE OF updated_at ON product_inner_packaging_types FOR EACH ROW
+EXECUTE PROCEDURE trg_updated_at_2 ();
+
+-- 最後に３つ目の関数を実行
+CREATE TRIGGER updated_at_3_product_inner_packaging_types BEFORE
+UPDATE ON product_inner_packaging_types FOR EACH ROW
+EXECUTE PROCEDURE trg_updated_at_3 ();
+
 CREATE TABLE basic_products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(32) UNIQUE NOT NULL,
@@ -184,10 +207,12 @@ CREATE TABLE product_components (
     amount NUMERIC(8, 2) NOT NULL,
     unit_type_id SMALLINT NOT NULL DEFAULT 1, -- 1 は g（グラム）
     pieces INTEGER NOT NULL DEFAULT 1,
+    inner_packaging_type_id SMALLINT NOT NULL DEFAULT 1, -- 1 は未分類
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     FOREIGN KEY (product_id) REFERENCES products (id),
-    FOREIGN KEY (unit_type_id) REFERENCES unit_types (id)
+    FOREIGN KEY (unit_type_id) REFERENCES unit_types (id),
+    FOREIGN KEY (inner_packaging_type_id) REFERENCES product_inner_packaging_types (id)
 );
 
 -- まず１つ目の関数を実行
