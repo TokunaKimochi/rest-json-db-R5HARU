@@ -203,7 +203,7 @@ CREATE TABLE product_components (
     id SERIAL PRIMARY KEY,
     product_id INTEGER NOT NULL,
     title VARCHAR(32) NOT NULL,
-    symbol VARCHAR(8),
+    symbol VARCHAR(8) NOT NULL,
     amount NUMERIC(8, 2) NOT NULL,
     unit_type_id SMALLINT NOT NULL DEFAULT 1, -- 1 ÇÕ gÅiÉOÉâÉÄÅj
     pieces INTEGER NOT NULL DEFAULT 1,
