@@ -167,7 +167,7 @@ CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     basic_id INTEGER NOT NULL,
     name VARCHAR(32) UNIQUE NOT NULL,
-    short_name VARCHAR(16) UNIQUE,
+    short_name VARCHAR(32) UNIQUE NOT NULL, -- 略称だが長い場合もある
     internal_code VARCHAR(10), -- （社内）商品コード
     is_set_product BOOLEAN NOT NULL DEFAULT false,
     height_mm INTEGER, -- 商品サイズ縦 (mm)
@@ -279,7 +279,6 @@ CREATE TABLE product_skus (
     inner_carton_weight_g INTEGER, -- ボール重量 (g)
     -- B はゼロでなければ在庫チェック表に載せる
     priority level_abc_enum NOT NULL DEFAULT 'B',
-    note TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     CONSTRAINT valid_itf_case_format CHECK (
