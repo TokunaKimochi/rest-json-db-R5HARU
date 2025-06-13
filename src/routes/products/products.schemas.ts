@@ -18,6 +18,7 @@ const basicProductsSchema = z.object({
 });
 
 const productsSchema = z.object({
+  supplier_id: z.coerce.number().int().positive(),
   // name を省略
   short_name: z.string().trim().max(32),
   internal_code: z.string().trim().max(10).optional(),
@@ -78,6 +79,64 @@ const productSkusSchema = z.object({
   inner_carton_depth_mm: z.coerce.number().int().positive().optional(),
   inner_carton_weight_g: z.coerce.number().int().positive().optional(),
   priority: z.enum(['A', 'B', 'C']),
+});
+
+// 仕入先の新規登録
+export const postReqNewSupplierSchema = z.object({
+  tel: z
+    .string()
+    .min(1)
+    .min(3)
+    .max(13)
+    .regex(/^[0-9-]+$/)
+    .refine((val: string) => {
+      const phoneNumber = val.replace(/\D/g, '');
+      if (/104/.test(phoneNumber)) return true;
+      if (phoneNumber.length === 10) return true;
+      if (phoneNumber.length === 11) return true;
+      return false;
+    }),
+  fax: z
+    .string()
+    .max(12)
+    .regex(/^[0-9-]*$/)
+    .refine((val: string) => {
+      const faxNumber = val.replace(/\D/g, '');
+      if (faxNumber.length === 10) return true;
+      if (faxNumber.length === 0) return true;
+      return false;
+    }),
+  url: z.union([z.string().max(255).url(), z.string().length(0)]),
+  zip_code: z
+    .string()
+    .min(1)
+    .min(7)
+    .max(8)
+    .regex(/^[0-9-]+$/)
+    .refine((val: string) => {
+      const zipCode = val.replace(/\D/g, '');
+      if (zipCode.length === 7) return true;
+      return false;
+    }),
+  address1: z.string().min(1).max(32),
+  address2: z.string().max(32),
+  address3: z.string().max(32),
+  name1: z.string().min(1).max(30),
+  name2: z.string().max(30),
+  contact_person_name: z.string().max(32),
+  contact_person_phone: z
+    .string()
+    .max(13)
+    .regex(/^[0-9-]*$/)
+    .refine((val: string) => {
+      const phoneNumber = val.replace(/\D/g, '');
+      if (phoneNumber.length === 10) return true;
+      if (phoneNumber.length === 11) return true;
+      if (phoneNumber.length === 0) return true;
+      return false;
+    }),
+  contact_person_email: z.union([z.string().max(255).email(), z.string().length(0)]),
+  note: z.string(),
 });
 
 // 完全新規登録（通常商品）
