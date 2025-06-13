@@ -4,6 +4,40 @@ CREATE TYPE expiration_unit_enum AS ENUM('D', 'M', 'Y');
 
 CREATE TYPE level_abc_enum AS ENUM('A', 'B', 'C');
 
+CREATE TABLE suppliers (
+    id SMALLSERIAL PRIMARY KEY,
+    tel VARCHAR(15) NOT NULL DEFAULT '',
+    fax VARCHAR(14) NOT NULL DEFAULT '',
+    url VARCHAR(255) NOT NULL DEFAULT '',
+    zip_code VARCHAR(8) NOT NULL,
+    address1 VARCHAR(32) NOT NULL,
+    address2 VARCHAR(32) NOT NULL DEFAULT '',
+    address3 VARCHAR(32) NOT NULL DEFAULT '',
+    name1 VARCHAR(30) NOT NULL,
+    name2 VARCHAR(30) NOT NULL DEFAULT '',
+    contact_person_name VARCHAR(32) NOT NULL DEFAULT '',
+    contact_person_phone VARCHAR(15) NOT NULL DEFAULT '',
+    contact_person_email VARCHAR(255) NOT NULL DEFAULT '',
+    note TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
+);
+
+-- まず１つ目の関数を実行
+CREATE TRIGGER updated_at_1_suppliers BEFORE
+UPDATE ON suppliers FOR EACH ROW
+EXECUTE PROCEDURE trg_updated_at_1 ();
+
+-- updated_at カラムが更新された時、２つ目の関数を実行
+CREATE TRIGGER updated_at_2_suppliers BEFORE
+UPDATE OF updated_at ON suppliers FOR EACH ROW
+EXECUTE PROCEDURE trg_updated_at_2 ();
+
+-- 最後に３つ目の関数を実行
+CREATE TRIGGER updated_at_3_suppliers BEFORE
+UPDATE ON suppliers FOR EACH ROW
+EXECUTE PROCEDURE trg_updated_at_3 ();
+
 CREATE TABLE unit_types (
     id SMALLSERIAL PRIMARY KEY,
     -- g とか ml ?
@@ -166,13 +200,15 @@ EXECUTE PROCEDURE trg_updated_at_3 ();
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     basic_id INTEGER NOT NULL,
+    supplier_id SMALLINT NOT NULL DEFAULT 1, -- 発注先 1 は自社工場
     name VARCHAR(32) UNIQUE NOT NULL,
     short_name VARCHAR(32) UNIQUE NOT NULL, -- 略称だが長い場合もある
     internal_code VARCHAR(10), -- （社内）商品コード
     is_set_product BOOLEAN NOT NULL DEFAULT false,
-    height_mm INTEGER, -- 商品サイズ縦 (mm)
+    depth_mm INTEGER, -- 商品サイズ縦（奥行き） (mm)
     width_mm INTEGER, -- 商品サイズ横 (mm)
-    depth_mm INTEGER, -- 商品サイズ高さ (mm)
+    diameter_mm INTEGER, -- 商品サイズ直径 (mm)
+    height_mm INTEGER, -- 商品サイズ高さ (mm)
     weight_g INTEGER, -- 商品重量 (g)
     available_date DATE NOT NULL DEFAULT current_date,
     discontinued_date DATE NOT NULL DEFAULT '2555-01-01',
@@ -181,7 +217,22 @@ CREATE TABLE products (
     ulid_str VARCHAR(26) UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
-    FOREIGN KEY (basic_id) REFERENCES basic_products (id)
+    CONSTRAINT chk_product_dimensions CHECK (
+        (
+            diameter_mm IS NOT NULL
+            AND depth_mm IS NULL
+            AND width_mm IS NULL
+        )
+        OR (
+            (
+                depth_mm IS NOT NULL
+                OR width_mm IS NOT NULL
+            )
+            AND diameter_mm IS NULL
+        )
+    ),
+    FOREIGN KEY (basic_id) REFERENCES basic_products (id),
+    FOREIGN KEY (supplier_id) REFERENCES suppliers (id)
 );
 
 -- まず１つ目の関数を実行
@@ -269,13 +320,13 @@ CREATE TABLE product_skus (
     itf_case_code VARCHAR(14) UNIQUE,
     -- ボール ITF コード
     itf_inner_carton_code VARCHAR(14) UNIQUE,
-    case_height_mm INTEGER, -- ケースサイズ縦 (mm)
+    case_depth_mm INTEGER, -- ケースサイズ縦（奥行き） (mm)
     case_width_mm INTEGER, -- ケースサイズ横 (mm)
-    case_depth_mm INTEGER, -- ケースサイズ高さ (mm)
+    case_height_mm INTEGER, -- ケースサイズ高さ (mm)
     case_weight_g INTEGER, -- ケース重量 (g)
-    inner_carton_height_mm INTEGER, -- ボールサイズ縦 (mm)
+    inner_carton_depth_mm INTEGER, -- ボールサイズ縦（奥行き） (mm)
     inner_carton_width_mm INTEGER, -- ボールサイズ横 (mm)
-    inner_carton_depth_mm INTEGER, -- ボールサイズ高さ (mm)
+    inner_carton_height_mm INTEGER, -- ボールサイズ高さ (mm)
     inner_carton_weight_g INTEGER, -- ボール重量 (g)
     -- B はゼロでなければ在庫チェック表に載せる
     priority level_abc_enum NOT NULL DEFAULT 'B',
@@ -320,3 +371,41 @@ EXECUTE PROCEDURE trg_updated_at_2 ();
 CREATE TRIGGER updated_at_3_product_skus BEFORE
 UPDATE ON product_skus FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
+
+-- <select><option> で使う id, name をまとめて返す VIEW を定義
+-- ENUM はフロントでハードコーディングの予定 (ー_ー;)
+CREATE VIEW ids_and_names_for_products AS
+SELECT
+    'unit_types' AS table_name,
+    id,
+    name
+FROM
+    unit_types
+UNION ALL
+SELECT
+    'product_sourcing_types' AS table_name,
+    id,
+    name
+FROM
+    product_sourcing_types
+UNION ALL
+SELECT
+    'product_categories' AS table_name,
+    id,
+    name
+FROM
+    product_categories
+UNION ALL
+SELECT
+    'product_packaging_types' AS table_name,
+    id,
+    name
+FROM
+    product_packaging_types
+UNION ALL
+SELECT
+    'product_inner_packaging_types' AS table_name,
+    id,
+    name
+FROM
+    product_inner_packaging_types;
