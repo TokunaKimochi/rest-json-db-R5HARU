@@ -6,6 +6,7 @@ import invoiceTypes from './invoice-types';
 import notes from './notes';
 import addressDataByZipCode from './address-data-by-zip-code';
 import shippingInstructionPrintouts from './shipping-instruction-printouts';
+import products from './products';
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use('/invoice-types', invoiceTypes);
 router.use('/notes', notes);
 router.use('/address-data-by-zip-code', addressDataByZipCode);
 router.use('/shipping-instruction-printouts', shippingInstructionPrintouts);
+router.use('/products', products);
 
 export default router;
