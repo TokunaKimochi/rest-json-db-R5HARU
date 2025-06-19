@@ -408,4 +408,11 @@ SELECT
     id,
     name
 FROM
-    product_inner_packaging_types;
+    product_inner_packaging_types
+UNION ALL
+SELECT
+    'suppliers' AS table_name,
+    id,
+    name1 AS name
+FROM
+    suppliers;

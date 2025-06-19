@@ -13,6 +13,7 @@ export const findAllProductOptions = async (): Promise<Record<OptionTypes, Produ
     product_categories: [],
     product_packaging_types: [],
     product_inner_packaging_types: [],
+    suppliers: [],
   };
 
   rows.forEach(({ table_name, id, name }) => {
