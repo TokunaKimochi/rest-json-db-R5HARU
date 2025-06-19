@@ -20,4 +20,5 @@ export const optionTypesSchemas = z.enum([
   'product_categories',
   'product_packaging_types',
   'product_inner_packaging_types',
+  'suppliers',
 ]);
