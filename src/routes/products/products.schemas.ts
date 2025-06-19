@@ -24,13 +24,15 @@ const productsSchema = z.object({
   short_name: z.string().trim().max(32),
   internal_code: z.string().trim().max(10).optional(),
   is_set_product: z.boolean(),
-  height_mm: z.coerce.number().int().positive().optional(),
-  width_mm: z.coerce.number().int().positive().optional(),
   depth_mm: z.coerce.number().int().positive().optional(),
+  width_mm: z.coerce.number().int().positive().optional(),
+  diameter_mm: z.coerce.number().int().positive().optional(),
+  height_mm: z.coerce.number().int().positive().optional(),
   weight_g: z.coerce.number().int().positive().optional(),
   available_date: z.coerce
     .date()
-    .transform((val) => val.toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo', dateStyle: 'short' })),
+    .transform((val) => val.toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo', dateStyle: 'short' }))
+    .optional(),
   discontinued_date: z.coerce
     .date()
     .transform((val) => val.toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo', dateStyle: 'short' }))
