@@ -6,9 +6,9 @@ export const commonProductsSchema = z.object({
   updated_at: z.string().trim().max(40),
 });
 
-const basicProductsSchema = z.object({
+export const basicProductsSchema = z.object({
   basic_name: z.string().trim().min(1).max(32),
-  jan_code: z.string().trim().length(13).regex(/[0-9]/).optional(),
+  jan_code: z.preprocess((v) => (v === '' ? undefined : v), z.string().trim().length(13).regex(/[0-9]/).optional()),
   sourcing_type_id: z.coerce.number().int().positive(),
   category_id: z.coerce.number().int().positive(),
   packaging_type_id: z.coerce.number().int().positive(),
@@ -17,12 +17,12 @@ const basicProductsSchema = z.object({
   predecessor_id: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
 });
 
-const productsSchema = z.object({
+export const productsSchema = z.object({
   basic_id: z.coerce.number().int().positive(),
   supplier_id: z.coerce.number().int().positive(),
   product_name: z.string().trim().min(1).max(32),
   short_name: z.string().trim().min(1).max(32),
-  internal_code: z.string().trim().min(5).max(10).optional(),
+  internal_code: z.preprocess((v) => (v === '' ? undefined : v), z.string().trim().min(5).max(10).optional()),
   is_set_product: z.boolean(),
   depth_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
   width_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
@@ -46,40 +46,41 @@ const productsSchema = z.object({
   note: z.string().optional(),
 });
 
-const productComponentsSchema = z.object({
-  components: z
-    .array(
-      z.object({
-        title: z.string().trim().min(1).max(32),
-        symbol: z.string().trim().min(1).max(8),
-        amount: z.coerce.number().positive(),
-        unit_type_id: z.coerce.number().int().positive(),
-        pieces: z.coerce.number().int().positive(),
-        inner_packaging_type_id: z.coerce.number().int().positive(),
-      })
-    )
-    .min(1),
+export const aComponentSchema = z.object({
+  title: z.string().trim().min(1).max(32),
+  symbol: z.string().trim().min(1).max(8),
+  amount: z.coerce.number().positive(),
+  unit_type_id: z.coerce.number().int().positive(),
+  pieces: z.coerce.number().int().positive(),
+  inner_packaging_type_id: z.coerce.number().int().positive(),
 });
 
-const productCombinationsSchema = z.object({
-  combinations: z
-    .array(
-      z.object({
-        product_id: z.coerce.number().int().positive(),
-        item_product_id: z.coerce.number().int().positive(),
-        quantity: z.coerce.number().int().positive(),
-      })
-    )
-    .min(1),
+export const productComponentsSchema = z.object({
+  components: z.array(aComponentSchema).min(1),
 });
 
-const productSkusSchema = z.object({
+export const aCombinationSchema = z.object({
+  item_product_id: z.coerce.number().int().positive(),
+  quantity: z.coerce.number().int().positive(),
+});
+
+export const productCombinationsSchema = z.object({
+  combinations: z.array(aCombinationSchema).min(1),
+});
+
+export const productSkusSchema = z.object({
   skus_name: z.string().trim().min(1).max(32),
   product_id: z.coerce.number().int().positive(),
-  case_quantity: z.coerce.number().int().positive().optional(),
-  inner_carton_quantity: z.coerce.number().int().positive().optional(),
-  itf_case_code: z.string().trim().length(14).regex(/[0-9]/).optional(),
-  itf_inner_carton_code: z.string().trim().length(14).regex(/[0-9]/).optional(),
+  case_quantity: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
+  inner_carton_quantity: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
+  itf_case_code: z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z.string().trim().length(14).regex(/[0-9]/).optional()
+  ),
+  itf_inner_carton_code: z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z.string().trim().length(14).regex(/[0-9]/).optional()
+  ),
   case_height_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
   case_width_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
   case_depth_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
