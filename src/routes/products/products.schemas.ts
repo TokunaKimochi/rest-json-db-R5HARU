@@ -155,7 +155,7 @@ export const postReqNewSupplierSchema = z.object({
 
 // 完全新規登録（通常商品）
 export const postReqNewProductSchema = basicProductsSchema.extend({
-  // product_name は basicProductsSchema.name をコピー
+  // product_name は basicProductsSchema.basic_name をコピー
   // ulid_str はサーバ側で計算
   // is_set_product を上書き extend()
   ...productsSchema.extend({ is_set_product: z.literal(false) }).omit({ basic_id: true, product_name: true }).shape,
@@ -167,7 +167,7 @@ export const postReqNewProductSchema = basicProductsSchema.extend({
 
 // 完全新規登録（セット商品）
 export const postReqNewSetProductSchema = basicProductsSchema.extend({
-  // product_name は basicProductsSchema.name をコピー
+  // product_name は basicProductsSchema.basic_name をコピー
   // ulid_str はサーバ側で計算
   // is_set_product を上書き extend()
   ...productsSchema.extend({ is_set_product: z.literal(true) }).omit({ basic_id: true, product_name: true }).shape,
