@@ -28,6 +28,13 @@ export const registerOneRegularProduct = async (body: PostReqNewProduct): Promis
       name: body.basic_name,
       short_name: body.short_name,
       internal_code: body.internal_code,
+      is_set_product: body.is_set_product,
+      depth_mm: body.depth_mm ?? null,
+      width_mm: body.width_mm ?? null,
+      diameter_mm: body.diameter_mm ?? null,
+      height_mm: body.height_mm ?? null,
+      weight_g: body.weight_g ?? null,
+      available_date: body.available_date,
     };
   });
   console.log(body);
