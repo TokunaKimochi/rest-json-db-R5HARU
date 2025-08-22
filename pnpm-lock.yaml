@@ -50,6 +50,9 @@ importers:
       typescript:
         specifier: 5.5.4
         version: 5.5.4
+      ulid:
+        specifier: ^3.0.1
+        version: 3.0.1
       zod:
         specifier: ^3.25.28
         version: 3.25.28
@@ -3190,6 +3193,10 @@ packages:
   typescript@5.5.4:
     resolution: {integrity: sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==}
     engines: {node: '>=14.17'}
+    hasBin: true
+
+  ulid@3.0.1:
+    resolution: {integrity: sha512-dPJyqPzx8preQhqq24bBG1YNkvigm87K8kVEHCD+ruZg24t6IFEFv00xMWfxcC4djmFtiTLdFuADn4+DOz6R7Q==}
     hasBin: true
 
   unbox-primitive@1.0.2:
@@ -6851,6 +6858,8 @@ snapshots:
       is-typed-array: 1.1.12
 
   typescript@5.5.4: {}
+
+  ulid@3.0.1: {}
 
   unbox-primitive@1.0.2:
     dependencies:
