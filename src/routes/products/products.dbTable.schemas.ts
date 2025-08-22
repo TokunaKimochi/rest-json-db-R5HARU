@@ -19,7 +19,24 @@ export const basicProductsTbRowSchema = commonProductsSchema.merge(basicProducts
 
 export const productsTbRowSchema = commonProductsSchema
   .merge(productsSchema)
-  .extend({ ulid: z.string().ulid() })
+  .extend({
+    available_date: z
+      .string()
+      .trim()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 形式で入力してください'),
+    discontinued_date: z
+      .string()
+      .trim()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 形式で入力してください'),
+    internal_code: z.string().trim().min(5).max(10).nullable(),
+    depth_mm: z.number().int().positive().nullable(),
+    width_mm: z.number().int().positive().nullable(),
+    diameter_mm: z.number().int().positive().nullable(),
+    height_mm: z.number().int().positive().nullable(),
+    weight_g: z.number().int().positive().nullable(),
+    note: z.string().nullable(),
+    ulid: z.string().ulid(),
+  })
   .transform((data) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { product_name, ...rest } = data;

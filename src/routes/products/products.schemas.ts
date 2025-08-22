@@ -201,3 +201,20 @@ export const postReqSetProductVariantSchema = productsSchema.extend({
 
 // ケースの入り数違い
 export const postReqNewProductSkuSchema = productSkusSchema;
+
+// products テーブルの insert sql
+export const insertProductsTbSchema = productsSchema
+  .extend({
+    name: z.string().trim().min(1).max(32),
+    internal_code: z.string().trim().min(5).max(10).nullable().optional(),
+    depth_mm: z.number().int().positive().nullable().optional(),
+    width_mm: z.number().int().positive().nullable().optional(),
+    diameter_mm: z.number().int().positive().nullable().optional(),
+    height_mm: z.number().int().positive().nullable().optional(),
+    weight_g: z.number().int().positive().nullable().optional(),
+    note: z.string().nullable().optional(),
+    ulid_str: z.string().ulid(),
+  })
+  .omit({
+    product_name: true,
+  });
