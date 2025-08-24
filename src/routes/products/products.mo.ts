@@ -3,7 +3,11 @@ import { insert } from 'sql-bricks';
 import { ulid } from 'ulid';
 import { InsertProductsTb, PostReqNewProduct, PostReqNewSetProduct } from './products.types';
 import { BasicProductsTbRow, ProductsTbRow } from './products.dbTable.types';
-import { productsTbRowSchema } from './products.dbTable.schemas';
+import {
+  basicProductsTbRowSchema,
+  productComponentsTbRowSchema,
+  productsTbRowSchema,
+} from './products.dbTable.schemas';
 
 export const registerOneRegularProduct = async (body: PostReqNewProduct): Promise<void> => {
   // 完全新規登録（通常商品）
@@ -19,12 +23,12 @@ export const registerOneRegularProduct = async (body: PostReqNewProduct): Promis
       predecessor_id: body.predecessor_id ?? null,
     };
     const { text: basicText, values: basicValues } = insert('basic_products', basicInput).toParams();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const basicProductsTbRow: BasicProductsTbRow = await t
       .one(`${basicText} RETURNING *`, basicValues)
+      .then((row) => basicProductsTbRowSchema.parse(row))
       .catch((err: string) => Promise.reject(new DataBaseError(err)));
 
-    let productInput: InsertProductsTb = {
+    const productInput: InsertProductsTb = {
       basic_id: basicProductsTbRow.id,
       supplier_id: body.supplier_id,
       name: body.basic_name,
@@ -36,24 +40,42 @@ export const registerOneRegularProduct = async (body: PostReqNewProduct): Promis
       diameter_mm: body.diameter_mm ?? null,
       height_mm: body.height_mm ?? null,
       weight_g: body.weight_g ?? null,
-      available_date: body.available_date, // undef なら取り除く
-      discontinued_date: body.discontinued_date, // undef なら取り除く
+      available_date: body.available_date, // undef なら pgp でデフォルトに変換される
+      discontinued_date: body.discontinued_date, // undef なら pgp でデフォルトに変換される
       note: body.note ?? null,
       ulid_str: ulid(),
     };
-    if (!body.available_date) {
-      productInput = (({ available_date, ..._rest }) => _rest)(productInput);
-    }
-    if (!body.discontinued_date) {
-      productInput = (({ discontinued_date, ..._rest }) => _rest)(productInput);
-    }
     const { text, values } = insert('products', productInput).toParams();
     const productsTbRow: ProductsTbRow = await t
       .one(`${text} RETURNING *`, values)
       .then((row) => productsTbRowSchema.parse(row))
       .catch((err: string) => Promise.reject(new DataBaseError(err)));
 
-    console.log(productsTbRow);
+    // Promise.all で並列実行
+    await Promise.all(
+      body.components.map(async (component) => {
+        const componentInput = {
+          product_id: productsTbRow.id,
+          title: component.title,
+          symbol: component.symbol,
+          amount: component.amount,
+          unit_type_id: component.unit_type_id,
+          pieces: component.pieces,
+          inner_packaging_type_id: component.inner_packaging_type_id,
+        };
+        const { text: componentText, values: componentValues } = insert(
+          'product_components',
+          componentInput
+        ).toParams();
+
+        return t
+          .one(`${componentText} RETURNING *`, componentValues)
+          .then((row) => productComponentsTbRowSchema.parse(row))
+          .catch((err: string) => {
+            throw new DataBaseError(err);
+          });
+      })
+    );
   });
 };
 
