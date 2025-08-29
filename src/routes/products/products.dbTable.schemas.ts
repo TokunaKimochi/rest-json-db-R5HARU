@@ -8,18 +8,22 @@ import {
   productsSchema,
 } from './products.schemas';
 
-export const basicProductsTbRowSchema = commonProductsSchema.merge(basicProductsSchema).transform((data) => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { basic_name, ...rest } = data;
-  return {
-    ...rest,
-    name: basic_name,
-  };
-});
+export const basicProductsTbRowSchema = commonProductsSchema
+  .merge(basicProductsSchema)
+  .omit({
+    basic_name: true,
+  })
+  .extend({
+    name: z.string().trim().min(1).max(32),
+    jan_code: z.string().trim().length(13).regex(/[0-9]/).nullable(),
+    predecessor_id: z.number().int().positive().nullable(),
+  });
 
 export const productsTbRowSchema = commonProductsSchema
   .merge(productsSchema)
+  .omit({ product_name: true })
   .extend({
+    name: z.string().trim().min(1).max(32),
     available_date: z
       .string()
       .trim()
@@ -36,14 +40,6 @@ export const productsTbRowSchema = commonProductsSchema
     weight_g: z.number().int().positive().nullable(),
     note: z.string().nullable(),
     ulid: z.string().ulid(),
-  })
-  .transform((data) => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { product_name, ...rest } = data;
-    return {
-      ...rest,
-      name: product_name,
-    };
   });
 
 export const productComponentsTbRowSchema = commonProductsSchema
