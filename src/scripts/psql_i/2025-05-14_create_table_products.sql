@@ -218,12 +218,22 @@ CREATE TABLE products (
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     CONSTRAINT chk_product_dimensions CHECK (
+        -- ① 全部 NULL も許容
+        (
+            diameter_mm IS NULL
+            AND depth_mm IS NULL
+            AND width_mm IS NULL
+        )
+        OR
+        -- ② 直径だけ指定パターン
         (
             diameter_mm IS NOT NULL
             AND depth_mm IS NULL
             AND width_mm IS NULL
         )
-        OR (
+        OR
+        -- ③ 縦横どちらか指定パターン
+        (
             (
                 depth_mm IS NOT NULL
                 OR width_mm IS NOT NULL

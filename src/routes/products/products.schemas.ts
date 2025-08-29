@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 export const commonProductsSchema = z.object({
   id: z.coerce.number().int().positive(),
-  created_at: z.string().trim().max(40),
-  updated_at: z.string().trim().max(40),
+  created_at: z.date(),
+  updated_at: z.date(),
 });
 
 export const basicProductsSchema = z.object({
@@ -202,19 +202,9 @@ export const postReqSetProductVariantSchema = productsSchema.extend({
 // ケースの入り数違い
 export const postReqNewProductSkuSchema = productSkusSchema;
 
-// products テーブルの insert sql
-export const insertProductsTbSchema = productsSchema
-  .extend({
-    name: z.string().trim().min(1).max(32),
-    internal_code: z.string().trim().min(5).max(10).nullable().optional(),
-    depth_mm: z.number().int().positive().nullable().optional(),
-    width_mm: z.number().int().positive().nullable().optional(),
-    diameter_mm: z.number().int().positive().nullable().optional(),
-    height_mm: z.number().int().positive().nullable().optional(),
-    weight_g: z.number().int().positive().nullable().optional(),
-    note: z.string().nullable().optional(),
-    ulid_str: z.string().ulid(),
-  })
-  .omit({
-    product_name: true,
-  });
+export const newProductSummarySchema = z.object({
+  basic_id: z.number().int().positive(),
+  product_id: z.number().int().positive(),
+  sku_id: z.number().int().positive(),
+  product_name: z.string().trim().min(1).max(32),
+});
