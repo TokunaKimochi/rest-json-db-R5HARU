@@ -3,7 +3,7 @@ import { insert } from 'sql-bricks';
 import { ulid } from 'ulid';
 import { NewProductSummary, PostReqNewProduct, PostReqNewSetProduct } from './products.types';
 import { BasicProductsTbRow, ProductSkusTbRow, ProductsTbRow } from './products.dbTable.types';
-import { basicProductsTbRowSchema, productsTbRowSchema } from './products.dbTable.schemas';
+import { basicProductsTbRowSchema, productSkusTbRowSchema, productsTbRowSchema } from './products.dbTable.schemas';
 
 export const registerOneRegularProduct = async (body: PostReqNewProduct): Promise<NewProductSummary> => {
   // 完全新規登録（通常商品）
@@ -26,7 +26,7 @@ export const registerOneRegularProduct = async (body: PostReqNewProduct): Promis
         .then((row) => basicProductsTbRowSchema.parse(row));
     } catch (err) {
       console.error('❌ basic_products insert failed\n', err);
-      throw err;
+      throw new DataBaseError(err as string);
     }
 
     const productInput = ((o) =>
@@ -57,15 +57,16 @@ export const registerOneRegularProduct = async (body: PostReqNewProduct): Promis
     const { text, values } = insert('products', productInput).toParams();
     let productsTbRow: ProductsTbRow;
     try {
-      productsTbRow = await t.one(`${text} RETURNING *`, values).then((row) => productsTbRowSchema.parse(row));
+      productsTbRow = await t
+        .one(
+          `${text} RETURNING *, available_date::text AS available_date, discontinued_date::text AS discontinued_date`,
+          values
+        )
+        .then((row) => productsTbRowSchema.parse(row));
     } catch (err) {
       console.error('❌ products insert failed\n', err);
-      throw err; // ここで再スロー
+      throw new DataBaseError(err as string);
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    // const productsTbRow: ProductsTbRow = await t.one(`${text} RETURNING *`, values);
-    console.log(productsTbRow);
-
     // Promise.all で並列実行
     await Promise.all(
       body.components.map(async (component) => {
@@ -108,16 +109,22 @@ export const registerOneRegularProduct = async (body: PostReqNewProduct): Promis
     };
     const { text: skusText, values: skusValues } = insert('product_skus', skusInput).toParams();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const productSkusTbRow: ProductSkusTbRow = await t
-      .one(`${skusText} RETURNING *`, skusValues)
-      .catch((err: string) => Promise.reject(new DataBaseError(err)));
+    let productSkusTbRow: ProductSkusTbRow;
+    try {
+      productSkusTbRow = await t
+        .one(`${skusText} RETURNING *`, skusValues)
+        .then((row) => productSkusTbRowSchema.parse(row));
+    } catch (err) {
+      console.error('❌ product_skus insert failed\n', err);
+      throw new DataBaseError(err as string);
+    }
 
     return {
       basic_id: basicProductsTbRow.id,
       product_id: productsTbRow.id,
       sku_id: productSkusTbRow.id,
       product_name: productsTbRow.name,
+      short_name: productsTbRow.short_name,
     };
   });
   return newProductSummary;

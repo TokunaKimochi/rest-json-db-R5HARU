@@ -207,4 +207,5 @@ export const newProductSummarySchema = z.object({
   product_id: z.number().int().positive(),
   sku_id: z.number().int().positive(),
   product_name: z.string().trim().min(1).max(32),
+  short_name: z.string().trim().min(1).max(32),
 });
