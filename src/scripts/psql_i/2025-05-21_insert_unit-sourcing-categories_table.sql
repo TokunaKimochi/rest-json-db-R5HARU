@@ -27,7 +27,8 @@ VALUES
     ('烏龍茶'),
     ('しょうが湯'),
     ('米菓'),
-    ('飴');
+    ('飴'),
+    ('セット商品');
 
 INSERT INTO
     product_packaging_types (name)

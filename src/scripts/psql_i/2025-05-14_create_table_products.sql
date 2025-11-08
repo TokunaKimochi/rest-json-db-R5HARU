@@ -384,7 +384,7 @@ EXECUTE PROCEDURE trg_updated_at_3 ();
 
 -- <select><option> で使う id, name をまとめて返す VIEW を定義
 -- ENUM はフロントでハードコーディングの予定 (ー_ー;)
-CREATE VIEW ids_and_names_for_products AS
+CREATE OR REPLACE VIEW ids_and_names_for_products AS
 SELECT
     'unit_types' AS table_name,
     id,
