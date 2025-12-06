@@ -4,7 +4,7 @@ import { ulid } from 'ulid';
 import { z, ZodTypeAny } from 'zod';
 import { ITask } from 'pg-promise';
 import { NewProductSummary, PostReqNewProduct, PostReqNewSetProduct } from './products.types';
-import { BasicProductsTbRow, ProductSkusTbRow, ProductsTbRow } from './products.dbTable.types';
+import { BasicProductsTbRow, ProductsTbRow } from './products.dbTable.types';
 import { basicProductsTbRowSchema, productSkusTbRowSchema, productsTbRowSchema } from './products.dbTable.schemas';
 
 const formatBasicProductData = (body: PostReqNewProduct | PostReqNewSetProduct) => ({
@@ -71,20 +71,70 @@ async function insertOne<S extends ZodTypeAny>(
   input: Record<string, unknown>,
   schema: S,
   returning = '*'
-): Promise<z.infer<S>> {
+): Promise<
+  | { isSucceeded: true; rows: z.infer<S> }
+  | {
+      isSucceeded: false;
+      uniqueConstraintError: {
+        table: string;
+        column: string;
+        value: string;
+      };
+    }
+> {
   const { text, values } = insert(table, input).toParams();
+
+  const keyRegex = /^Key \((.*?)\)=\((.*?)\) already exists\.$/;
+  const pgErrorSchema = z.object({
+    code: z.string(),
+    detail: z
+      .string()
+      .regex(keyRegex)
+      .transform((s) => {
+        // 末尾の ! (非null アサーション演算子) でコンパイラに null にならないと伝える
+        const [errorMessage, column, value] = s.match(keyRegex)!;
+        return { errorMessage, column, value };
+      }),
+    table: z.string(),
+  });
   try {
     const row = await t.one<unknown>(`${text} RETURNING ${returning}`, values);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return schema.parse(row);
-  } catch (err) {
+    return {
+      isSucceeded: true,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      rows: schema.parse(row),
+    };
+  } catch (err: unknown) {
+    const parsedError = pgErrorSchema.safeParse(err);
+    if (parsedError.success && parsedError.data.code === '23505') {
+      console.warn(`⚠️ ${parsedError.data.detail.errorMessage} in ${parsedError.data.table}`);
+      return {
+        isSucceeded: false,
+        uniqueConstraintError: {
+          table: parsedError.data.table.toUpperCase(),
+          column: parsedError.data.detail.column.toUpperCase(),
+          value: parsedError.data.detail.value,
+        },
+      };
+    }
     console.error(`❌ ${table} insert failed\n`, err);
     throw new DataBaseError(err as string);
   }
 }
 
 // 完全新規登録（通常商品）
-export const registerOneRegularProduct = async (body: PostReqNewProduct): Promise<NewProductSummary> =>
+export const registerOneRegularProduct = async (
+  body: PostReqNewProduct
+): Promise<
+  | { isRegistered: true; rows: NewProductSummary }
+  | {
+      isRegistered: false;
+      uniqueConstraintError: {
+        key: string;
+        value: string;
+      };
+    }
+> =>
   db.tx('regular-product-registration', async (t) => {
     // 1. basic_products
     const basicProductsTbRow = await insertOne(
@@ -93,21 +143,39 @@ export const registerOneRegularProduct = async (body: PostReqNewProduct): Promis
       formatBasicProductData(body),
       basicProductsTbRowSchema
     );
+    if (basicProductsTbRow.isSucceeded === false) {
+      return {
+        isRegistered: false,
+        uniqueConstraintError: {
+          key: `${basicProductsTbRow.uniqueConstraintError.table}.${basicProductsTbRow.uniqueConstraintError.column}`,
+          value: basicProductsTbRow.uniqueConstraintError.value,
+        },
+      };
+    }
 
     // 2. products
     const productsTbRow = await insertOne(
       t,
       'products',
-      formatProductData(body, basicProductsTbRow),
+      formatProductData(body, basicProductsTbRow.rows),
       productsTbRowSchema,
       '*, available_date::text AS available_date, discontinued_date::text AS discontinued_date'
     );
+    if (productsTbRow.isSucceeded === false) {
+      return {
+        isRegistered: false,
+        uniqueConstraintError: {
+          key: `${productsTbRow.uniqueConstraintError.table}.${productsTbRow.uniqueConstraintError.column}`,
+          value: productsTbRow.uniqueConstraintError.value,
+        },
+      };
+    }
 
     // 3. product_components (並列挿入)
     await Promise.all(
       body.components.map(async (component) => {
         const { text, values } = insert('product_components', {
-          product_id: productsTbRow.id,
+          product_id: productsTbRow.rows.id,
           title: component.title,
           symbol: component.symbol,
           amount: component.amount,
@@ -123,25 +191,51 @@ export const registerOneRegularProduct = async (body: PostReqNewProduct): Promis
     );
 
     // 4. product_skus
-    const productSkusTbRow: ProductSkusTbRow = await insertOne(
+    const productSkusTbRow = await insertOne(
       t,
       'product_skus',
-      formatSkusData(body, productsTbRow),
+      formatSkusData(body, productsTbRow.rows),
       productSkusTbRowSchema
     );
+    if (productSkusTbRow.isSucceeded === false) {
+      return {
+        isRegistered: false,
+        uniqueConstraintError: {
+          key: `${productSkusTbRow.uniqueConstraintError.table}.${productSkusTbRow.uniqueConstraintError.column}`,
+          value: productSkusTbRow.uniqueConstraintError.value,
+        },
+      };
+    }
 
     // 5. summary
     return {
-      basic_id: basicProductsTbRow.id,
-      product_id: productsTbRow.id,
-      sku_id: productSkusTbRow.id,
-      product_name: productsTbRow.name,
-      short_name: productsTbRow.short_name,
+      isRegistered: true,
+      rows: {
+        basic_id: basicProductsTbRow.rows.id,
+        product_id: productsTbRow.rows.id,
+        sku_id: productSkusTbRow.rows.id,
+        product_name: productsTbRow.rows.name,
+        short_name: productsTbRow.rows.short_name,
+      },
     };
   });
 
 // 完全新規登録（セット商品）
-export const registerOneSetProduct = async (body: PostReqNewSetProduct): Promise<NewProductSummary> =>
+export const registerOneSetProduct = async (
+  body: PostReqNewSetProduct
+): Promise<
+  | {
+      isRegistered: true;
+      rows: NewProductSummary;
+    }
+  | {
+      isRegistered: false;
+      uniqueConstraintError: {
+        key: string;
+        value: string;
+      };
+    }
+> =>
   db.tx('set-product-registration', async (t) => {
     // 1. basic_products
     const basicProductsTbRow = await insertOne(
@@ -150,21 +244,39 @@ export const registerOneSetProduct = async (body: PostReqNewSetProduct): Promise
       formatBasicProductData(body),
       basicProductsTbRowSchema
     );
+    if (basicProductsTbRow.isSucceeded === false) {
+      return {
+        isRegistered: false,
+        uniqueConstraintError: {
+          key: `${basicProductsTbRow.uniqueConstraintError.table}.${basicProductsTbRow.uniqueConstraintError.column}`,
+          value: basicProductsTbRow.uniqueConstraintError.value,
+        },
+      };
+    }
 
     // 2. products
     const productsTbRow = await insertOne(
       t,
       'products',
-      formatProductData(body, basicProductsTbRow),
+      formatProductData(body, basicProductsTbRow.rows),
       productsTbRowSchema,
       '*, available_date::text AS available_date, discontinued_date::text AS discontinued_date'
     );
+    if (productsTbRow.isSucceeded === false) {
+      return {
+        isRegistered: false,
+        uniqueConstraintError: {
+          key: `${productsTbRow.uniqueConstraintError.table}.${productsTbRow.uniqueConstraintError.column}`,
+          value: productsTbRow.uniqueConstraintError.value,
+        },
+      };
+    }
 
     // 3. product_combinations (並列挿入)
     await Promise.all(
       body.combinations.map(async (combination) => {
         const { text, values } = insert('product_combinations', {
-          product_id: productsTbRow.id,
+          product_id: productsTbRow.rows.id,
           item_product_id: combination.item_product_id,
           quantity: combination.quantity,
         }).toParams();
@@ -176,19 +288,31 @@ export const registerOneSetProduct = async (body: PostReqNewSetProduct): Promise
     );
 
     // 4. product_skus
-    const productSkusTbRow: ProductSkusTbRow = await insertOne(
+    const productSkusTbRow = await insertOne(
       t,
       'product_skus',
-      formatSkusData(body, productsTbRow),
+      formatSkusData(body, productsTbRow.rows),
       productSkusTbRowSchema
     );
+    if (productSkusTbRow.isSucceeded === false) {
+      return {
+        isRegistered: false,
+        uniqueConstraintError: {
+          key: `${productSkusTbRow.uniqueConstraintError.table}.${productSkusTbRow.uniqueConstraintError.column}`,
+          value: productSkusTbRow.uniqueConstraintError.value,
+        },
+      };
+    }
 
     // 5. summary
     return {
-      basic_id: basicProductsTbRow.id,
-      product_id: productsTbRow.id,
-      sku_id: productSkusTbRow.id,
-      product_name: productsTbRow.name,
-      short_name: productsTbRow.short_name,
+      isRegistered: true,
+      rows: {
+        basic_id: basicProductsTbRow.rows.id,
+        product_id: productsTbRow.rows.id,
+        sku_id: productSkusTbRow.rows.id,
+        product_name: productsTbRow.rows.name,
+        short_name: productsTbRow.rows.short_name,
+      },
     };
   });

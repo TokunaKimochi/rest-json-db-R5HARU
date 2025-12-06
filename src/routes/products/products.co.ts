@@ -9,20 +9,24 @@ export const registerOneRegular = async (
 ): Promise<void> => {
   try {
     const productSummary = await registerOneRegularProduct(req.body);
-    res.status(201).json(productSummary);
+    if (productSummary.isRegistered === false) {
+      res.status(200).json(productSummary);
+    } else {
+      res.status(201).json(productSummary);
+    }
   } catch (err: unknown) {
     res.status(500);
     next(err);
   }
 };
 
-export const registerOneSetItem = (
+export const registerOneSetItem = async (
   req: Request<object, object, PostReqNewSetProduct>,
   res: Response,
   next: NextFunction
-): void => {
+): Promise<void> => {
   try {
-    registerOneSetProduct(req.body);
+    await registerOneSetProduct(req.body);
     res.status(201);
   } catch (err: unknown) {
     res.status(500);
