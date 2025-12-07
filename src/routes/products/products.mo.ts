@@ -1,7 +1,7 @@
 import { DataBaseError, db } from '@/db';
 import { insert } from 'sql-bricks';
 import { ulid } from 'ulid';
-import { z, ZodTypeAny } from 'zod';
+import { z, ZodType } from 'zod';
 import { ITask } from 'pg-promise';
 import { NewProductSummary, PostReqNewProduct, PostReqNewSetProduct } from './products.types';
 import { BasicProductsTbRow, ProductsTbRow } from './products.dbTable.types';
@@ -65,14 +65,15 @@ const formatSkusData = (body: PostReqNewProduct | PostReqNewSetProduct, products
 });
 
 // 共通 insertOne ヘルパー
-async function insertOne<S extends ZodTypeAny>(
+async function insertOne<T>(
   t: ITask<object>,
   table: string,
   input: Record<string, unknown>,
-  schema: S,
+  // schema は Zod スキーマであり、バリデーション成功時、型「T」になる
+  schema: ZodType<T>,
   returning = '*'
 ): Promise<
-  | { isSucceeded: true; rows: z.infer<S> }
+  | { isSucceeded: true; rows: T }
   | {
       isSucceeded: false;
       uniqueConstraintError: {
@@ -101,7 +102,6 @@ async function insertOne<S extends ZodTypeAny>(
     const row = await t.one<unknown>(`${text} RETURNING ${returning}`, values);
     return {
       isSucceeded: true,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       rows: schema.parse(row),
     };
   } catch (err: unknown) {
@@ -224,10 +224,7 @@ export const registerOneRegularProduct = async (
 export const registerOneSetProduct = async (
   body: PostReqNewSetProduct
 ): Promise<
-  | {
-      isRegistered: true;
-      rows: NewProductSummary;
-    }
+  | { isRegistered: true; rows: NewProductSummary }
   | {
       isRegistered: false;
       uniqueConstraintError: {
