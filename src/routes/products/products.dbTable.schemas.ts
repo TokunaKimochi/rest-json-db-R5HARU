@@ -33,6 +33,7 @@ export const productsTbRowSchema = commonProductsSchema
       .trim()
       .regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 形式で入力してください'),
     internal_code: z.string().trim().min(5).max(10).nullable(),
+    is_set_product: z.boolean(),
     depth_mm: z.number().int().positive().nullable(),
     width_mm: z.number().int().positive().nullable(),
     diameter_mm: z.number().int().positive().nullable(),

@@ -23,7 +23,7 @@ export const productsSchema = z.object({
   product_name: z.string().trim().min(1).max(32),
   short_name: z.string().trim().min(1).max(32),
   internal_code: z.preprocess((v) => (v === '' ? undefined : v), z.string().trim().min(5).max(10).optional()),
-  is_set_product: z.boolean(),
+  is_set_product: z.preprocess((v) => Number(v), z.coerce.boolean()),
   depth_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
   width_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
   diameter_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
@@ -158,7 +158,9 @@ export const postReqNewProductSchema = basicProductsSchema.extend({
   // product_name は basicProductsSchema.basic_name をコピー
   // ulid_str はサーバ側で計算
   // is_set_product を上書き extend()
-  ...productsSchema.extend({ is_set_product: z.literal(false) }).omit({ basic_id: true, product_name: true }).shape,
+  ...productsSchema
+    .extend({ is_set_product: z.preprocess((v) => !!Number(v), z.literal(false)) })
+    .omit({ basic_id: true, product_name: true }).shape,
   ...productComponentsSchema.shape,
   // skus_name は productsSchema.short_name をコピー
   // product_id はコピー
@@ -170,7 +172,9 @@ export const postReqNewSetProductSchema = basicProductsSchema.extend({
   // product_name は basicProductsSchema.basic_name をコピー
   // ulid_str はサーバ側で計算
   // is_set_product を上書き extend()
-  ...productsSchema.extend({ is_set_product: z.literal(true) }).omit({ basic_id: true, product_name: true }).shape,
+  ...productsSchema
+    .extend({ is_set_product: z.preprocess((v) => !!Number(v), z.literal(true)) })
+    .omit({ basic_id: true, product_name: true }).shape,
   ...productCombinationsSchema.shape,
   // skus_name は productsSchema.short_name をコピー
   // product_id はコピー
@@ -181,7 +185,7 @@ export const postReqNewSetProductSchema = basicProductsSchema.extend({
 export const postReqProductVariantSchema = productsSchema.extend({
   // ulid_str はサーバ側で計算
   // is_set_product を上書き extend()
-  is_set_product: z.literal(false),
+  is_set_product: z.preprocess((v) => !!Number(v), z.literal(false)),
   ...productComponentsSchema.shape,
   // skus_name は productsSchema.short_name をコピー
   // product_id はコピー
@@ -192,7 +196,7 @@ export const postReqProductVariantSchema = productsSchema.extend({
 export const postReqSetProductVariantSchema = productsSchema.extend({
   // ulid_str はサーバ側で計算
   // is_set_product を上書き extend()
-  is_set_product: z.literal(true),
+  is_set_product: z.preprocess((v) => !!Number(v), z.literal(true)),
   ...productCombinationsSchema.shape,
   // skus_name は productsSchema.short_name をコピー
   // product_id はコピー
