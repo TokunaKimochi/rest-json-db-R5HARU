@@ -26,8 +26,12 @@ export const registerOneSetItem = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    await registerOneSetProduct(req.body);
-    res.status(201);
+    const productSummary = await registerOneSetProduct(req.body);
+    if (productSummary.isRegistered === false) {
+      res.status(200).json(productSummary);
+    } else {
+      res.status(201).json(productSummary);
+    }
   } catch (err: unknown) {
     res.status(500);
     next(err);
