@@ -19,6 +19,9 @@ router
     validateRequest({ body: postReqNewSetProductSchema }) as RequestHandler,
     controllers.registerOneSetItem as RequestHandler
   );
+router.route('/single-products').get(controllers.findAllSingles as RequestHandler);
+
+// パッケージタイプや発注先などの各セレクト・オプションを一括返却
 router.route('/options').get(findAll as RequestHandler);
 
 export default router;

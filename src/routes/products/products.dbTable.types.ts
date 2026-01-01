@@ -5,6 +5,7 @@ import {
   productComponentsTbRowSchema,
   productSkusTbRowSchema,
   productsTbRowSchema,
+  viewSingleProductsRowSchema,
 } from './products.dbTable.schemas';
 
 export type BasicProductsTbRow = z.infer<typeof basicProductsTbRowSchema>;
@@ -12,3 +13,4 @@ export type ProductsTbRow = z.infer<typeof productsTbRowSchema>;
 export type ProductComponentsTbRow = z.infer<typeof productComponentsTbRowSchema>;
 export type ProductCombinationsTbRow = z.infer<typeof productCombinationsTbRowSchema>;
 export type ProductSkusTbRow = z.infer<typeof productSkusTbRowSchema>;
+export type ViewSingleProductsRow = z.infer<typeof viewSingleProductsRowSchema>;

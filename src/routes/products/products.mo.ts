@@ -4,7 +4,7 @@ import { ulid } from 'ulid';
 import { z, ZodType } from 'zod';
 import { ITask } from 'pg-promise';
 import { NewProductSummary, PostReqNewProduct, PostReqNewSetProduct } from './products.types';
-import { BasicProductsTbRow, ProductsTbRow } from './products.dbTable.types';
+import { BasicProductsTbRow, ProductsTbRow, ViewSingleProductsRow } from './products.dbTable.types';
 import { basicProductsTbRowSchema, productSkusTbRowSchema, productsTbRowSchema } from './products.dbTable.schemas';
 
 const formatBasicProductData = (body: PostReqNewProduct | PostReqNewSetProduct) => ({
@@ -313,3 +313,10 @@ export const registerOneSetProduct = async (
       },
     };
   });
+
+export const findAllSingleProducts = async (): Promise<ViewSingleProductsRow[]> => {
+  const result: ViewSingleProductsRow[] = await db
+    .manyOrNone('SELECT * FROM v_single_products ORDER BY product_id')
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
+  return result;
+};
