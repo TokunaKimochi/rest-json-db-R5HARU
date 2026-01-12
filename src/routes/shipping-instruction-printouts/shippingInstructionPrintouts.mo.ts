@@ -11,6 +11,7 @@ import {
 } from './shippingInstructionPrintouts.types';
 
 export const findSomeShippingInstructions = async ({
+  non_fk_customer_id,
   category,
   dateA,
   dateB,
@@ -45,9 +46,10 @@ export const findSomeShippingInstructions = async ({
     }
     // ここにエラー処理をねじ込む!!
     // 検索範囲を制限して、それを超えたらエラーを返す
-    const millisecondsIn7Days = 7 * 24 * 60 * 60 * 1000;
-    if (endDate.getTime() - startDate.getTime() > millisecondsIn7Days) {
-      throw new DataBaseError('❎️🔍 - 検索範囲の指定は７日間までです', 400);
+    const rangeDays = non_fk_customer_id ? 731 : 31;
+    const millisecondsInRangeDays = rangeDays * 24 * 60 * 60 * 1000;
+    if (endDate.getTime() - startDate.getTime() > millisecondsInRangeDays) {
+      throw new DataBaseError(`❎️🔍 - 検索範囲の指定は ${rangeDays}日間までです`, 400);
     }
     // 片方有効な Date 型、もう片方 undefined
   } else {
@@ -72,20 +74,27 @@ export const findSomeShippingInstructions = async ({
       .catch((err: string) => Promise.reject(new DataBaseError(err)));
     return result;
   }
-  // 配達指定日 or 出荷予定日で検索
+  // ----- 配達指定日 or 出荷予定日で検索 -----
+  const andCustomerId = non_fk_customer_id ? ` AND non_fk_customer_id = ${non_fk_customer_id}` : '';
+
   if (endDate === undefined) {
     const result: ShippingInstructionHistoryTbRow[] = await db
       .manyOrNone(
-        `SELECT ${columns} FROM shipping_instruction_print_history WHERE ${category} = $1 ORDER BY ${category}`,
-        [startDateStr]
+        `SELECT ${columns} FROM shipping_instruction_print_history WHERE ${category} = $[startDateStr]${andCustomerId} ORDER BY ${category}`,
+        {
+          startDateStr,
+        }
       )
       .catch((err: string) => Promise.reject(new DataBaseError(err)));
     return result;
   }
   const result: ShippingInstructionHistoryTbRow[] = await db
     .manyOrNone(
-      `SELECT ${columns} FROM shipping_instruction_print_history WHERE ${category} >= $1 AND ${category} < $2 ORDER BY ${category}`,
-      [startDateStr, dayAfterEndDateStr]
+      `SELECT ${columns} FROM shipping_instruction_print_history WHERE ${category} >= $[startDateStr] AND ${category} < $[dayAfterEndDateStr]${andCustomerId} ORDER BY ${category}`,
+      {
+        startDateStr,
+        dayAfterEndDateStr,
+      }
     )
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
   return result;

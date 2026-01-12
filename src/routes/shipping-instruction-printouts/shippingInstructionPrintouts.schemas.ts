@@ -44,11 +44,24 @@ export const shippingInstructionHistoryTbRowSchema = shippingInstructionPrintInp
 });
 
 export const findShippingInstructionsQuerySchema = z
-  .object({
-    category: z.enum(['delivery_date', 'printed_at', 'shipping_date']),
-    dateA: z.coerce.date().optional(),
-    dateB: z.coerce.date().optional(),
-  })
+  .union([
+    z.object({
+      non_fk_customer_id: z.coerce.number().int().positive(),
+      category: z.enum(['delivery_date', 'shipping_date']),
+      dateA: z.coerce.date().optional(),
+      dateB: z.coerce.date().optional(),
+    }),
+    z.object({
+      non_fk_customer_id: z.preprocess(
+        // eslint-disable-next-line no-nested-ternary
+        (v) => (v === 'false' ? false : v === '' ? undefined : v),
+        z.literal(false).optional()
+      ),
+      category: z.enum(['delivery_date', 'printed_at', 'shipping_date']),
+      dateA: z.coerce.date().optional(),
+      dateB: z.coerce.date().optional(),
+    }),
+  ])
   .brand<'FindShippingInstructionsQuery'>();
 
 export const shippingInstructionPrintIDSchema = z
