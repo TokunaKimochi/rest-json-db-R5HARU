@@ -9,6 +9,7 @@ const router = Router();
 
 router
   .route('/')
+  .get(controllers.findAllSkuDetails as RequestHandler)
   .post(
     validateRequest({ body: postReqNewProductSchema }) as RequestHandler,
     controllers.registerOneRegular as RequestHandler

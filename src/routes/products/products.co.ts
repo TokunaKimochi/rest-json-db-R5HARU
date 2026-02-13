@@ -1,6 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 import { PostReqNewProduct, PostReqNewSetProduct } from './products.types';
-import { findAllSingleProducts, registerOneRegularProduct, registerOneSetProduct } from './products.mo';
+import {
+  findAllProductSkuDetails,
+  findAllSingleProducts,
+  registerOneRegularProduct,
+  registerOneSetProduct,
+} from './products.mo';
 
 export const registerOneRegular = async (
   req: Request<object, object, PostReqNewProduct>,
@@ -42,6 +47,17 @@ export const findAllSingles = async (_: Request, res: Response, next: NextFuncti
   try {
     const singleProducts = await findAllSingleProducts();
     res.status(200).json(singleProducts);
+  } catch (err: unknown) {
+    console.error(err);
+    res.status(500);
+    next(err);
+  }
+};
+
+export const findAllSkuDetails = async (_: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const skuDetails = await findAllProductSkuDetails();
+    res.status(200).json(skuDetails);
   } catch (err: unknown) {
     console.error(err);
     res.status(500);
