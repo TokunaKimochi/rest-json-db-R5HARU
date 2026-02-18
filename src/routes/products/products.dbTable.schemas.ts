@@ -27,11 +27,11 @@ export const productsTbRowSchema = commonProductsSchema
     available_date: z
       .string()
       .trim()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 形式で入力してください'),
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'insert の RETURNING 句で DATE 型を YYYY-MM-DD にキャストして受け取る仕様'),
     discontinued_date: z
       .string()
       .trim()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 形式で入力してください'),
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'insert の RETURNING 句で DATE 型を YYYY-MM-DD にキャストして受け取る仕様'),
     internal_code: z.string().trim().min(5).max(10).nullable(),
     is_set_product: z.boolean(),
     depth_mm: z.number().int().positive().nullable(),
@@ -76,8 +76,8 @@ export const viewSingleProductsRowSchema = z.object({
   product_name: z.string().min(1).max(32),
   product_short_name: z.string().min(1).max(32),
   internal_code: z.string().min(5).max(10).nullable(),
-  available_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  discontinued_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  available_date: z.date(),
+  discontinued_date: z.date(),
   depth_mm: z.number().int().positive().nullable(),
   width_mm: z.number().int().positive().nullable(),
   diameter_mm: z.number().int().positive().nullable(),
@@ -100,7 +100,7 @@ export const viewSingleProductsRowSchema = z.object({
   // First Component (代表成分・内容量)
   component_title: z.string().min(1).max(32),
   component_symbol: z.string().min(1).max(8),
-  component_amount: z.number().positive(),
+  component_amount: z.string().regex(/^\+?(?:[1-9]\d{0,5}|0)(?:\.\d{1,2})?$/),
   component_unit_name: z.string().min(1).max(8),
   component_pieces: z.number().int().positive(),
   component_inner_packaging_type: z.string().min(1).max(32),
