@@ -4,6 +4,31 @@ CREATE TYPE expiration_unit_enum AS ENUM('D', 'M', 'Y');
 
 CREATE TYPE level_abc_enum AS ENUM('A', 'B', 'C');
 
+CREATE TYPE common_colors_in_css AS ENUM(
+    'rose',
+    'pink',
+    'fuchsia',
+    'purple',
+    'violet',
+    'indigo',
+    'blue',
+    'sky',
+    'cyan',
+    'teal',
+    'emerald',
+    'green',
+    'lime',
+    'yellow',
+    'amber',
+    'orange',
+    'red',
+    'neutral',
+    'stone',
+    'zinc',
+    'gray',
+    'slate'
+);
+
 CREATE TABLE suppliers (
     id SMALLSERIAL PRIMARY KEY,
     tel VARCHAR(15) NOT NULL DEFAULT '',
@@ -88,6 +113,7 @@ CREATE TABLE product_categories (
     id SMALLSERIAL PRIMARY KEY,
     -- Ç®íÉÇ∆Ç©ÉRÅ[ÉqÅ[Ç∆Ç©
     name VARCHAR(32) NOT NULL,
+    cat_color common_colors_in_css,
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
 );
