@@ -29,6 +29,20 @@ CREATE TYPE common_colors_in_css AS ENUM(
     'slate'
 );
 
+CREATE TYPE color_shade AS ENUM(
+    '50',
+    '100',
+    '200',
+    '300',
+    '400',
+    '500',
+    '600',
+    '700',
+    '800',
+    '900',
+    '950'
+);
+
 CREATE TABLE suppliers (
     id SMALLSERIAL PRIMARY KEY,
     tel VARCHAR(15) NOT NULL DEFAULT '',
@@ -114,6 +128,7 @@ CREATE TABLE product_categories (
     -- Ç®íÉÇ∆Ç©ÉRÅ[ÉqÅ[Ç∆Ç©
     name VARCHAR(32) NOT NULL,
     cat_color common_colors_in_css,
+    color_shade color_shade,
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
 );

@@ -4,6 +4,7 @@ import * as controllers from './products.co';
 import { postReqNewProductSchema, postReqNewSetProductSchema } from './products.schemas';
 
 import findAll from './options/options.co';
+import allImages from './images/images.co';
 
 const router = Router();
 
@@ -24,5 +25,6 @@ router.route('/single-products').get(controllers.findAllSingles as RequestHandle
 
 // パッケージタイプや発注先などの各セレクト・オプションを一括返却
 router.route('/options').get(findAll as RequestHandler);
+router.route('/images').get(allImages as RequestHandler);
 
 export default router;
