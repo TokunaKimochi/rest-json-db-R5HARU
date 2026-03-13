@@ -40,10 +40,14 @@ SELECT
     bp.jan_code,
     bp.expiration_value,
     bp.expiration_unit,
-    pst.name AS sourcing_type,
-    pc.name AS category_name,
-    ppt.name AS packaging_type,
     bp.predecessor_id,
+    -- Product category
+    pc.id AS category_id,
+    pc.name AS category_name,
+    pc.cat_color AS category_color,
+    pc.color_shade AS category_color_shade,
+    pst.name AS sourcing_type,
+    ppt.name AS packaging_type,
     -- Supplier
     s.id AS supplier_id,
     s.name1 AS supplier_name1,

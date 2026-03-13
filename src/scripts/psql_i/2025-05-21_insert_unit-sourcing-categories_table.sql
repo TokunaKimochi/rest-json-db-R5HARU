@@ -16,10 +16,10 @@ VALUES
 INSERT INTO
     product_categories (name, cat_color, color_shade)
 VALUES
-    ('–¢•ª—Þ', 'neutral', '100'),
+    ('–¢•ª—Þ', 'neutral', '200'),
     ('‚»‚Ì‘¼', 'slate', '400'),
-    ('‚±‚ñ‚Ô’ƒ', 'orange', '300'),
-    ('‚±‚ñ‚Ô’ƒ ‘¼', 'orange', '300'),
+    ('‚±‚ñ‚Ô’ƒ', 'orange', '400'),
+    ('‚±‚ñ‚Ô’ƒ ‘¼', 'orange', '400'),
     ('”~‚±‚ñ‚Ô’ƒ', 'pink', '300'),
     ('”~‚±‚ñ‚Ô’ƒ ‘¼', 'pink', '300'),
     ('‚µ‚¢‚½‚¯’ƒ', 'amber', '600'),

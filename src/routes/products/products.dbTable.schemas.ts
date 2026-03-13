@@ -164,11 +164,39 @@ export const viewSkuDetailsRowSchema = z.object({
   // SQL上は LEFT JOIN ですが、データ不整合（ID=1などのデフォルト値がない状態）を
   // エラーとして検知するため、NOT NULL として定義します。
 
+  // Category
+  category_id: z.number().int().positive(),
+  category_name: z.string().min(1).max(32),
+  category_color: z
+    .enum([
+      'rose',
+      'pink',
+      'fuchsia',
+      'purple',
+      'violet',
+      'indigo',
+      'blue',
+      'sky',
+      'cyan',
+      'teal',
+      'emerald',
+      'green',
+      'lime',
+      'yellow',
+      'amber',
+      'orange',
+      'red',
+      'neutral',
+      'stone',
+      'zinc',
+      'gray',
+      'slate',
+    ])
+    .nullable(),
+  category_color_shade: z.enum(['200', '300', '400', '500', '600', '700', '800']).nullable(),
+
   // Sourcing Type
   sourcing_type: z.string().min(1).max(32),
-
-  // Category
-  category_name: z.string().min(1).max(32),
 
   // Packaging Type
   packaging_type: z.string().min(1).max(32),
