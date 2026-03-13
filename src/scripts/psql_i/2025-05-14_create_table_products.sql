@@ -29,19 +29,8 @@ CREATE TYPE common_colors_in_css AS ENUM(
     'slate'
 );
 
-CREATE TYPE color_shade AS ENUM(
-    '50',
-    '100',
-    '200',
-    '300',
-    '400',
-    '500',
-    '600',
-    '700',
-    '800',
-    '900',
-    '950'
-);
+-- ÉtÉçÉìÉgë§ÇÃ UI Ç≈ red.200 Å} 100 ÇÃëÄçÏÇ™Ç†ÇËìæÇÈëzíË
+CREATE TYPE color_shade AS ENUM('200', '300', '400', '500', '600', '700', '800');
 
 CREATE TABLE suppliers (
     id SMALLSERIAL PRIMARY KEY,
