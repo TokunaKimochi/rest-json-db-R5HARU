@@ -116,8 +116,8 @@ CREATE TABLE product_categories (
     id SMALLSERIAL PRIMARY KEY,
     -- Ç®íÉÇ∆Ç©ÉRÅ[ÉqÅ[Ç∆Ç©
     name VARCHAR(32) NOT NULL,
-    cat_color common_colors_in_css,
-    color_shade color_shade,
+    cat_color common_colors_in_css NOT NULL,
+    color_shade color_shade NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
 );
