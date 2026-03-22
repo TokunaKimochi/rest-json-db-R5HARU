@@ -70,9 +70,9 @@ FROM
     LEFT JOIN product_packaging_types ppt ON bp.packaging_type_id = ppt.id;
 
 --- セット品構成ビュー
-CREATE OR REPLACE VIEW v_sku_combinations AS
+CREATE OR REPLACE VIEW v_product_combinations AS
 SELECT
-    ps.id AS sku_id,
+    p.id AS product_id,
     pcmb.id AS combination_id,
     pcmb.quantity,
     -- Set Product (完成商品)
@@ -86,17 +86,16 @@ SELECT
     pcmb.created_at,
     pcmb.updated_at
 FROM
-    product_skus ps
-    JOIN product_combinations pcmb ON ps.product_id = pcmb.product_id
-    JOIN products p ON pcmb.product_id = p.id
+    products p
+    JOIN product_combinations pcmb ON p.id = pcmb.product_id
     JOIN products item_p ON pcmb.item_product_id = item_p.id;
 
 --- 製品成分ビュー
-CREATE OR REPLACE VIEW v_sku_components AS
+CREATE OR REPLACE VIEW v_product_components AS
 SELECT
-    ps.id AS sku_id,
     p.id AS product_id,
     p.name AS product_name,
+    p.short_name AS product_short_name,
     -- Component
     pcmp.id AS component_id,
     pcmp.title,
@@ -108,9 +107,8 @@ SELECT
     pcmp.created_at,
     pcmp.updated_at
 FROM
-    product_skus ps
-    JOIN product_components pcmp ON ps.product_id = pcmp.product_id
-    JOIN products p ON pcmp.product_id = p.id
+    products p
+    JOIN product_components pcmp ON p.id = pcmp.product_id
     LEFT JOIN unit_types ut ON pcmp.unit_type_id = ut.id
     LEFT JOIN product_inner_packaging_types ipt ON pcmp.inner_packaging_type_id = ipt.id;
 

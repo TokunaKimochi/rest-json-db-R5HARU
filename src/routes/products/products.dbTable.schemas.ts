@@ -212,3 +212,34 @@ export const viewSkuDetailsRowSchema = z.object({
   url: z.string().max(255),
   supplier_note: z.string(),
 });
+
+export const viewProductCombinationsRowSchema = z.object({
+  product_id: z.number().int().positive(),
+  combination_id: z.number().int().positive(),
+  quantity: z.number().int().positive(),
+  set_product_id: z.number().int().positive(),
+  set_product_name: z.string().min(1).max(32),
+  set_product_short_name: z.string().min(1).max(32),
+  item_product_id: z.number().int().positive(),
+  item_product_name: z.string().min(1).max(32),
+  item_product_short_name: z.string().min(1).max(32),
+  created_at: z.date(),
+  updated_at: z.date(),
+});
+export const viewProductCombinationsArraySchema = z.array(viewProductCombinationsRowSchema);
+
+export const viewProductComponentsRowSchema = z.object({
+  product_id: z.number().int().positive(),
+  product_name: z.string().min(1).max(32),
+  product_short_name: z.string().min(1).max(32),
+  component_id: z.number().int().positive(),
+  title: z.string().min(1).max(32),
+  symbol: z.string().min(1).max(8),
+  amount: z.string().regex(/^\+?(?:[1-9]\d{0,5}|0)(?:\.\d{1,2})?$/),
+  unit_name: z.string().min(1).max(8),
+  pieces: z.number().int().positive(),
+  inner_packaging_type: z.string().min(1).max(32),
+  created_at: z.date(),
+  updated_at: z.date(),
+});
+export const viewProductComponentsArraySchema = z.array(viewProductComponentsRowSchema);

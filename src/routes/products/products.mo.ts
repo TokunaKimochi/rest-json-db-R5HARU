@@ -3,9 +3,22 @@ import { insert } from 'sql-bricks';
 import { ulid } from 'ulid';
 import { z, ZodType } from 'zod';
 import { ITask } from 'pg-promise';
-import { NewProductSummary, PostReqNewProduct, PostReqNewSetProduct } from './products.types';
-import { BasicProductsTbRow, ProductsTbRow, ViewSingleProductsRow, ViewSkuDetailsRow } from './products.dbTable.types';
-import { basicProductsTbRowSchema, productSkusTbRowSchema, productsTbRowSchema } from './products.dbTable.schemas';
+import { NewProductSummary, ParamsWithProductId, PostReqNewProduct, PostReqNewSetProduct } from './products.types';
+import {
+  BasicProductsTbRow,
+  ProductsTbRow,
+  ViewProductCombinationsArray,
+  ViewProductComponentsArray,
+  ViewSingleProductsRow,
+  ViewSkuDetailsRow,
+} from './products.dbTable.types';
+import {
+  basicProductsTbRowSchema,
+  productSkusTbRowSchema,
+  productsTbRowSchema,
+  viewProductCombinationsArraySchema,
+  viewProductComponentsArraySchema,
+} from './products.dbTable.schemas';
 
 const formatBasicProductData = (body: PostReqNewProduct | PostReqNewSetProduct) => ({
   name: body.basic_name,
@@ -326,4 +339,30 @@ export const findAllProductSkuDetails = async (): Promise<ViewSkuDetailsRow[]> =
     .manyOrNone('SELECT * FROM v_sku_details ORDER BY sku_id')
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
   return result;
+};
+
+export const findAllCombinationsAboutProduct = async (
+  p: ParamsWithProductId
+): Promise<ViewProductCombinationsArray> => {
+  const rows = await db
+    .manyOrNone('SELECT * FROM v_product_combinations WHERE product_id = $1 ORDER BY combination_id ASC', [p.productId])
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
+  const result = viewProductCombinationsArraySchema.safeParse(rows);
+
+  if (result.success && result.data.length) return result.data;
+
+  if (result.error) throw new DataBaseError(result.error.message);
+  throw new DataBaseError('Not found');
+};
+
+export const findAllComponentsAboutProduct = async (p: ParamsWithProductId): Promise<ViewProductComponentsArray> => {
+  const rows = await db
+    .manyOrNone('SELECT * FROM v_product_components WHERE product_id = $1 ORDER BY component_id ASC', [p.productId])
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
+  const result = viewProductComponentsArraySchema.safeParse(rows);
+
+  if (result.success && result.data.length) return result.data;
+
+  if (result.error) throw new DataBaseError(result.error.message);
+  throw new DataBaseError('Not found');
 };

@@ -213,3 +213,10 @@ export const newProductSummarySchema = z.object({
   product_name: z.string().trim().min(1).max(32),
   short_name: z.string().trim().min(1).max(32),
 });
+
+export const paramsWithProductIdSchema = z
+  .object({
+    // リクエストボディではなくパスパラメータ（e.g. /123）なのでキャメルケース
+    productId: z.coerce.number().int().positive(),
+  })
+  .brand<'ParamsWithProductId'>();

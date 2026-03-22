@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
-import { PostReqNewProduct, PostReqNewSetProduct } from './products.types';
+import { ParamsWithProductId, PostReqNewProduct, PostReqNewSetProduct } from './products.types';
 import {
+  findAllCombinationsAboutProduct,
+  findAllComponentsAboutProduct,
   findAllProductSkuDetails,
   findAllSingleProducts,
   registerOneRegularProduct,
@@ -58,6 +60,36 @@ export const findAllSkuDetails = async (_: Request, res: Response, next: NextFun
   try {
     const skuDetails = await findAllProductSkuDetails();
     res.status(200).json(skuDetails);
+  } catch (err: unknown) {
+    console.error(err);
+    res.status(500);
+    next(err);
+  }
+};
+
+export const findAllCombinationsAbout = async (
+  req: Request<ParamsWithProductId>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const combinations = await findAllCombinationsAboutProduct(req.params);
+    res.status(200).json(combinations);
+  } catch (err: unknown) {
+    console.error(err);
+    res.status(500);
+    next(err);
+  }
+};
+
+export const findAllComponentsAbout = async (
+  req: Request<ParamsWithProductId>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const components = await findAllComponentsAboutProduct(req.params);
+    res.status(200).json(components);
   } catch (err: unknown) {
     console.error(err);
     res.status(500);
