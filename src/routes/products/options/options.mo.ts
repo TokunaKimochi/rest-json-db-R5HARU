@@ -4,7 +4,7 @@ import { OptionTypes, ProductOptionsIdAndName } from './options.types';
 // eslint-disable-next-line import/prefer-default-export
 export const findAllProductOptions = async (): Promise<Record<OptionTypes, ProductOptionsIdAndName[]>> => {
   const rows: { table_name: OptionTypes; id: number; name: string }[] = await db
-    .manyOrNone('SELECT table_name, id, name FROM ids_and_names_for_products ORDER BY table_name, id')
+    .manyOrNone('SELECT table_name, id, name FROM v_ids_and_names_for_products ORDER BY table_name, id')
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
 
   const result: Record<OptionTypes, ProductOptionsIdAndName[]> = {

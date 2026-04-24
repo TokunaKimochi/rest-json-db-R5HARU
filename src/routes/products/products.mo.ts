@@ -22,6 +22,7 @@ import {
 
 const formatBasicProductData = (body: PostReqNewProduct | PostReqNewSetProduct) => ({
   name: body.basic_name,
+  internal_code: body.internal_code ?? null,
   jan_code: body.jan_code ?? null,
   sourcing_type_id: body.sourcing_type_id,
   category_id: body.category_id,
@@ -44,7 +45,6 @@ const formatProductData = (body: PostReqNewProduct | PostReqNewSetProduct, basic
     supplier_id: body.supplier_id,
     name: body.basic_name,
     short_name: body.short_name,
-    internal_code: body.internal_code ?? null,
     is_set_product: body.is_set_product,
     depth_mm: body.depth_mm ?? null,
     width_mm: body.width_mm ?? null,

@@ -23,7 +23,6 @@ SELECT
     p.id AS product_id,
     p.name AS product_name,
     p.short_name AS product_short_name,
-    p.internal_code,
     p.is_set_product,
     p.depth_mm,
     p.width_mm,
@@ -37,6 +36,7 @@ SELECT
     -- Basic Product
     bp.id AS basic_product_id,
     bp.name AS basic_product_name,
+    bp.internal_code,
     bp.jan_code,
     bp.expiration_value,
     bp.expiration_unit,
@@ -119,7 +119,6 @@ SELECT
     p.id AS product_id,
     p.name AS product_name,
     p.short_name AS product_short_name,
-    p.internal_code,
     p.available_date,
     p.discontinued_date,
     p.depth_mm,
@@ -131,6 +130,7 @@ SELECT
     p.ulid_str,
     -- Basic Product
     bp.name AS basic_product_name,
+    bp.internal_code,
     bp.jan_code,
     bp.predecessor_id,
     bp.expiration_value,
