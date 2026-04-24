@@ -15,6 +15,7 @@ export const basicProductsTbRowSchema = commonProductsSchema
   })
   .extend({
     name: z.string().trim().min(1).max(32),
+    internal_code: z.string().trim().min(5).max(10).nullable(),
     jan_code: z.string().trim().length(13).regex(/[0-9]/).nullable(),
     predecessor_id: z.number().int().positive().nullable(),
   });
@@ -32,7 +33,6 @@ export const productsTbRowSchema = commonProductsSchema
       .string()
       .trim()
       .regex(/^\d{4}-\d{2}-\d{2}$/, 'insert の RETURNING 句で DATE 型を YYYY-MM-DD にキャストして受け取る仕様'),
-    internal_code: z.string().trim().min(5).max(10).nullable(),
     is_set_product: z.boolean(),
     depth_mm: z.number().int().positive().nullable(),
     width_mm: z.number().int().positive().nullable(),
@@ -75,7 +75,6 @@ export const viewSingleProductsRowSchema = z.object({
   product_id: z.number().int().positive(),
   product_name: z.string().min(1).max(32),
   product_short_name: z.string().min(1).max(32),
-  internal_code: z.string().min(5).max(10).nullable(),
   available_date: z.date(),
   discontinued_date: z.date(),
   depth_mm: z.number().int().positive().nullable(),
@@ -87,6 +86,7 @@ export const viewSingleProductsRowSchema = z.object({
   ulid_str: z.string().ulid(),
   // Basic Product
   basic_product_name: z.string().min(1).max(32),
+  internal_code: z.string().min(5).max(10).nullable(),
   jan_code: z.string().length(13).regex(/[0-9]/).nullable(),
   predecessor_id: z.number().int().positive().nullable(),
   expiration_value: z.number().int().positive(),
@@ -140,7 +140,6 @@ export const viewSkuDetailsRowSchema = z.object({
   discontinued_date: z.date(),
 
   // 元テーブルで NULL 許容
-  internal_code: z.string().min(5).max(10).nullable(),
   depth_mm: z.number().int().positive().nullable(),
   width_mm: z.number().int().positive().nullable(),
   diameter_mm: z.number().int().positive().nullable(),
@@ -155,6 +154,7 @@ export const viewSkuDetailsRowSchema = z.object({
   basic_product_name: z.string().min(1).max(32),
 
   // 元テーブルで NULL 許容
+  internal_code: z.string().min(5).max(10).nullable(),
   jan_code: z.string().length(13).regex(/[0-9]/).nullable(),
   expiration_value: z.number().int().positive().nullable(),
   expiration_unit: z.enum(['D', 'M', 'Y']).nullable(),

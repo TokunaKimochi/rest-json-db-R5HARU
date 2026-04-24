@@ -1,5 +1,40 @@
 -- シフトJIS CRLF で保存してコマンドプロンプトで実行
 -- psql> \i <FULL_PATH(unix like)>.sql
+/* == 事前処理 ==
+- 旧バージョンの定義をクリーンアップ */
+-- CASCADE オプションでテーブル削除時に関連ビューとトリガーも削除
+DROP TABLE IF EXISTS product_skus CASCADE;
+
+DROP TABLE IF EXISTS product_combinations CASCADE;
+
+DROP TABLE IF EXISTS product_components CASCADE;
+
+DROP TABLE IF EXISTS unit_types CASCADE;
+
+DROP TABLE IF EXISTS product_inner_packaging_types CASCADE;
+
+DROP TABLE IF EXISTS products CASCADE;
+
+DROP TABLE IF EXISTS suppliers CASCADE;
+
+DROP TABLE IF EXISTS basic_products CASCADE;
+
+DROP TABLE IF EXISTS product_sourcing_types CASCADE;
+
+DROP TABLE IF EXISTS product_categories CASCADE;
+
+DROP TABLE IF EXISTS product_packaging_types CASCADE;
+
+-- 最後に独自タイプを削除
+DROP TYPE IF EXISTS expiration_unit_enum;
+
+DROP TYPE IF EXISTS level_abc_enum;
+
+DROP TYPE IF EXISTS common_colors_in_css;
+
+DROP TYPE IF EXISTS color_shade;
+
+/* 商品関連のテーブルと ENUM 型を定義 */
 CREATE TYPE expiration_unit_enum AS ENUM('D', 'M', 'Y');
 
 CREATE TYPE level_abc_enum AS ENUM('A', 'B', 'C');
@@ -186,6 +221,7 @@ EXECUTE PROCEDURE trg_updated_at_3 ();
 CREATE TABLE basic_products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(32) UNIQUE NOT NULL,
+    internal_code VARCHAR(10), -- （社内）商品コード
     jan_code VARCHAR(13) UNIQUE,
     sourcing_type_id SMALLINT NOT NULL DEFAULT 1, -- 1 は自社製造自社製品
     category_id SMALLINT NOT NULL DEFAULT 1, -- 1 は未分類
@@ -233,7 +269,6 @@ CREATE TABLE products (
     supplier_id SMALLINT NOT NULL DEFAULT 1, -- 発注先 1 は自社工場
     name VARCHAR(32) UNIQUE NOT NULL,
     short_name VARCHAR(32) UNIQUE NOT NULL, -- 略称だが長い場合もある
-    internal_code VARCHAR(10), -- （社内）商品コード
     is_set_product BOOLEAN NOT NULL DEFAULT false,
     depth_mm INTEGER, -- 商品サイズ縦（奥行き） (mm)
     width_mm INTEGER, -- 商品サイズ横 (mm)
@@ -414,7 +449,7 @@ EXECUTE PROCEDURE trg_updated_at_3 ();
 
 -- <select><option> で使う id, name をまとめて返す VIEW を定義
 -- ENUM はフロントでハードコーディングの予定 (ー_ー;)
-CREATE OR REPLACE VIEW ids_and_names_for_products AS
+CREATE OR REPLACE VIEW v_ids_and_names_for_products AS
 SELECT
     'unit_types' AS table_name,
     id,
