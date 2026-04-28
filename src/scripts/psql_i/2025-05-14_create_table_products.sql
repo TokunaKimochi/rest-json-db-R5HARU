@@ -329,6 +329,7 @@ CREATE TABLE product_components (
     id SERIAL PRIMARY KEY,
     product_id INTEGER NOT NULL,
     title VARCHAR(32) NOT NULL,
+    category_id SMALLINT NOT NULL DEFAULT 1, -- 1 ÇÕñ¢ï™óﬁ
     symbol VARCHAR(8) NOT NULL,
     amount NUMERIC(8, 2) NOT NULL,
     unit_type_id SMALLINT NOT NULL DEFAULT 1, -- 1 ÇÕ gÅiÉOÉâÉÄÅj
@@ -337,6 +338,7 @@ CREATE TABLE product_components (
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     FOREIGN KEY (product_id) REFERENCES products (id),
+    FOREIGN KEY (category_id) REFERENCES product_categories (id),
     FOREIGN KEY (unit_type_id) REFERENCES unit_types (id),
     FOREIGN KEY (inner_packaging_type_id) REFERENCES product_inner_packaging_types (id)
 );

@@ -99,6 +99,7 @@ SELECT
     -- Component
     pcmp.id AS component_id,
     pcmp.title,
+    pc.name AS component_category_name,
     pcmp.symbol,
     pcmp.amount,
     ut.name AS unit_name,
@@ -109,6 +110,7 @@ SELECT
 FROM
     products p
     JOIN product_components pcmp ON p.id = pcmp.product_id
+    JOIN product_categories pc ON pcmp.category_id = pc.id
     LEFT JOIN unit_types ut ON pcmp.unit_type_id = ut.id
     LEFT JOIN product_inner_packaging_types ipt ON pcmp.inner_packaging_type_id = ipt.id;
 
@@ -139,10 +141,11 @@ SELECT
     pc.name AS category_name,
     ppt.name AS packaging_type,
     -- Supplier
-    -- name2がNOT NULL DEFAULT '' のため、RTRIMでname2が空文字の場合の余分な末尾スペースを削除
+    -- name2 は NOT NULL DEFAULT '' のため、空文字のときに余分な末尾スペースが残らないように RTRIM を使用
     RTRIM(s.name1 || ' ' || s.name2) AS supplier_name,
     -- First Component (代表成分・内容量)
     pcmp.title AS component_title,
+    pcc.name AS component_category_name,
     pcmp.symbol AS component_symbol,
     pcmp.amount AS component_amount,
     ut.name AS component_unit_name,
@@ -155,10 +158,12 @@ FROM
     LEFT JOIN product_sourcing_types pst ON bp.sourcing_type_id = pst.id
     LEFT JOIN product_categories pc ON bp.category_id = pc.id
     LEFT JOIN product_packaging_types ppt ON bp.packaging_type_id = ppt.id
-    -- LATERAL JOIN: 各製品(p)に紐づく最初の1件の成分(pcmp)を効率的に取得
+    -- LATERAL JOIN: 各製品(p)に紐づく最初の1件の成分(pcmp)を取得
+    -- LATERAL は外側の行 (p) を参照できるため、サブクエリ内で p.id を使って該当成分を絞る
     LEFT JOIN LATERAL (
         SELECT
             pcmp.title,
+            pcmp.category_id,
             pcmp.symbol,
             pcmp.amount,
             pcmp.unit_type_id,
@@ -167,15 +172,15 @@ FROM
         FROM
             product_components pcmp
         WHERE
-            -- LATERAL (横方向) によって外側のテーブルを参照
+            -- サブクエリ内で外側の p.id を参照している（該当行が無ければサブクエリは空になる）
             pcmp.product_id = p.id
         ORDER BY
             pcmp.id ASC
         LIMIT
             1
-            -- サブクエリの WHERE句で結合条件が既出 -> 常に結合 TRUE
-            -- サブクエリの結果が無ければ LEFT JOIN で NULL を代入
+            -- サブクエリが空の場合、LEFT JOIN LATERAL により pcmp.* は NULL になる
     ) pcmp ON TRUE
+    LEFT JOIN product_categories pcc ON pcmp.category_id = pcc.id
     LEFT JOIN unit_types ut ON pcmp.unit_type_id = ut.id
     LEFT JOIN product_inner_packaging_types ipt ON pcmp.inner_packaging_type_id = ipt.id
 WHERE
