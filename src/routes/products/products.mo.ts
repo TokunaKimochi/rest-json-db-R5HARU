@@ -190,6 +190,7 @@ export const registerOneRegularProduct = async (
         const { text, values } = insert('product_components', {
           product_id: productsTbRow.rows.id,
           title: component.title,
+          category_id: component.category_id,
           symbol: component.symbol,
           amount: component.amount,
           unit_type_id: component.unit_type_id,

@@ -99,6 +99,7 @@ export const viewSingleProductsRowSchema = z.object({
   supplier_name: z.string().min(1).max(61),
   // First Component (代表成分・内容量)
   component_title: z.string().min(1).max(32),
+  component_category_name: z.string().min(1).max(32),
   component_symbol: z.string().min(1).max(8),
   component_amount: z.string().regex(/^\+?(?:[1-9]\d{0,5}|0)(?:\.\d{1,2})?$/),
   component_unit_name: z.string().min(1).max(8),
@@ -234,6 +235,7 @@ export const viewProductComponentsRowSchema = z.object({
   product_short_name: z.string().min(1).max(32),
   component_id: z.number().int().positive(),
   title: z.string().min(1).max(32),
+  component_category_name: z.string().min(1).max(32),
   symbol: z.string().min(1).max(8),
   amount: z.string().regex(/^\+?(?:[1-9]\d{0,5}|0)(?:\.\d{1,2})?$/),
   unit_name: z.string().min(1).max(8),
