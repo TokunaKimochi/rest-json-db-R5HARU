@@ -32,7 +32,11 @@ const formatBasicProductData = (body: PostReqNewProduct | PostReqNewSetProduct) 
   predecessor_id: body.predecessor_id ?? null,
 });
 
-const formatProductData = (body: PostReqNewProduct | PostReqNewSetProduct, basicProductsTbRow: BasicProductsTbRow) => {
+const formatProductData = (
+  body: PostReqNewProduct | PostReqNewSetProduct,
+  basicProductsTbRow: BasicProductsTbRow,
+  category_id: number
+) => {
   const productInput = ((o) =>
     // 最後にオブジェクトに戻す
     Object.fromEntries(
@@ -46,6 +50,7 @@ const formatProductData = (body: PostReqNewProduct | PostReqNewSetProduct, basic
     name: body.basic_name,
     short_name: body.short_name,
     is_set_product: body.is_set_product,
+    cached_category_id: category_id,
     depth_mm: body.depth_mm ?? null,
     width_mm: body.width_mm ?? null,
     diameter_mm: body.diameter_mm ?? null,
@@ -170,7 +175,7 @@ export const registerOneRegularProduct = async (
     const productsTbRow = await insertOne(
       t,
       'products',
-      formatProductData(body, basicProductsTbRow.rows),
+      formatProductData(body, basicProductsTbRow.rows, body.components[0].category_id),
       productsTbRowSchema,
       '*, available_date::text AS available_date, discontinued_date::text AS discontinued_date'
     );
@@ -265,11 +270,19 @@ export const registerOneSetProduct = async (
       };
     }
 
+    // 事前に登録すべき cached_category_id を取得
+    const { cached_category_id: categoryIdCopy } = await t
+      .one('SELECT cached_category_id FROM products WHERE id = $1', [body.combinations[0].item_product_id])
+      .then((row) => productsTbRowSchema.pick({ cached_category_id: true }).parse(row))
+      .catch((err: string) => {
+        throw new DataBaseError(err);
+      });
+
     // 2. products
     const productsTbRow = await insertOne(
       t,
       'products',
-      formatProductData(body, basicProductsTbRow.rows),
+      formatProductData(body, basicProductsTbRow.rows, categoryIdCopy),
       productsTbRowSchema,
       '*, available_date::text AS available_date, discontinued_date::text AS discontinued_date'
     );
