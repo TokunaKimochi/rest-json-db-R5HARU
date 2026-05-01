@@ -66,7 +66,7 @@ FROM
     JOIN basic_products bp ON p.basic_id = bp.id
     LEFT JOIN suppliers s ON p.supplier_id = s.id
     LEFT JOIN product_sourcing_types pst ON bp.sourcing_type_id = pst.id
-    LEFT JOIN product_categories pc ON bp.category_id = pc.id
+    JOIN product_categories pc ON p.cached_category_id = pc.id
     LEFT JOIN product_packaging_types ppt ON bp.packaging_type_id = ppt.id;
 
 --- セット品構成ビュー
@@ -156,7 +156,7 @@ FROM
     JOIN basic_products bp ON p.basic_id = bp.id
     LEFT JOIN suppliers s ON p.supplier_id = s.id
     LEFT JOIN product_sourcing_types pst ON bp.sourcing_type_id = pst.id
-    LEFT JOIN product_categories pc ON bp.category_id = pc.id
+    JOIN product_categories pc ON p.cached_category_id = pc.id
     LEFT JOIN product_packaging_types ppt ON bp.packaging_type_id = ppt.id
     -- LATERAL JOIN: 各製品(p)に紐づく最初の1件の成分(pcmp)を取得
     -- LATERAL は外側の行 (p) を参照できるため、サブクエリ内で p.id を使って該当成分を絞る

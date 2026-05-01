@@ -270,6 +270,8 @@ CREATE TABLE products (
     name VARCHAR(32) UNIQUE NOT NULL,
     short_name VARCHAR(32) UNIQUE NOT NULL, -- 略称だが長い場合もある
     is_set_product BOOLEAN NOT NULL DEFAULT false,
+    -- 内容物（セット品を含む）の代表からコピーしたカテゴリーＩＤ
+    cached_category_id SMALLINT NOT NULL,
     depth_mm INTEGER, -- 商品サイズ縦（奥行き） (mm)
     width_mm INTEGER, -- 商品サイズ横 (mm)
     diameter_mm INTEGER, -- 商品サイズ直径 (mm)
@@ -307,7 +309,8 @@ CREATE TABLE products (
         )
     ),
     FOREIGN KEY (basic_id) REFERENCES basic_products (id),
-    FOREIGN KEY (supplier_id) REFERENCES suppliers (id)
+    FOREIGN KEY (supplier_id) REFERENCES suppliers (id),
+    FOREIGN KEY (cached_category_id) REFERENCES product_categories (id)
 );
 
 -- まず１つ目の関数を実行
