@@ -324,7 +324,7 @@ export const registerOneSetProduct = async (
               discontinued_date: z.date(),
             })
           )
-          .min(2)
+          .min(1)
           .parse(rows)
       )
       .catch((err: string) => {

@@ -68,7 +68,7 @@ export const aCombinationSchema = z.object({
 });
 
 export const productCombinationsSchema = z.object({
-  combinations: z.array(aCombinationSchema).min(2),
+  combinations: z.array(aCombinationSchema).min(1),
 });
 
 export const productSkusSchema = z.object({
