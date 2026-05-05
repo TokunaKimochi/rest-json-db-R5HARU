@@ -11,7 +11,6 @@ export const basicProductsSchema = z.object({
   internal_code: z.preprocess((v) => (v === '' ? undefined : v), z.string().trim().min(5).max(10).optional()),
   jan_code: z.preprocess((v) => (v === '' ? undefined : v), z.string().trim().length(13).regex(/[0-9]/).optional()),
   sourcing_type_id: z.coerce.number().int().positive(),
-  category_id: z.coerce.number().int().positive(),
   packaging_type_id: z.coerce.number().int().positive(),
   expiration_value: z.coerce.number().int().positive(),
   expiration_unit: z.enum(['D', 'M', 'Y']),
@@ -25,6 +24,8 @@ export const productsSchema = z.object({
   short_name: z.string().trim().min(1).max(32),
   is_set_product: z.preprocess((v) => Number(v), z.coerce.boolean()),
   cached_category_id: z.coerce.number().int().positive(),
+  display_category_name: z.string().min(1).max(32),
+  is_assorted: z.boolean(),
   depth_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
   width_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
   diameter_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
@@ -67,7 +68,7 @@ export const aCombinationSchema = z.object({
 });
 
 export const productCombinationsSchema = z.object({
-  combinations: z.array(aCombinationSchema).min(1),
+  combinations: z.array(aCombinationSchema).min(2),
 });
 
 export const productSkusSchema = z.object({
@@ -160,9 +161,13 @@ export const postReqNewProductSchema = basicProductsSchema.extend({
   // product_name は basicProductsSchema.basic_name をコピー
   // ulid_str はサーバ側で計算
   // is_set_product を上書き extend()
-  ...productsSchema
-    .extend({ is_set_product: z.preprocess((v) => !!Number(v), z.literal(false)) })
-    .omit({ basic_id: true, product_name: true, cached_category_id: true }).shape,
+  ...productsSchema.extend({ is_set_product: z.preprocess((v) => !!Number(v), z.literal(false)) }).omit({
+    basic_id: true,
+    product_name: true,
+    cached_category_id: true,
+    display_category_name: true,
+    is_assorted: true,
+  }).shape,
   ...productComponentsSchema.shape,
   // skus_name は productsSchema.short_name をコピー
   // product_id はコピー
@@ -174,9 +179,13 @@ export const postReqNewSetProductSchema = basicProductsSchema.extend({
   // product_name は basicProductsSchema.basic_name をコピー
   // ulid_str はサーバ側で計算
   // is_set_product を上書き extend()
-  ...productsSchema
-    .extend({ is_set_product: z.preprocess((v) => !!Number(v), z.literal(true)) })
-    .omit({ basic_id: true, product_name: true, cached_category_id: true }).shape,
+  ...productsSchema.extend({ is_set_product: z.preprocess((v) => !!Number(v), z.literal(true)) }).omit({
+    basic_id: true,
+    product_name: true,
+    cached_category_id: true,
+    display_category_name: true,
+    is_assorted: true,
+  }).shape,
   ...productCombinationsSchema.shape,
   // skus_name は productsSchema.short_name をコピー
   // product_id はコピー
@@ -194,7 +203,7 @@ export const postReqProductVariantSchema = productsSchema
     // product_id はコピー
     ...productSkusSchema.omit({ skus_name: true, product_id: true }).shape,
   })
-  .omit({ cached_category_id: true });
+  .omit({ cached_category_id: true, display_category_name: true, is_assorted: true });
 
 // （セット商品の）内容量変更などの既存商品のバリエーション（JAN は同じ）
 export const postReqSetProductVariantSchema = productsSchema
@@ -207,7 +216,7 @@ export const postReqSetProductVariantSchema = productsSchema
     // product_id はコピー
     ...productSkusSchema.omit({ skus_name: true, product_id: true }).shape,
   })
-  .omit({ cached_category_id: true });
+  .omit({ cached_category_id: true, display_category_name: true, is_assorted: true });
 
 // ケースの入り数違い
 export const postReqNewProductSkuSchema = productSkusSchema;

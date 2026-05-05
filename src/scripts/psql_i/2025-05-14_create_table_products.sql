@@ -224,7 +224,6 @@ CREATE TABLE basic_products (
     internal_code VARCHAR(10), -- （社内）商品コード
     jan_code VARCHAR(13) UNIQUE,
     sourcing_type_id SMALLINT NOT NULL DEFAULT 1, -- 1 は自社製造自社製品
-    category_id SMALLINT NOT NULL DEFAULT 1, -- 1 は未分類
     packaging_type_id SMALLINT NOT NULL DEFAULT 1, -- 1 は未分類
     -- 賞味期限
     expiration_value INTEGER,
@@ -242,7 +241,6 @@ CREATE TABLE basic_products (
         OR predecessor_id <> id
     ),
     FOREIGN KEY (sourcing_type_id) REFERENCES product_sourcing_types (id),
-    FOREIGN KEY (category_id) REFERENCES product_categories (id),
     FOREIGN KEY (packaging_type_id) REFERENCES product_packaging_types (id),
     -- self-referential foreign key
     FOREIGN KEY (predecessor_id) REFERENCES basic_products (id)
@@ -272,6 +270,8 @@ CREATE TABLE products (
     is_set_product BOOLEAN NOT NULL DEFAULT false,
     -- 内容物（セット品を含む）の代表からコピーしたカテゴリーＩＤ
     cached_category_id SMALLINT NOT NULL,
+    display_category_name VARCHAR(32) NOT NULL, -- 同じく直接入力ではなく導出
+    is_assorted BOOLEAN NOT NULL, -- 同じく導出
     depth_mm INTEGER, -- 商品サイズ縦（奥行き） (mm)
     width_mm INTEGER, -- 商品サイズ横 (mm)
     diameter_mm INTEGER, -- 商品サイズ直径 (mm)

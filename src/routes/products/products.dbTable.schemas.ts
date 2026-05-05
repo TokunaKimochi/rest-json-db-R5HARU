@@ -75,6 +75,7 @@ export const viewSingleProductsRowSchema = z.object({
   product_id: z.number().int().positive(),
   product_name: z.string().min(1).max(32),
   product_short_name: z.string().min(1).max(32),
+  display_category_name: z.string().min(1).max(32),
   available_date: z.date(),
   discontinued_date: z.date(),
   depth_mm: z.number().int().positive().nullable(),
@@ -92,7 +93,6 @@ export const viewSingleProductsRowSchema = z.object({
   expiration_value: z.number().int().positive(),
   expiration_unit: z.enum(['D', 'M', 'Y']),
   sourcing_type: z.string().min(1).max(32),
-  category_name: z.string().min(1).max(32),
   packaging_type: z.string().min(1).max(32),
   // Supplier
   // 半角スペースで連結のため name1.length + name2.length + 1
@@ -137,6 +137,8 @@ export const viewSkuDetailsRowSchema = z.object({
   product_name: z.string().min(1).max(32),
   product_short_name: z.string().min(1).max(32),
   is_set_product: z.boolean(),
+  display_category_name: z.string().min(1).max(32),
+  is_assorted: z.boolean(),
   available_date: z.date(),
   discontinued_date: z.date(),
 

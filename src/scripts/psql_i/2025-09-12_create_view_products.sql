@@ -24,6 +24,8 @@ SELECT
     p.name AS product_name,
     p.short_name AS product_short_name,
     p.is_set_product,
+    p.display_category_name,
+    p.is_assorted,
     p.depth_mm,
     p.width_mm,
     p.diameter_mm,
@@ -121,6 +123,7 @@ SELECT
     p.id AS product_id,
     p.name AS product_name,
     p.short_name AS product_short_name,
+    p.display_category_name,
     p.available_date,
     p.discontinued_date,
     p.depth_mm,
@@ -138,14 +141,13 @@ SELECT
     bp.expiration_value,
     bp.expiration_unit,
     pst.name AS sourcing_type,
-    pc.name AS category_name,
     ppt.name AS packaging_type,
     -- Supplier
     -- name2 は NOT NULL DEFAULT '' のため、空文字のときに余分な末尾スペースが残らないように RTRIM を使用
     RTRIM(s.name1 || ' ' || s.name2) AS supplier_name,
     -- First Component (代表成分・内容量)
     pcmp.title AS component_title,
-    pcc.name AS component_category_name,
+    pc.name AS component_category_name,
     pcmp.symbol AS component_symbol,
     pcmp.amount AS component_amount,
     ut.name AS component_unit_name,
@@ -156,7 +158,6 @@ FROM
     JOIN basic_products bp ON p.basic_id = bp.id
     LEFT JOIN suppliers s ON p.supplier_id = s.id
     LEFT JOIN product_sourcing_types pst ON bp.sourcing_type_id = pst.id
-    JOIN product_categories pc ON p.cached_category_id = pc.id
     LEFT JOIN product_packaging_types ppt ON bp.packaging_type_id = ppt.id
     -- LATERAL JOIN: 各製品(p)に紐づく最初の1件の成分(pcmp)を取得
     -- LATERAL は外側の行 (p) を参照できるため、サブクエリ内で p.id を使って該当成分を絞る
@@ -180,7 +181,7 @@ FROM
             1
             -- サブクエリが空の場合、LEFT JOIN LATERAL により pcmp.* は NULL になる
     ) pcmp ON TRUE
-    LEFT JOIN product_categories pcc ON pcmp.category_id = pcc.id
+    LEFT JOIN product_categories pc ON pcmp.category_id = pc.id
     LEFT JOIN unit_types ut ON pcmp.unit_type_id = ut.id
     LEFT JOIN product_inner_packaging_types ipt ON pcmp.inner_packaging_type_id = ipt.id
 WHERE

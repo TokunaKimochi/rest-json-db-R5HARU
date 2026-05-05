@@ -18,14 +18,20 @@ import {
   productsTbRowSchema,
   viewProductCombinationsArraySchema,
   viewProductComponentsArraySchema,
+  viewSingleProductsRowSchema,
+  viewSkuDetailsRowSchema,
 } from './products.dbTable.schemas';
+
+const CATEGORY_ID = {
+  UNCATEGORIZED: { Int: 1, Str: '未分類' },
+  OTHERS: { Int: 2, Str: 'その他' },
+} as const;
 
 const formatBasicProductData = (body: PostReqNewProduct | PostReqNewSetProduct) => ({
   name: body.basic_name,
   internal_code: body.internal_code ?? null,
   jan_code: body.jan_code ?? null,
   sourcing_type_id: body.sourcing_type_id,
-  category_id: body.category_id,
   packaging_type_id: body.packaging_type_id,
   expiration_value: body.expiration_value,
   expiration_unit: body.expiration_unit,
@@ -35,7 +41,9 @@ const formatBasicProductData = (body: PostReqNewProduct | PostReqNewSetProduct) 
 const formatProductData = (
   body: PostReqNewProduct | PostReqNewSetProduct,
   basicProductsTbRow: BasicProductsTbRow,
-  category_id: number
+  category_id: number,
+  display_category_name: string,
+  is_assorted: boolean
 ) => {
   const productInput = ((o) =>
     // 最後にオブジェクトに戻す
@@ -51,6 +59,8 @@ const formatProductData = (
     short_name: body.short_name,
     is_set_product: body.is_set_product,
     cached_category_id: category_id,
+    display_category_name: is_assorted ? `${display_category_name} 他` : display_category_name,
+    is_assorted,
     depth_mm: body.depth_mm ?? null,
     width_mm: body.width_mm ?? null,
     diameter_mm: body.diameter_mm ?? null,
@@ -171,11 +181,41 @@ export const registerOneRegularProduct = async (
       };
     }
 
+    // Set で順番を維持しつつ重複を消し、スプレッド構文で配列に戻す
+    const categoryIds = [...new Set(body.components.map((component) => component.category_id))];
+    const { name: categoryName } = await t
+      .one('SELECT name FROM product_categories WHERE id = $1', [categoryIds[0]])
+      .then((row) => z.object({ name: z.string().min(1).max(32) }).parse(row))
+      .catch((err: string) => {
+        throw new DataBaseError(err);
+      });
+
+    // 特定のID { 1: '未分類', 2: 'その他' } が含まれているかチェック
+    const hasUncategorized = categoryIds.includes(CATEGORY_ID.UNCATEGORIZED.Int);
+    const hasOthers = categoryIds.includes(CATEGORY_ID.OTHERS.Int);
+
+    // 引数に渡すIDと名前を決定（1 > 2 > それ以外のカテゴリー の優先順位）
+    // eslint-disable-next-line no-nested-ternary
+    const resolvedCategoryId = hasUncategorized
+      ? CATEGORY_ID.UNCATEGORIZED.Int
+      : hasOthers
+      ? CATEGORY_ID.OTHERS.Int
+      : categoryIds[0];
+    // eslint-disable-next-line no-nested-ternary
+    const resolvedCategoryName = hasUncategorized
+      ? CATEGORY_ID.UNCATEGORIZED.Str
+      : hasOthers
+      ? CATEGORY_ID.OTHERS.Str
+      : categoryName;
+
+    // 「未分類」や「その他」が含まれる場合は false、それ以外で複数カテゴリ or アソート含なら true
+    const isAssorted = !hasUncategorized && !hasOthers && categoryIds.length > 1;
+
     // 2. products
     const productsTbRow = await insertOne(
       t,
       'products',
-      formatProductData(body, basicProductsTbRow.rows, body.components[0].category_id),
+      formatProductData(body, basicProductsTbRow.rows, resolvedCategoryId, resolvedCategoryName, isAssorted),
       productsTbRowSchema,
       '*, available_date::text AS available_date, discontinued_date::text AS discontinued_date'
     );
@@ -270,19 +310,63 @@ export const registerOneSetProduct = async (
       };
     }
 
-    // 事前に登録すべき cached_category_id を取得
-    const { cached_category_id: categoryIdCopy } = await t
-      .one('SELECT cached_category_id FROM products WHERE id = $1', [body.combinations[0].item_product_id])
-      .then((row) => productsTbRowSchema.pick({ cached_category_id: true }).parse(row))
+    // Set で順番を維持しつつ重複を消し、スプレッド構文で配列に戻す
+    const itemIds = [...new Set(body.combinations.map((item) => item.item_product_id))];
+    const itemProducts = await t
+      .many('SELECT * FROM products WHERE id IN ($1:csv)', [itemIds])
+      .then((rows) =>
+        z
+          .array(
+            productsTbRowSchema.extend({
+              // この２つは insert の RETURNING 句で DATE 型を YYYY-MM-DD にキャストする前提の定義
+              // なので、ここでは上書き
+              available_date: z.date(),
+              discontinued_date: z.date(),
+            })
+          )
+          .min(2)
+          .parse(rows)
+      )
       .catch((err: string) => {
         throw new DataBaseError(err);
       });
+
+    const categoryIds = [...new Set(itemProducts.map((item) => item.cached_category_id))];
+    const isAssortedArr = [...new Set(itemProducts.map((item) => item.is_assorted))];
+
+    const { name: categoryName } = await t
+      .one('SELECT name FROM product_categories WHERE id = $1', [categoryIds[0]])
+      .then((row) => z.object({ name: z.string().min(1).max(32) }).parse(row))
+      .catch((err: string) => {
+        throw new DataBaseError(err);
+      });
+
+    // 特定のID { 1: '未分類', 2: 'その他' } が含まれているかチェック
+    const hasUncategorized = categoryIds.includes(CATEGORY_ID.UNCATEGORIZED.Int);
+    const hasOthers = categoryIds.includes(CATEGORY_ID.OTHERS.Int);
+
+    // 引数に渡すIDと名前を決定（1 > 2 > それ以外のカテゴリー の優先順位）
+    // eslint-disable-next-line no-nested-ternary
+    const resolvedCategoryId = hasUncategorized
+      ? CATEGORY_ID.UNCATEGORIZED.Int
+      : hasOthers
+      ? CATEGORY_ID.OTHERS.Int
+      : categoryIds[0];
+    // eslint-disable-next-line no-nested-ternary
+    const resolvedCategoryName = hasUncategorized
+      ? CATEGORY_ID.UNCATEGORIZED.Str
+      : hasOthers
+      ? CATEGORY_ID.OTHERS.Str
+      : categoryName;
+
+    // 「未分類」や「その他」が含まれる場合は false、それ以外で複数カテゴリ or アソート含なら true
+    const isAssorted = !hasUncategorized && !hasOthers && (categoryIds.length > 1 || isAssortedArr.includes(true));
 
     // 2. products
     const productsTbRow = await insertOne(
       t,
       'products',
-      formatProductData(body, basicProductsTbRow.rows, categoryIdCopy),
+      formatProductData(body, basicProductsTbRow.rows, resolvedCategoryId, resolvedCategoryName, isAssorted),
       productsTbRowSchema,
       '*, available_date::text AS available_date, discontinued_date::text AS discontinued_date'
     );
@@ -342,17 +426,27 @@ export const registerOneSetProduct = async (
   });
 
 export const findAllSingleProducts = async (): Promise<ViewSingleProductsRow[]> => {
-  const result: ViewSingleProductsRow[] = await db
+  const rows = await db
     .manyOrNone('SELECT * FROM v_single_products ORDER BY product_id')
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
-  return result;
+  const result = z.array(viewSingleProductsRowSchema).safeParse(rows);
+
+  if (result.success && result.data.length) return result.data;
+
+  if (result.error) throw new DataBaseError(result.error.message);
+  throw new DataBaseError('Not found');
 };
 
 export const findAllProductSkuDetails = async (): Promise<ViewSkuDetailsRow[]> => {
-  const result: ViewSkuDetailsRow[] = await db
+  const rows = await db
     .manyOrNone('SELECT * FROM v_sku_details ORDER BY sku_id')
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
-  return result;
+  const result = z.array(viewSkuDetailsRowSchema).safeParse(rows);
+
+  if (result.success && result.data.length) return result.data;
+
+  if (result.error) throw new DataBaseError(result.error.message);
+  throw new DataBaseError('Not found');
 };
 
 export const findAllCombinationsAboutProduct = async (
