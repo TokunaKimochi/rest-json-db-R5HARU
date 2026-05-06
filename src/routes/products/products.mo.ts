@@ -3,6 +3,7 @@ import { insert } from 'sql-bricks';
 import { ulid } from 'ulid';
 import { z, ZodType } from 'zod';
 import { ITask } from 'pg-promise';
+import UnexpectedError from '@/classes/unexpected-error';
 import { NewProductSummary, ParamsWithProductId, PostReqNewProduct, PostReqNewSetProduct } from './products.types';
 import {
   BasicProductsTbRow,
@@ -187,7 +188,7 @@ export const registerOneRegularProduct = async (
       .one('SELECT name FROM product_categories WHERE id = $1', [categoryIds[0]])
       .then((row) => z.object({ name: z.string().min(1).max(32) }).parse(row))
       .catch((err: string) => {
-        throw new DataBaseError(err);
+        throw new UnexpectedError(err);
       });
 
     // 特定のID { 1: '未分類', 2: 'その他' } が含まれているかチェック
@@ -328,7 +329,7 @@ export const registerOneSetProduct = async (
           .parse(rows)
       )
       .catch((err: string) => {
-        throw new DataBaseError(err);
+        throw new UnexpectedError(err);
       });
 
     const categoryIds = [...new Set(itemProducts.map((item) => item.cached_category_id))];
@@ -338,7 +339,7 @@ export const registerOneSetProduct = async (
       .one('SELECT name FROM product_categories WHERE id = $1', [categoryIds[0]])
       .then((row) => z.object({ name: z.string().min(1).max(32) }).parse(row))
       .catch((err: string) => {
-        throw new DataBaseError(err);
+        throw new UnexpectedError(err);
       });
 
     // 特定のID { 1: '未分類', 2: 'その他' } が含まれているかチェック

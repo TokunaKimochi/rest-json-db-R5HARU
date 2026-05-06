@@ -3,6 +3,7 @@ import ErrorResponse from 'interfaces/ErrorResponse';
 import ValidatedRequest from 'interfaces/ValidatedRequest';
 import { ZodError } from 'zod';
 import { DataBaseError } from './db';
+import UnexpectedError from './classes/unexpected-error';
 
 export const validateRequest =
   (schema: ValidatedRequest) =>
@@ -42,6 +43,9 @@ export function errorHandler(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction
 ): void {
+  if (err instanceof UnexpectedError) {
+    console.error(err);
+  }
   if (err instanceof DataBaseError) {
     res.status(err.status).json({
       message: err.message,
