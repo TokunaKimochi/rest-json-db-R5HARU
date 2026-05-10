@@ -433,9 +433,8 @@ export const findAllSingleProducts = async (): Promise<ViewSingleProductsRow[]> 
   const result = z.array(viewSingleProductsRowSchema).safeParse(rows);
 
   if (result.success && result.data.length) return result.data;
-
   if (result.error) throw new DataBaseError(result.error.message);
-  throw new DataBaseError('Not found');
+  return [];
 };
 
 export const findAllProductSkuDetails = async (): Promise<ViewSkuDetailsRow[]> => {
@@ -445,9 +444,8 @@ export const findAllProductSkuDetails = async (): Promise<ViewSkuDetailsRow[]> =
   const result = z.array(viewSkuDetailsRowSchema).safeParse(rows);
 
   if (result.success && result.data.length) return result.data;
-
   if (result.error) throw new DataBaseError(result.error.message);
-  throw new DataBaseError('Not found');
+  return [];
 };
 
 export const findAllCombinationsAboutProduct = async (
@@ -459,9 +457,8 @@ export const findAllCombinationsAboutProduct = async (
   const result = viewProductCombinationsArraySchema.safeParse(rows);
 
   if (result.success && result.data.length) return result.data;
-
   if (result.error) throw new DataBaseError(result.error.message);
-  throw new DataBaseError('Not found');
+  return [];
 };
 
 export const findAllComponentsAboutProduct = async (p: ParamsWithProductId): Promise<ViewProductComponentsArray> => {
@@ -471,7 +468,6 @@ export const findAllComponentsAboutProduct = async (p: ParamsWithProductId): Pro
   const result = viewProductComponentsArraySchema.safeParse(rows);
 
   if (result.success && result.data.length) return result.data;
-
   if (result.error) throw new DataBaseError(result.error.message);
-  throw new DataBaseError('Not found');
+  return [];
 };
