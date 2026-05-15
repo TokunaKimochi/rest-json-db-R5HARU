@@ -17,6 +17,8 @@ export const basicProductsTbRowSchema = commonProductsSchema
     name: z.string().trim().min(1).max(32),
     internal_code: z.string().trim().min(5).max(10).nullable(),
     jan_code: z.string().trim().length(13).regex(/[0-9]/).nullable(),
+    expiration_value: z.number().int().positive().nullable(),
+    expiration_unit: z.enum(['D', 'M', 'Y']).nullable(),
     predecessor_id: z.number().int().positive().nullable(),
   });
 
@@ -90,8 +92,8 @@ export const viewSingleProductsRowSchema = z.object({
   internal_code: z.string().min(5).max(10).nullable(),
   jan_code: z.string().length(13).regex(/[0-9]/).nullable(),
   predecessor_id: z.number().int().positive().nullable(),
-  expiration_value: z.number().int().positive(),
-  expiration_unit: z.enum(['D', 'M', 'Y']),
+  expiration_value: z.number().int().positive().nullable(),
+  expiration_unit: z.enum(['D', 'M', 'Y']).nullable(),
   sourcing_type: z.string().min(1).max(32),
   packaging_type: z.string().min(1).max(32),
   // Supplier
@@ -155,6 +157,8 @@ export const viewSkuDetailsRowSchema = z.object({
   // 元テーブルで NOT NULL
   basic_product_id: z.number().int().positive(),
   basic_product_name: z.string().min(1).max(32),
+  sourcing_type_id: z.number().int().positive(),
+  packaging_type_id: z.number().int().positive(),
 
   // 元テーブルで NULL 許容
   internal_code: z.string().min(5).max(10).nullable(),
@@ -237,11 +241,14 @@ export const viewProductComponentsRowSchema = z.object({
   product_short_name: z.string().min(1).max(32),
   component_id: z.number().int().positive(),
   title: z.string().min(1).max(32),
+  category_id: z.number().int().positive(),
   component_category_name: z.string().min(1).max(32),
   symbol: z.string().min(1).max(8),
   amount: z.string().regex(/^\+?(?:[1-9]\d{0,5}|0)(?:\.\d{1,2})?$/),
+  unit_type_id: z.number().int().positive(),
   unit_name: z.string().min(1).max(8),
   pieces: z.number().int().positive(),
+  inner_packaging_type_id: z.number().int().positive(),
   inner_packaging_type: z.string().min(1).max(32),
   created_at: z.date(),
   updated_at: z.date(),

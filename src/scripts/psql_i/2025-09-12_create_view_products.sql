@@ -40,6 +40,8 @@ SELECT
     bp.name AS basic_product_name,
     bp.internal_code,
     bp.jan_code,
+    bp.sourcing_type_id,
+    bp.packaging_type_id,
     bp.expiration_value,
     bp.expiration_unit,
     bp.predecessor_id,
@@ -101,11 +103,14 @@ SELECT
     -- Component
     pcmp.id AS component_id,
     pcmp.title,
+    pcmp.category_id,
     pc.name AS component_category_name,
     pcmp.symbol,
     pcmp.amount,
+    pcmp.unit_type_id,
     ut.name AS unit_name,
     pcmp.pieces,
+    pcmp.inner_packaging_type_id,
     ipt.name AS inner_packaging_type,
     pcmp.created_at,
     pcmp.updated_at

@@ -12,8 +12,8 @@ export const basicProductsSchema = z.object({
   jan_code: z.preprocess((v) => (v === '' ? undefined : v), z.string().trim().length(13).regex(/[0-9]/).optional()),
   sourcing_type_id: z.coerce.number().int().positive(),
   packaging_type_id: z.coerce.number().int().positive(),
-  expiration_value: z.coerce.number().int().positive(),
-  expiration_unit: z.enum(['D', 'M', 'Y']),
+  expiration_value: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
+  expiration_unit: z.enum(['D', 'M', 'Y']).optional(),
   predecessor_id: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
 });
 
