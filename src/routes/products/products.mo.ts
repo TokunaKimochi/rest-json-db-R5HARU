@@ -34,8 +34,8 @@ const formatBasicProductData = (body: PostReqNewProduct | PostReqNewSetProduct) 
   jan_code: body.jan_code ?? null,
   sourcing_type_id: body.sourcing_type_id,
   packaging_type_id: body.packaging_type_id,
-  expiration_value: body.expiration_value,
-  expiration_unit: body.expiration_unit,
+  expiration_value: body.expiration_value ?? null,
+  expiration_unit: body.expiration_unit ?? null,
   predecessor_id: body.predecessor_id ?? null,
 });
 
