@@ -3,7 +3,7 @@ import { validateRequest } from '../../middleWares';
 import * as controllers from './products.co';
 import { paramsWithProductIdSchema, postReqNewProductSchema, postReqNewSetProductSchema } from './products.schemas';
 
-import findAll from './options/options.co';
+import findAll, { findAllPackagingTypeFlags } from './options/options.co';
 import allImages from './images/images.co';
 
 const router = Router();
@@ -39,6 +39,7 @@ router
 
 // パッケージタイプや発注先などの各セレクト・オプションを一括返却
 router.route('/options').get(findAll as RequestHandler);
+router.route('/packaging-type-flags').get(findAllPackagingTypeFlags as RequestHandler);
 router.route('/images').get(allImages as RequestHandler);
 
 export default router;

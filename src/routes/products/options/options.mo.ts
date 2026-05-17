@@ -1,7 +1,8 @@
 import { DataBaseError, db } from '@/db';
-import { OptionTypes, ProductOptionsIdAndName } from './options.types';
+import { z } from 'zod';
+import { OptionTypes, ProductOptionsIdAndName, ProductPackagingTypeFlags } from './options.types';
+import { productPackagingTypeFlagsSchemas } from './options.schemas';
 
-// eslint-disable-next-line import/prefer-default-export
 export const findAllProductOptions = async (): Promise<Record<OptionTypes, ProductOptionsIdAndName[]>> => {
   const rows: { table_name: OptionTypes; id: number; name: string }[] = await db
     .manyOrNone('SELECT table_name, id, name FROM v_ids_and_names_for_products ORDER BY table_name, id')
@@ -24,4 +25,15 @@ export const findAllProductOptions = async (): Promise<Record<OptionTypes, Produ
   });
 
   return result;
+};
+
+export const findAllProductPackagingTypeFlags = async (): Promise<ProductPackagingTypeFlags[]> => {
+  const rows = await db
+    .manyOrNone('SELECT id, name, has_depth, has_width, has_diameter FROM product_packaging_types ORDER BY id')
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
+  const result = z.array(productPackagingTypeFlagsSchemas).safeParse(rows);
+
+  if (result.success && result.data.length) return result.data;
+  if (result.error) throw new DataBaseError(result.error.message);
+  return [];
 };

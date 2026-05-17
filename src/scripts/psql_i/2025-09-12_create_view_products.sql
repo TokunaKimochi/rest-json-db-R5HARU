@@ -1,5 +1,15 @@
 -- シフトJIS CRLF で保存してコマンドプロンプトで実行
 -- psql> \i <FULL_PATH(unix like)>.sql
+/* == 事前処理 ==
+- 旧バージョンの定義をクリーンアップ */
+DROP VIEW IF EXISTS v_sku_details;
+
+DROP VIEW IF EXISTS v_product_combinations;
+
+DROP VIEW IF EXISTS v_product_components;
+
+DROP VIEW IF EXISTS v_single_products;
+
 --- 製品詳細ビュー
 CREATE OR REPLACE VIEW v_sku_details AS
 SELECT

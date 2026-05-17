@@ -174,10 +174,27 @@ EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE product_packaging_types (
     id SMALLSERIAL PRIMARY KEY,
-    -- 缶とかペットボトルとか
+    -- 缶とか化粧箱とかペットボトルとか
     name VARCHAR(32) NOT NULL,
+    -- 寸法フラグ（将来の拡張性のために個別フラグを保持）
+    has_depth BOOLEAN NOT NULL DEFAULT false,
+    has_width BOOLEAN NOT NULL DEFAULT false,
+    has_diameter BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    -- 制約:
+    -- 1) depth と width は常に同値（depth -> width かつ width -> depth）
+    -- 2) diameter と (depth or width) は排他
+    CONSTRAINT pkgtype_depth_width_equal CHECK (has_depth = has_width),
+    CONSTRAINT pkgtype_dimension_exclusive CHECK (
+        NOT (
+            has_diameter
+            AND (
+                has_depth
+                OR has_width
+            )
+        )
+    )
 );
 
 -- まず１つ目の関数を実行
@@ -197,7 +214,7 @@ EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE product_inner_packaging_types (
     id SMALLSERIAL PRIMARY KEY,
-    -- 缶とかペットボトルとか
+    -- アルミ袋とか分包袋とか
     name VARCHAR(32) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()

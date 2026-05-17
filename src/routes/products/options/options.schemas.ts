@@ -22,3 +22,11 @@ export const optionTypesSchemas = z.enum([
   'product_inner_packaging_types',
   'suppliers',
 ]);
+
+export const productPackagingTypeFlagsSchemas = z.object({
+  id: z.number().int().positive(),
+  name: z.string().min(1).max(32),
+  has_depth: z.boolean(),
+  has_width: z.boolean(),
+  has_diameter: z.boolean(),
+});

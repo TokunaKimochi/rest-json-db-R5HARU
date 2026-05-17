@@ -30,22 +30,22 @@ VALUES
     ('飴', 'emerald', '400');
 
 INSERT INTO
-    product_packaging_types (name)
+    product_packaging_types (name, has_depth, has_width, has_diameter)
 VALUES
-    ('未分類'),
-    ('その他'),
-    ('紙缶'),
-    ('プルトップ缶'),
-    ('缶'),
-    ('クラスターパック'),
-    ('缶入袋'),
-    ('タイコ箱'),
-    ('化粧箱'),
-    ('無地箱'),
-    ('SP無地+シール'),
-    ('スタンドパック'),
-    ('無地袋+シール'),
-    ('平袋');
+    ('未分類', false, false, false),
+    ('その他', true, true, false),
+    ('紙缶', false, false, true),
+    ('プルトップ缶', false, false, true),
+    ('缶', false, false, true),
+    ('クラスターパック', true, true, false),
+    ('缶入袋', true, true, false),
+    ('タイコ箱', true, true, false),
+    ('化粧箱', true, true, false),
+    ('無地箱', true, true, false),
+    ('SP無地+シール', true, true, false),
+    ('スタンドパック', true, true, false),
+    ('無地袋+シール', true, true, false),
+    ('平袋', true, true, false);
 
 INSERT INTO
     product_inner_packaging_types (name)
