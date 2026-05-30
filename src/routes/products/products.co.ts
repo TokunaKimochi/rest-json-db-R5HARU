@@ -5,9 +5,8 @@ import {
   findAllComponentsAboutProduct,
   findAllProductSkuDetails,
   findAllSingleProducts,
-  registerOneRegularProduct,
-  registerOneSetProduct,
 } from './products.mo';
+import { registerOneRegularProduct, registerOneSetProduct } from './products.mo.inserts';
 
 export const registerOneRegular = async (
   req: Request<object, object, PostReqNewProduct>,
