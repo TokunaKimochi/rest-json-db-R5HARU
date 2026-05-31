@@ -229,6 +229,32 @@ export const newProductSummarySchema = z.object({
   short_name: z.string().trim().min(1).max(32),
 });
 
+// 通常商品の編集
+export const putReqProductSchema = basicProductsSchema.extend({
+  ...productsSchema.extend({ is_set_product: z.literal('0') }).shape,
+  components: productComponentsSchema.shape.components.element
+    .extend({
+      component_id: z.number().int().positive(),
+    })
+    .array()
+    .min(1),
+  ...productSkusSchema.shape,
+  sku_id: z.number().int().positive(),
+});
+
+// セット商品の編集
+export const putReqSetProductSchema = basicProductsSchema.extend({
+  ...productsSchema.extend({ is_set_product: z.literal('1') }).shape,
+  combinations: productCombinationsSchema.shape.combinations.element
+    .extend({
+      combination_id: z.number().int().positive(),
+    })
+    .array()
+    .min(1),
+  ...productSkusSchema.shape,
+  sku_id: z.number().int().positive(),
+});
+
 export const paramsWithProductIdSchema = z
   .object({
     // リクエストボディではなくパスパラメータ（e.g. /123）なのでキャメルケース

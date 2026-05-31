@@ -1,7 +1,12 @@
 import { RequestHandler, Router } from 'express';
 import { validateRequest } from '../../middleWares';
 import * as controllers from './products.co';
-import { paramsWithProductIdSchema, postReqNewProductSchema, postReqNewSetProductSchema } from './products.schemas';
+import {
+  paramsWithProductIdSchema,
+  postReqNewProductSchema,
+  postReqNewSetProductSchema,
+  putReqProductSchema,
+} from './products.schemas';
 
 import findAll, { findAllPackagingTypeFlags } from './options/options.co';
 import allImages from './images/images.co';
@@ -14,7 +19,8 @@ router
   .post(
     validateRequest({ body: postReqNewProductSchema }) as RequestHandler,
     controllers.registerOneRegular as RequestHandler
-  );
+  )
+  .put(validateRequest({ body: putReqProductSchema }) as RequestHandler, controllers.updateOneRegular);
 router
   .route('/set-item')
   .post(

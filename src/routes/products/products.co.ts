@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { ParamsWithProductId, PostReqNewProduct, PostReqNewSetProduct } from './products.types';
+import { ParamsWithProductId, PostReqNewProduct, PostReqNewSetProduct, PutReqProduct } from './products.types';
 import {
   findAllCombinationsAboutProduct,
   findAllComponentsAboutProduct,
@@ -7,6 +7,7 @@ import {
   findAllSingleProducts,
 } from './products.mo';
 import { registerOneRegularProduct, registerOneSetProduct } from './products.mo.inserts';
+import updateOneRegularProduct from './products.mo.updates';
 
 export const registerOneRegular = async (
   req: Request<object, object, PostReqNewProduct>,
@@ -20,6 +21,16 @@ export const registerOneRegular = async (
     } else {
       res.status(201).json(productSummary);
     }
+  } catch (err: unknown) {
+    res.status(500);
+    next(err);
+  }
+};
+
+export const updateOneRegular = (req: Request<object, object, PutReqProduct>, res: Response, next: NextFunction) => {
+  try {
+    const body = updateOneRegularProduct(req.body);
+    res.status(200).json(body);
   } catch (err: unknown) {
     res.status(500);
     next(err);
