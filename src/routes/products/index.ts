@@ -20,7 +20,10 @@ router
     validateRequest({ body: postReqNewProductSchema }) as RequestHandler,
     controllers.registerOneRegular as RequestHandler
   )
-  .put(validateRequest({ body: putReqProductSchema }) as RequestHandler, controllers.updateOneRegular);
+  .put(
+    validateRequest({ body: putReqProductSchema }) as RequestHandler,
+    controllers.updateOneRegular as RequestHandler
+  );
 router
   .route('/set-item')
   .post(
