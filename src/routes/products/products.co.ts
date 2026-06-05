@@ -7,7 +7,7 @@ import {
   findAllSingleProducts,
 } from './products.mo';
 import { registerOneRegularProduct, registerOneSetProduct } from './products.mo.inserts';
-import updateOneRegularProduct from './products.mo.updates';
+import { updateOneRegularProduct } from './products.mo.updates';
 
 export const registerOneRegular = async (
   req: Request<object, object, PostReqNewProduct>,
@@ -27,10 +27,16 @@ export const registerOneRegular = async (
   }
 };
 
-export const updateOneRegular = (req: Request<object, object, PutReqProduct>, res: Response, next: NextFunction) => {
+export const updateOneRegular = async (
+  req: Request<object, object, PutReqProduct>,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const body = updateOneRegularProduct(req.body);
-    res.status(200).json(body);
+    const productSummary = await updateOneRegularProduct(req.body);
+    // productSummary.isUpdated の真偽にかかわらず
+    // ステータスコード 200
+    res.status(200).json(productSummary);
   } catch (err: unknown) {
     res.status(500);
     next(err);

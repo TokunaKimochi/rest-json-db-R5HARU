@@ -1,69 +1,17 @@
 import { insert } from 'sql-bricks';
-import { z, ZodType } from 'zod';
-import { ITask } from 'pg-promise';
+import { z } from 'zod';
 import UnexpectedError from '@/classes/unexpected-error';
 import { DataBaseError, db } from '@/db';
 import { NewProductSummary, PostReqNewProduct, PostReqNewSetProduct } from './products.types';
 import { basicProductsTbRowSchema, productSkusTbRowSchema, productsTbRowSchema } from './products.dbTable.schemas';
-import { CATEGORY_ID, formatBasicProductData, formatProductData, formatSkusData } from './products.mo';
-
-// 共通 insertOne ヘルパー
-async function insertOne<T>(
-  t: ITask<object>,
-  table: string,
-  input: Record<string, unknown>,
-  // schema は Zod スキーマであり、バリデーション成功時、型「T」になる
-  schema: ZodType<T>,
-  returning = '*'
-): Promise<
-  | { isSucceeded: true; rows: T }
-  | {
-      isSucceeded: false;
-      uniqueConstraintError: {
-        table: string;
-        column: string;
-        value: string;
-      };
-    }
-> {
-  const { text, values } = insert(table, input).toParams();
-
-  const keyRegex = /^Key \((.*?)\)=\((.*?)\) already exists\.$/;
-  const pgErrorSchema = z.object({
-    code: z.string(),
-    detail: z
-      .string()
-      .regex(keyRegex)
-      .transform((s) => {
-        // 末尾の ! (非null アサーション演算子) でコンパイラに null にならないと伝える
-        const [errorMessage, column, value] = s.match(keyRegex)!;
-        return { errorMessage, column, value };
-      }),
-    table: z.string(),
-  });
-  try {
-    const row = await t.one<unknown>(`${text} RETURNING ${returning}`, values);
-    return {
-      isSucceeded: true,
-      rows: schema.parse(row),
-    };
-  } catch (err: unknown) {
-    const parsedError = pgErrorSchema.safeParse(err);
-    if (parsedError.success && parsedError.data.code === '23505') {
-      console.warn(`⚠️ ${parsedError.data.detail.errorMessage} in ${parsedError.data.table}`);
-      return {
-        isSucceeded: false,
-        uniqueConstraintError: {
-          table: parsedError.data.table.toUpperCase(),
-          column: parsedError.data.detail.column.toUpperCase(),
-          value: parsedError.data.detail.value,
-        },
-      };
-    }
-    console.error(`❌ ${table} insert failed\n`, err);
-    throw new DataBaseError(err as string);
-  }
-}
+import {
+  CATEGORY_ID,
+  formatBasicProductData,
+  formatProductData,
+  formatSkusData,
+  resolveRegularCategory,
+  upsertOne,
+} from './products.mo';
 
 // 完全新規登録（通常商品）
 export const registerOneRegularProduct = async (
@@ -80,66 +28,47 @@ export const registerOneRegularProduct = async (
 > =>
   db.tx('regular-product-registration', async (t) => {
     // 1. basic_products
-    const basicProductsTbRow = await insertOne(
+    const basicProductsTbResults = await upsertOne({
       t,
-      'basic_products',
-      formatBasicProductData(body),
-      basicProductsTbRowSchema
-    );
-    if (basicProductsTbRow.isSucceeded === false) {
+      table: 'basic_products',
+      input: formatBasicProductData(body),
+      schema: basicProductsTbRowSchema,
+      updateId: null,
+    });
+    if (basicProductsTbResults.isSucceeded === false) {
       return {
         isRegistered: false,
         uniqueConstraintError: {
-          key: `${basicProductsTbRow.uniqueConstraintError.table}.${basicProductsTbRow.uniqueConstraintError.column}`,
-          value: basicProductsTbRow.uniqueConstraintError.value,
+          key: `${basicProductsTbResults.uniqueConstraintError.table}.${basicProductsTbResults.uniqueConstraintError.column}`,
+          value: basicProductsTbResults.uniqueConstraintError.value,
         },
       };
     }
 
-    // Set で順番を維持しつつ重複を消し、スプレッド構文で配列に戻す
-    const categoryIds = [...new Set(body.components.map((component) => component.category_id))];
-    const { name: categoryName } = await t
-      .one('SELECT name FROM product_categories WHERE id = $1', [categoryIds[0]])
-      .then((row) => z.object({ name: z.string().min(1).max(32) }).parse(row))
-      .catch((err: string) => {
-        throw new UnexpectedError(err);
-      });
-
-    // 特定のID { 1: '未分類', 2: 'その他' } が含まれているかチェック
-    const hasUncategorized = categoryIds.includes(CATEGORY_ID.UNCATEGORIZED.Int);
-    const hasOthers = categoryIds.includes(CATEGORY_ID.OTHERS.Int);
-
-    // 引数に渡すIDと名前を決定（1 > 2 > それ以外のカテゴリー の優先順位）
-    // eslint-disable-next-line no-nested-ternary
-    const resolvedCategoryId = hasUncategorized
-      ? CATEGORY_ID.UNCATEGORIZED.Int
-      : hasOthers
-      ? CATEGORY_ID.OTHERS.Int
-      : categoryIds[0];
-    // eslint-disable-next-line no-nested-ternary
-    const resolvedCategoryName = hasUncategorized
-      ? CATEGORY_ID.UNCATEGORIZED.Str
-      : hasOthers
-      ? CATEGORY_ID.OTHERS.Str
-      : categoryName;
-
-    // 「未分類」や「その他」が含まれる場合は false、それ以外で複数カテゴリ or アソート含なら true
-    const isAssorted = !hasUncategorized && !hasOthers && categoryIds.length > 1;
-
     // 2. products
-    const productsTbRow = await insertOne(
+    const { resolvedCategoryId, resolvedCategoryName, isAssorted } = await resolveRegularCategory(t, body);
+
+    const productsTbResults = await upsertOne({
       t,
-      'products',
-      formatProductData(body, basicProductsTbRow.rows, resolvedCategoryId, resolvedCategoryName, isAssorted),
-      productsTbRowSchema,
-      '*, available_date::text AS available_date, discontinued_date::text AS discontinued_date'
-    );
-    if (productsTbRow.isSucceeded === false) {
+      table: 'products',
+      input: formatProductData(
+        body,
+        basicProductsTbResults.rows,
+        resolvedCategoryId,
+        resolvedCategoryName,
+        isAssorted,
+        'new'
+      ),
+      schema: productsTbRowSchema,
+      returning: '*, available_date::text AS available_date, discontinued_date::text AS discontinued_date',
+      updateId: null,
+    });
+    if (productsTbResults.isSucceeded === false) {
       return {
         isRegistered: false,
         uniqueConstraintError: {
-          key: `${productsTbRow.uniqueConstraintError.table}.${productsTbRow.uniqueConstraintError.column}`,
-          value: productsTbRow.uniqueConstraintError.value,
+          key: `${productsTbResults.uniqueConstraintError.table}.${productsTbResults.uniqueConstraintError.column}`,
+          value: productsTbResults.uniqueConstraintError.value,
         },
       };
     }
@@ -148,7 +77,7 @@ export const registerOneRegularProduct = async (
     await Promise.all(
       body.components.map(async (component) => {
         const { text, values } = insert('product_components', {
-          product_id: productsTbRow.rows.id,
+          product_id: productsTbResults.rows.id,
           title: component.title,
           category_id: component.category_id,
           symbol: component.symbol,
@@ -165,18 +94,19 @@ export const registerOneRegularProduct = async (
     );
 
     // 4. product_skus
-    const productSkusTbRow = await insertOne(
+    const productSkusTbResults = await upsertOne({
       t,
-      'product_skus',
-      formatSkusData(body, productsTbRow.rows),
-      productSkusTbRowSchema
-    );
-    if (productSkusTbRow.isSucceeded === false) {
+      table: 'product_skus',
+      input: formatSkusData(body, productsTbResults.rows),
+      schema: productSkusTbRowSchema,
+      updateId: null,
+    });
+    if (productSkusTbResults.isSucceeded === false) {
       return {
         isRegistered: false,
         uniqueConstraintError: {
-          key: `${productSkusTbRow.uniqueConstraintError.table}.${productSkusTbRow.uniqueConstraintError.column}`,
-          value: productSkusTbRow.uniqueConstraintError.value,
+          key: `${productSkusTbResults.uniqueConstraintError.table}.${productSkusTbResults.uniqueConstraintError.column}`,
+          value: productSkusTbResults.uniqueConstraintError.value,
         },
       };
     }
@@ -185,11 +115,11 @@ export const registerOneRegularProduct = async (
     return {
       isRegistered: true,
       rows: {
-        basic_id: basicProductsTbRow.rows.id,
-        product_id: productsTbRow.rows.id,
-        sku_id: productSkusTbRow.rows.id,
-        product_name: productsTbRow.rows.name,
-        short_name: productsTbRow.rows.short_name,
+        basic_id: basicProductsTbResults.rows.id,
+        product_id: productsTbResults.rows.id,
+        sku_id: productSkusTbResults.rows.id,
+        product_name: productsTbResults.rows.name,
+        short_name: productsTbResults.rows.short_name,
       },
     };
   });
@@ -209,18 +139,19 @@ export const registerOneSetProduct = async (
 > =>
   db.tx('set-product-registration', async (t) => {
     // 1. basic_products
-    const basicProductsTbRow = await insertOne(
+    const basicProductsTbResults = await upsertOne({
       t,
-      'basic_products',
-      formatBasicProductData(body),
-      basicProductsTbRowSchema
-    );
-    if (basicProductsTbRow.isSucceeded === false) {
+      table: 'basic_products',
+      input: formatBasicProductData(body),
+      schema: basicProductsTbRowSchema,
+      updateId: null,
+    });
+    if (basicProductsTbResults.isSucceeded === false) {
       return {
         isRegistered: false,
         uniqueConstraintError: {
-          key: `${basicProductsTbRow.uniqueConstraintError.table}.${basicProductsTbRow.uniqueConstraintError.column}`,
-          value: basicProductsTbRow.uniqueConstraintError.value,
+          key: `${basicProductsTbResults.uniqueConstraintError.table}.${basicProductsTbResults.uniqueConstraintError.column}`,
+          value: basicProductsTbResults.uniqueConstraintError.value,
         },
       };
     }
@@ -278,19 +209,27 @@ export const registerOneSetProduct = async (
     const isAssorted = !hasUncategorized && !hasOthers && (categoryIds.length > 1 || isAssortedArr.includes(true));
 
     // 2. products
-    const productsTbRow = await insertOne(
+    const productsTbResults = await upsertOne({
       t,
-      'products',
-      formatProductData(body, basicProductsTbRow.rows, resolvedCategoryId, resolvedCategoryName, isAssorted),
-      productsTbRowSchema,
-      '*, available_date::text AS available_date, discontinued_date::text AS discontinued_date'
-    );
-    if (productsTbRow.isSucceeded === false) {
+      table: 'products',
+      input: formatProductData(
+        body,
+        basicProductsTbResults.rows,
+        resolvedCategoryId,
+        resolvedCategoryName,
+        isAssorted,
+        'new'
+      ),
+      schema: productsTbRowSchema,
+      returning: '*, available_date::text AS available_date, discontinued_date::text AS discontinued_date',
+      updateId: null,
+    });
+    if (productsTbResults.isSucceeded === false) {
       return {
         isRegistered: false,
         uniqueConstraintError: {
-          key: `${productsTbRow.uniqueConstraintError.table}.${productsTbRow.uniqueConstraintError.column}`,
-          value: productsTbRow.uniqueConstraintError.value,
+          key: `${productsTbResults.uniqueConstraintError.table}.${productsTbResults.uniqueConstraintError.column}`,
+          value: productsTbResults.uniqueConstraintError.value,
         },
       };
     }
@@ -299,7 +238,7 @@ export const registerOneSetProduct = async (
     await Promise.all(
       body.combinations.map(async (combination) => {
         const { text, values } = insert('product_combinations', {
-          product_id: productsTbRow.rows.id,
+          product_id: productsTbResults.rows.id,
           item_product_id: combination.item_product_id,
           quantity: combination.quantity,
         }).toParams();
@@ -311,18 +250,19 @@ export const registerOneSetProduct = async (
     );
 
     // 4. product_skus
-    const productSkusTbRow = await insertOne(
+    const productSkusTbResults = await upsertOne({
       t,
-      'product_skus',
-      formatSkusData(body, productsTbRow.rows),
-      productSkusTbRowSchema
-    );
-    if (productSkusTbRow.isSucceeded === false) {
+      table: 'product_skus',
+      input: formatSkusData(body, productsTbResults.rows),
+      schema: productSkusTbRowSchema,
+      updateId: null,
+    });
+    if (productSkusTbResults.isSucceeded === false) {
       return {
         isRegistered: false,
         uniqueConstraintError: {
-          key: `${productSkusTbRow.uniqueConstraintError.table}.${productSkusTbRow.uniqueConstraintError.column}`,
-          value: productSkusTbRow.uniqueConstraintError.value,
+          key: `${productSkusTbResults.uniqueConstraintError.table}.${productSkusTbResults.uniqueConstraintError.column}`,
+          value: productSkusTbResults.uniqueConstraintError.value,
         },
       };
     }
@@ -331,11 +271,11 @@ export const registerOneSetProduct = async (
     return {
       isRegistered: true,
       rows: {
-        basic_id: basicProductsTbRow.rows.id,
-        product_id: productsTbRow.rows.id,
-        sku_id: productSkusTbRow.rows.id,
-        product_name: productsTbRow.rows.name,
-        short_name: productsTbRow.rows.short_name,
+        basic_id: basicProductsTbResults.rows.id,
+        product_id: productsTbResults.rows.id,
+        sku_id: productSkusTbResults.rows.id,
+        product_name: productsTbResults.rows.name,
+        short_name: productsTbResults.rows.short_name,
       },
     };
   });
