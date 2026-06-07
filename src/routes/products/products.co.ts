@@ -1,5 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
-import { ParamsWithProductId, PostReqNewProduct, PostReqNewSetProduct, PutReqProduct } from './products.types';
+import {
+  ParamsWithProductId,
+  PostReqNewProduct,
+  PostReqNewSetProduct,
+  PutReqProduct,
+  PutReqSetProduct,
+} from './products.types';
 import {
   findAllCombinationsAboutProduct,
   findAllComponentsAboutProduct,
@@ -7,7 +13,7 @@ import {
   findAllSingleProducts,
 } from './products.mo';
 import { registerOneRegularProduct, registerOneSetProduct } from './products.mo.inserts';
-import { updateOneRegularProduct } from './products.mo.updates';
+import { updateOneRegularProduct, updateOneSetProduct } from './products.mo.updates';
 
 export const registerOneRegular = async (
   req: Request<object, object, PostReqNewProduct>,
@@ -55,6 +61,22 @@ export const registerOneSetItem = async (
     } else {
       res.status(201).json(productSummary);
     }
+  } catch (err: unknown) {
+    res.status(500);
+    next(err);
+  }
+};
+
+export const updateOneSetItem = async (
+  req: Request<object, object, PutReqSetProduct>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const productSummary = await updateOneSetProduct(req.body);
+    // productSummary.isUpdated の真偽にかかわらず
+    // ステータスコード 200
+    res.status(200).json(productSummary);
   } catch (err: unknown) {
     res.status(500);
     next(err);

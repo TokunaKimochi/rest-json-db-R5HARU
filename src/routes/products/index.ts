@@ -6,6 +6,7 @@ import {
   postReqNewProductSchema,
   postReqNewSetProductSchema,
   putReqProductSchema,
+  putReqSetProductSchema,
 } from './products.schemas';
 
 import findAll, { findAllPackagingTypeFlags } from './options/options.co';
@@ -29,6 +30,10 @@ router
   .post(
     validateRequest({ body: postReqNewSetProductSchema }) as RequestHandler,
     controllers.registerOneSetItem as RequestHandler
+  )
+  .put(
+    validateRequest({ body: putReqSetProductSchema }) as RequestHandler,
+    controllers.updateOneSetItem as RequestHandler
   );
 router.route('/single-products').get(controllers.findAllSingles as RequestHandler);
 

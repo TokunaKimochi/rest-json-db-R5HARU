@@ -4,7 +4,13 @@ import { z, ZodType } from 'zod';
 import { ITask } from 'pg-promise';
 import { insert, update } from 'sql-bricks';
 import UnexpectedError from '@/classes/unexpected-error';
-import { ParamsWithProductId, PostReqNewProduct, PostReqNewSetProduct, PutReqProduct } from './products.types';
+import {
+  ParamsWithProductId,
+  PostReqNewProduct,
+  PostReqNewSetProduct,
+  PutReqProduct,
+  PutReqSetProduct,
+} from './products.types';
 import {
   BasicProductsTbRow,
   ProductsTbRow,
@@ -14,6 +20,7 @@ import {
   ViewSkuDetailsRow,
 } from './products.dbTable.types';
 import {
+  productsTbRowSchema,
   viewProductCombinationsArraySchema,
   viewProductComponentsArraySchema,
   viewSingleProductsRowSchema,
@@ -195,6 +202,73 @@ export const resolveRegularCategory = async (
 
   // 「未分類」や「その他」が含まれる場合は false、それ以外で複数カテゴリ or アソート含なら true
   const isAssorted = !hasUncategorized && !hasOthers && categoryIds.length > 1;
+
+  return {
+    resolvedCategoryId,
+    resolvedCategoryName,
+    isAssorted,
+  };
+};
+
+export const resolveSetCategory = async (
+  t: ITask<object>,
+  body: PostReqNewSetProduct | PutReqSetProduct
+): Promise<{
+  resolvedCategoryId: number;
+  resolvedCategoryName: string;
+  isAssorted: boolean;
+}> => {
+  // Set で順番を維持しつつ重複を消し、スプレッド構文で配列に戻す
+  const itemIds = [...new Set(body.combinations.map((item) => item.item_product_id))];
+  const itemProducts = await t
+    .many('SELECT * FROM products WHERE id IN ($1:csv)', [itemIds])
+    .then((rows) =>
+      z
+        .array(
+          productsTbRowSchema.extend({
+            // この２つは insert の RETURNING 句で DATE 型を YYYY-MM-DD にキャストする前提の定義
+            // なので、ここでは上書き
+            available_date: z.date(),
+            discontinued_date: z.date(),
+          })
+        )
+        .min(1)
+        .parse(rows)
+    )
+    .catch((err: string) => {
+      throw new UnexpectedError(err);
+    });
+
+  const categoryIds = [...new Set(itemProducts.map((item) => item.cached_category_id))];
+  const isAssortedArr = [...new Set(itemProducts.map((item) => item.is_assorted))];
+
+  const { name: categoryName } = await t
+    .one('SELECT name FROM product_categories WHERE id = $1', [categoryIds[0]])
+    .then((row) => z.object({ name: z.string().min(1).max(32) }).parse(row))
+    .catch((err: string) => {
+      throw new UnexpectedError(err);
+    });
+
+  // 特定のID { 1: '未分類', 2: 'その他' } が含まれているかチェック
+  const hasUncategorized = categoryIds.includes(CATEGORY_ID.UNCATEGORIZED.Int);
+  const hasOthers = categoryIds.includes(CATEGORY_ID.OTHERS.Int);
+
+  // 引数に渡すIDと名前を決定（1 > 2 > それ以外のカテゴリー の優先順位）
+  // eslint-disable-next-line no-nested-ternary
+  const resolvedCategoryId = hasUncategorized
+    ? CATEGORY_ID.UNCATEGORIZED.Int
+    : hasOthers
+    ? CATEGORY_ID.OTHERS.Int
+    : categoryIds[0];
+  // eslint-disable-next-line no-nested-ternary
+  const resolvedCategoryName = hasUncategorized
+    ? CATEGORY_ID.UNCATEGORIZED.Str
+    : hasOthers
+    ? CATEGORY_ID.OTHERS.Str
+    : categoryName;
+
+  // 「未分類」や「その他」が含まれる場合は false、それ以外で複数カテゴリ or アソート含なら true
+  const isAssorted = !hasUncategorized && !hasOthers && (categoryIds.length > 1 || isAssortedArr.includes(true));
 
   return {
     resolvedCategoryId,
