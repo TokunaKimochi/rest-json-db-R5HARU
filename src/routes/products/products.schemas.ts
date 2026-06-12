@@ -279,3 +279,9 @@ export const paramsWithProductIdSchema = z
     productId: z.coerce.number().int().positive(),
   })
   .brand<'ParamsWithProductId'>();
+
+export const queryWithBasicIdSchema = z
+  .object({
+    excludeId: z.coerce.number().int().gte(1).optional(),
+  })
+  .brand<'QueryWithBasicId'>();
