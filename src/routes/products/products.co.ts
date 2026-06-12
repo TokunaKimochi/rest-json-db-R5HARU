@@ -5,8 +5,10 @@ import {
   PostReqNewSetProduct,
   PutReqProduct,
   PutReqSetProduct,
+  QueryWithBasicId,
 } from './products.types';
 import {
+  findAllBasicProducts,
   findAllCombinationsAboutProduct,
   findAllComponentsAboutProduct,
   findAllProductSkuDetails,
@@ -128,6 +130,21 @@ export const findAllComponentsAbout = async (
   try {
     const components = await findAllComponentsAboutProduct(req.params);
     res.status(200).json(components);
+  } catch (err: unknown) {
+    console.error(err);
+    res.status(500);
+    next(err);
+  }
+};
+
+export const findAllBasic = async (
+  req: Request<object, object, object, QueryWithBasicId>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const basicProducts = await findAllBasicProducts(req.query);
+    res.status(200).json(basicProducts);
   } catch (err: unknown) {
     console.error(err);
     res.status(500);

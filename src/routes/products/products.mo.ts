@@ -4,12 +4,14 @@ import { z, ZodType } from 'zod';
 import { ITask } from 'pg-promise';
 import { insert, update } from 'sql-bricks';
 import UnexpectedError from '@/classes/unexpected-error';
+import jaconv from 'jaconv';
 import {
   ParamsWithProductId,
   PostReqNewProduct,
   PostReqNewSetProduct,
   PutReqProduct,
   PutReqSetProduct,
+  QueryWithBasicId,
 } from './products.types';
 import {
   BasicProductsTbRow,
@@ -20,6 +22,7 @@ import {
   ViewSkuDetailsRow,
 } from './products.dbTable.types';
 import {
+  basicProductsTbRowSchema,
   productsTbRowSchema,
   viewProductCombinationsArraySchema,
   viewProductComponentsArraySchema,
@@ -31,6 +34,31 @@ export const CATEGORY_ID = {
   UNCATEGORIZED: { Int: 1, Str: '未分類' },
   OTHERS: { Int: 2, Str: 'その他' },
 } as const;
+
+const sanitize = (originalText: string) => {
+  let text = originalText;
+
+  text = text.trim();
+  text = jaconv.toZen(text);
+  text = text.replace(/[-－﹣−‐⁃‑‒–—﹘―⎯⏤ーｰ─━]/g, ' ');
+  text = text.replace(/\s+/g, ' ');
+  text = text.replace(/[ ]*（[ ]*/g, '（');
+  text = text.replace(/[ ]*）[ ]*/g, '）');
+  text = text.replace(/．/g, '.');
+
+  return text;
+};
+
+type Dimension = number | null | undefined;
+const sortDimensions = (a: Dimension, b: Dimension): [Dimension, Dimension] => {
+  // どちらか一方でも空値（null または undefined）なら、入力順のまま返す
+  if (a == null || b == null) {
+    return [a, b];
+  }
+
+  // 両方とも数値であれば、小さい順に並べ替えて返す
+  return a < b ? [a, b] : [b, a];
+};
 
 export const formatBasicProductData = (body: PostReqNewProduct | PostReqNewSetProduct) => ({
   name: body.basic_name,
@@ -51,6 +79,7 @@ export const formatProductData = (
   is_assorted: boolean,
   mode: 'new' | 'edit'
 ) => {
+  const [depth, width] = sortDimensions(body.depth_mm, body.width_mm);
   const productInput = ((o) =>
     // 最後にオブジェクトに戻す
     Object.fromEntries(
@@ -62,13 +91,13 @@ export const formatProductData = (
     basic_id: basicProductsTbRow.id,
     supplier_id: body.supplier_id,
     name: body.basic_name,
-    short_name: body.short_name,
+    short_name: sanitize(body.short_name),
     is_set_product: body.is_set_product,
     cached_category_id: category_id,
     display_category_name: is_assorted ? `${display_category_name} 他` : display_category_name,
     is_assorted,
-    depth_mm: body.depth_mm ?? null,
-    width_mm: body.width_mm ?? null,
+    depth_mm: depth ?? null,
+    width_mm: width ?? null,
     diameter_mm: body.diameter_mm ?? null,
     height_mm: body.height_mm ?? null,
     weight_g: body.weight_g ?? null,
@@ -82,7 +111,7 @@ export const formatProductData = (
 
 export const formatSkusData = (body: PostReqNewProduct | PostReqNewSetProduct, productsTbRow: ProductsTbRow) => ({
   product_id: productsTbRow.id,
-  name: body.short_name,
+  name: sanitize(body.short_name),
   case_quantity: body.case_quantity ?? null,
   inner_carton_quantity: body.inner_carton_quantity ?? null,
   itf_case_code: body.itf_case_code ?? null,
@@ -317,6 +346,22 @@ export const findAllComponentsAboutProduct = async (p: ParamsWithProductId): Pro
     .manyOrNone('SELECT * FROM v_product_components WHERE product_id = $1 ORDER BY component_id ASC', [p.productId])
     .catch((err: string) => Promise.reject(new DataBaseError(err)));
   const result = viewProductComponentsArraySchema.safeParse(rows);
+
+  if (result.success && result.data.length) return result.data;
+  if (result.error) throw new DataBaseError(result.error.message);
+  return [];
+};
+
+export const findAllBasicProducts = async (q: QueryWithBasicId): Promise<BasicProductsTbRow[]> => {
+  const hasExcludeId = q.excludeId !== undefined;
+
+  const query = hasExcludeId
+    ? 'SELECT * FROM basic_products WHERE id != $1 ORDER BY id'
+    : 'SELECT * FROM basic_products ORDER BY id';
+  const params = hasExcludeId ? [q.excludeId] : undefined;
+
+  const rows = await db.manyOrNone(query, params).catch((err: string) => Promise.reject(new DataBaseError(err)));
+  const result = z.array(basicProductsTbRowSchema).safeParse(rows);
 
   if (result.success && result.data.length) return result.data;
   if (result.error) throw new DataBaseError(result.error.message);
