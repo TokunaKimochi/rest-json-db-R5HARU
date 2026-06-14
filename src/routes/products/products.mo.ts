@@ -109,23 +109,27 @@ export const formatProductData = (
   return productInput;
 };
 
-export const formatSkusData = (body: PostReqNewProduct | PostReqNewSetProduct, productsTbRow: ProductsTbRow) => ({
-  product_id: productsTbRow.id,
-  name: sanitize(body.short_name),
-  case_quantity: body.case_quantity ?? null,
-  inner_carton_quantity: body.inner_carton_quantity ?? null,
-  itf_case_code: body.itf_case_code ?? null,
-  itf_inner_carton_code: body.itf_inner_carton_code ?? null,
-  case_depth_mm: body.case_depth_mm ?? null,
-  case_width_mm: body.case_width_mm ?? null,
-  case_height_mm: body.case_height_mm ?? null,
-  case_weight_g: body.case_weight_g ?? null,
-  inner_carton_depth_mm: body.inner_carton_depth_mm ?? null,
-  inner_carton_width_mm: body.inner_carton_width_mm ?? null,
-  inner_carton_height_mm: body.inner_carton_height_mm ?? null,
-  inner_carton_weight_g: body.inner_carton_weight_g ?? null,
-  priority: body.priority,
-});
+export const formatSkusData = (body: PostReqNewProduct | PostReqNewSetProduct, productsTbRow: ProductsTbRow) => {
+  const [caseDepth, caseWidth] = sortDimensions(body.case_depth_mm, body.case_width_mm);
+  const [innerDepth, innerWidth] = sortDimensions(body.inner_carton_depth_mm, body.inner_carton_width_mm);
+  return {
+    product_id: productsTbRow.id,
+    name: sanitize(body.short_name),
+    case_quantity: body.case_quantity ?? null,
+    inner_carton_quantity: body.inner_carton_quantity ?? null,
+    itf_case_code: body.itf_case_code ?? null,
+    itf_inner_carton_code: body.itf_inner_carton_code ?? null,
+    case_depth_mm: caseDepth ?? null,
+    case_width_mm: caseWidth ?? null,
+    case_height_mm: body.case_height_mm ?? null,
+    case_weight_g: body.case_weight_g ?? null,
+    inner_carton_depth_mm: innerDepth ?? null,
+    inner_carton_width_mm: innerWidth ?? null,
+    inner_carton_height_mm: body.inner_carton_height_mm ?? null,
+    inner_carton_weight_g: body.inner_carton_weight_g ?? null,
+    priority: body.priority,
+  };
+};
 
 // ユニーク制約ハンドリングの共通ヘルパー
 export async function upsertOne<T>({

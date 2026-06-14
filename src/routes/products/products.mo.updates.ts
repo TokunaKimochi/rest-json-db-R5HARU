@@ -1,6 +1,7 @@
 import { DataBaseError, db } from '@/db';
 import UnexpectedError from '@/classes/unexpected-error';
 import { update } from 'sql-bricks';
+import jaconv from 'jaconv';
 import { NewProductSummary, PutReqProduct, PutReqSetProduct } from './products.types';
 import {
   formatBasicProductData,
@@ -87,7 +88,7 @@ export const updateOneRegularProduct = async (
           product_id: productsTbResults.rows.id,
           title: component.title,
           category_id: component.category_id,
-          symbol: component.symbol,
+          symbol: jaconv.toHanAscii(component.symbol),
           amount: component.amount,
           unit_type_id: component.unit_type_id,
           pieces: component.pieces,
