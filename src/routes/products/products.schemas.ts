@@ -246,8 +246,7 @@ export const putReqProductSchema = basicProductsSchema.extend({
     })
     .array()
     .min(1),
-  // skus_name は productsSchema.short_name をコピー
-  ...productSkusSchema.omit({ skus_name: true }).shape,
+  ...productSkusSchema.shape,
   sku_id: z.number().int().positive(),
 });
 
@@ -268,8 +267,7 @@ export const putReqSetProductSchema = basicProductsSchema.extend({
     })
     .array()
     .min(1),
-  // skus_name は productsSchema.short_name をコピー
-  ...productSkusSchema.omit({ skus_name: true }).shape,
+  ...productSkusSchema.shape,
   sku_id: z.number().int().positive(),
 });
 

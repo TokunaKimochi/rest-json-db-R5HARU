@@ -60,7 +60,9 @@ const sortDimensions = (a: Dimension, b: Dimension): [Dimension, Dimension] => {
   return a < b ? [a, b] : [b, a];
 };
 
-export const formatBasicProductData = (body: PostReqNewProduct | PostReqNewSetProduct) => ({
+export const formatBasicProductData = (
+  body: PostReqNewProduct | PostReqNewSetProduct | PutReqProduct | PutReqSetProduct
+) => ({
   name: body.basic_name,
   internal_code: body.internal_code ?? null,
   jan_code: body.jan_code ?? null,
@@ -72,7 +74,7 @@ export const formatBasicProductData = (body: PostReqNewProduct | PostReqNewSetPr
 });
 
 export const formatProductData = (
-  body: PostReqNewProduct | PostReqNewSetProduct,
+  body: PostReqNewProduct | PostReqNewSetProduct | PutReqProduct | PutReqSetProduct,
   basicProductsTbRow: BasicProductsTbRow,
   category_id: number,
   display_category_name: string,
@@ -109,12 +111,21 @@ export const formatProductData = (
   return productInput;
 };
 
-export const formatSkusData = (body: PostReqNewProduct | PostReqNewSetProduct, productsTbRow: ProductsTbRow) => {
+export const formatSkusData = (
+  body: PostReqNewProduct | PostReqNewSetProduct | PutReqProduct | PutReqSetProduct,
+  productsTbRow: ProductsTbRow
+) => {
+  let name: string;
+  if ('skus_name' in body) {
+    name = sanitize(body.skus_name);
+  } else {
+    name = sanitize(body.short_name);
+  }
   const [caseDepth, caseWidth] = sortDimensions(body.case_depth_mm, body.case_width_mm);
   const [innerDepth, innerWidth] = sortDimensions(body.inner_carton_depth_mm, body.inner_carton_width_mm);
   return {
     product_id: productsTbRow.id,
-    name: sanitize(body.short_name),
+    name,
     case_quantity: body.case_quantity ?? null,
     inner_carton_quantity: body.inner_carton_quantity ?? null,
     itf_case_code: body.itf_case_code ?? null,
