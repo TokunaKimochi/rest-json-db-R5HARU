@@ -9,6 +9,7 @@ import {
   ParamsWithProductId,
   PostReqNewProduct,
   PostReqNewSetProduct,
+  ProductSkus,
   PutReqProduct,
   PutReqSetProduct,
   QueryWithBasicId,
@@ -112,7 +113,7 @@ export const formatProductData = (
 };
 
 export const formatSkusData = (
-  body: PostReqNewProduct | PostReqNewSetProduct | PutReqProduct | PutReqSetProduct,
+  body: PostReqNewProduct | PostReqNewSetProduct | PutReqProduct | PutReqSetProduct | ProductSkus,
   productsTbRow: ProductsTbRow
 ) => {
   let name: string;

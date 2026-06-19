@@ -3,6 +3,7 @@ import {
   ParamsWithProductId,
   PostReqNewProduct,
   PostReqNewSetProduct,
+  ProductSkus,
   PutReqProduct,
   PutReqSetProduct,
   QueryWithBasicId,
@@ -14,7 +15,11 @@ import {
   findAllProductSkuDetails,
   findAllSingleProducts,
 } from './products.mo';
-import { registerOneRegularProduct, registerOneSetProduct } from './products.mo.inserts';
+import {
+  registerOneQuantityVariantProduct,
+  registerOneRegularProduct,
+  registerOneSetProduct,
+} from './products.mo.inserts';
 import { updateOneRegularProduct, updateOneSetProduct } from './products.mo.updates';
 
 export const registerOneRegular = async (
@@ -79,6 +84,24 @@ export const updateOneSetItem = async (
     // productSummary.isUpdated の真偽にかかわらず
     // ステータスコード 200
     res.status(200).json(productSummary);
+  } catch (err: unknown) {
+    res.status(500);
+    next(err);
+  }
+};
+
+export const registerOneQuantityVariant = async (
+  req: Request<object, object, ProductSkus>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const variantSkuSummary = await registerOneQuantityVariantProduct(req.body);
+    if (variantSkuSummary.isRegistered === false) {
+      res.status(200).json(variantSkuSummary);
+    } else {
+      res.status(201).json(variantSkuSummary);
+    }
   } catch (err: unknown) {
     res.status(500);
     next(err);
