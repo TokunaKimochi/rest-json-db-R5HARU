@@ -5,6 +5,7 @@ import {
   paramsWithProductIdSchema,
   postReqNewProductSchema,
   postReqNewSetProductSchema,
+  productSkusSchema,
   putReqProductSchema,
   putReqSetProductSchema,
   queryWithBasicIdSchema,
@@ -35,6 +36,12 @@ router
   .put(
     validateRequest({ body: putReqSetProductSchema }) as RequestHandler,
     controllers.updateOneSetItem as RequestHandler
+  );
+router
+  .route('/sku')
+  .post(
+    validateRequest({ body: productSkusSchema }) as RequestHandler,
+    controllers.registerOneQuantityVariant as RequestHandler
   );
 router.route('/single-products').get(controllers.findAllSingles as RequestHandler);
 router

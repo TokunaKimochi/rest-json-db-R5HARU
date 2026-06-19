@@ -7,10 +7,13 @@ import {
   postReqNewSetProductSchema,
   postReqProductVariantSchema,
   postReqSetProductVariantSchema,
+  productSkusSchema,
   putReqProductSchema,
   putReqSetProductSchema,
   queryWithBasicIdSchema,
 } from './products.schemas';
+
+export type ProductSkus = z.infer<typeof productSkusSchema>;
 
 export type PostReqNewProduct = z.infer<typeof postReqNewProductSchema>;
 export type PostReqNewSetProduct = z.infer<typeof postReqNewSetProductSchema>;
