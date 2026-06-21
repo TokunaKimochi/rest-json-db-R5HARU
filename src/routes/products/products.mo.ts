@@ -36,16 +36,28 @@ export const CATEGORY_ID = {
   OTHERS: { Int: 2, Str: 'その他' },
 } as const;
 
-const sanitize = (originalText: string) => {
+const shortNameSanitize = (originalText: string, shouldDash2Space = true) => {
   let text = originalText;
 
   text = text.trim();
   text = jaconv.toZen(text);
-  text = text.replace(/[-－﹣−‐⁃‑‒–—﹘―⎯⏤ーｰ─━]/g, ' ');
+  text = text.replace(/[-－﹣−‐⁃‑‒–—﹘―⎯⏤ーｰ─━]/g, shouldDash2Space ? ' ' : '-');
   text = text.replace(/\s+/g, ' ');
   text = text.replace(/[ ]*（[ ]*/g, '（');
   text = text.replace(/[ ]*）[ ]*/g, '）');
   text = text.replace(/．/g, '.');
+
+  return text;
+};
+
+const normalize = (originalText: string) => {
+  let text = originalText;
+
+  text = text.trim();
+  text = jaconv.toKatakana(text);
+  text = text.replace(/[-－﹣−‐⁃‑‒–—﹘―⎯⏤ーｰ─━]/g, '');
+  text = text.replace(/\s+/g, '');
+  text = jaconv.normalize(text);
 
   return text;
 };
@@ -94,7 +106,7 @@ export const formatProductData = (
     basic_id: basicProductsTbRow.id,
     supplier_id: body.supplier_id,
     name: body.basic_name,
-    short_name: sanitize(body.short_name),
+    short_name: shortNameSanitize(body.short_name),
     is_set_product: body.is_set_product,
     cached_category_id: category_id,
     display_category_name: is_assorted ? `${display_category_name} 他` : display_category_name,
@@ -118,9 +130,9 @@ export const formatSkusData = (
 ) => {
   let name: string;
   if ('skus_name' in body) {
-    name = sanitize(body.skus_name);
+    name = shortNameSanitize(body.skus_name);
   } else {
-    name = sanitize(body.short_name);
+    name = shortNameSanitize(body.short_name);
   }
   const [caseDepth, caseWidth] = sortDimensions(body.case_depth_mm, body.case_width_mm);
   const [innerDepth, innerWidth] = sortDimensions(body.inner_carton_depth_mm, body.inner_carton_width_mm);

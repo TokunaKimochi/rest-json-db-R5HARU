@@ -45,7 +45,8 @@ VALUES
     ('SP無地+シール', true, true, false),
     ('スタンドパック', true, true, false),
     ('無地袋+シール', true, true, false),
-    ('平袋', true, true, false);
+    ('平袋', true, true, false),
+    ('袋', true, true, false);
 
 INSERT INTO
     product_inner_packaging_types (name)
@@ -55,6 +56,6 @@ VALUES
     ('無し'),
     ('スティックタイプ'),
     ('１杯分個包装'),
-    ('個包装'),
+    ('固形物個包装'),
     ('小分け袋'),
     ('袋');

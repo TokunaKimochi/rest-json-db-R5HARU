@@ -469,6 +469,40 @@ CREATE TRIGGER updated_at_3_product_skus BEFORE
 UPDATE ON product_skus FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
+CREATE TABLE product_tags (
+    id SERIAL PRIMARY KEY,
+    label VARCHAR(32) UNIQUE NOT NULL,
+    normalized_label VARCHAR(32) UNIQUE NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
+);
+
+-- まず１つ目の関数を実行
+CREATE TRIGGER updated_at_1_product_tags BEFORE
+UPDATE ON product_tags FOR EACH ROW
+EXECUTE PROCEDURE trg_updated_at_1 ();
+
+-- updated_at カラムが更新された時、２つ目の関数を実行
+CREATE TRIGGER updated_at_2_product_tags BEFORE
+UPDATE OF updated_at ON product_tags FOR EACH ROW
+EXECUTE PROCEDURE trg_updated_at_2 ();
+
+-- 最後に３つ目の関数を実行
+CREATE TRIGGER updated_at_3_product_tags BEFORE
+UPDATE ON product_tags FOR EACH ROW
+EXECUTE PROCEDURE trg_updated_at_3 ();
+
+-- このテーブルは updated_at を持たせない
+-- SKU のタグ編集は「全削除」=>「改めてインサート」を前提とする
+CREATE TABLE product_sku_tags (
+    product_tags_id INTEGER NOT NULL,
+    product_skus_id INTEGER NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    PRIMARY KEY (product_tags_id, product_skus_id),
+    CONSTRAINT fk_pst_tag FOREIGN KEY (product_tags_id) REFERENCES product_tags (id) ON DELETE CASCADE,
+    CONSTRAINT fk_pst_sku FOREIGN KEY (product_skus_id) REFERENCES product_skus (id) ON DELETE CASCADE
+);
+
 -- <select><option> で使う id, name をまとめて返す VIEW を定義
 -- ENUM はフロントでハードコーディングの予定 (ー_ー;)
 CREATE OR REPLACE VIEW v_ids_and_names_for_products AS

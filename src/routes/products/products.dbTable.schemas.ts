@@ -55,7 +55,7 @@ export const productCombinationsTbRowSchema = commonProductsSchema
 
 export const productSkusTbRowSchema = commonProductsSchema
   .merge(productSkusSchema)
-  .omit({ skus_name: true })
+  .omit({ skus_name: true, tags: true })
   .extend({
     name: z.string().trim().min(1).max(32),
     case_quantity: z.number().int().positive().nullable(),
