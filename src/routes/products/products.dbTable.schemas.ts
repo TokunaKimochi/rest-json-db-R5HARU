@@ -72,6 +72,20 @@ export const productSkusTbRowSchema = commonProductsSchema
     inner_carton_weight_g: z.number().int().positive().nullable(),
   });
 
+export const productTagsTbRowSchema = z.object({
+  id: z.coerce.number().int().positive(),
+  label: z.string().trim().min(1).max(32),
+  normalized_label: z.string().trim().min(1).max(32),
+  created_at: z.date(),
+  updated_at: z.date(),
+});
+
+export const productSkuTagsTbRowSchema = z.object({
+  product_tags_id: z.number().int().positive(),
+  product_skus_id: z.number().int().positive(),
+  created_at: z.date(),
+});
+
 export const viewSingleProductsRowSchema = z.object({
   // Product (単体商品)
   product_id: z.number().int().positive(),

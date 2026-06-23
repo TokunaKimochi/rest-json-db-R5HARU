@@ -16,6 +16,7 @@ import {
 } from './products.types';
 import {
   BasicProductsTbRow,
+  ProductSkusTbRow,
   ProductsTbRow,
   ViewProductCombinationsArray,
   ViewProductComponentsArray,
@@ -25,6 +26,7 @@ import {
 import {
   basicProductsTbRowSchema,
   productsTbRowSchema,
+  productTagsTbRowSchema,
   viewProductCombinationsArraySchema,
   viewProductComponentsArraySchema,
   viewSingleProductsRowSchema,
@@ -154,6 +156,62 @@ export const formatSkusData = (
     priority: body.priority,
   };
 };
+
+export async function insertTags(t: ITask<object>, tags: ProductSkus['tags'], productSkusTbRow: ProductSkusTbRow) {
+  if (!tags || tags.length === 0) return;
+
+  // まずは重複無し・ノーマライズ済のリストを作成
+  interface NormalizedTags {
+    label: string;
+    normalizedLabel: string;
+  }
+  const tmpMap = new Map<string, boolean>();
+  const normalizedTags = tags.reduce<NormalizedTags[]>((result, tag) => {
+    const normalizedLabel = normalize(tag.label);
+    if (!tmpMap.has(normalizedLabel)) {
+      tmpMap.set(normalizedLabel, true);
+      result.push({
+        label: shortNameSanitize(tag.label, false),
+        normalizedLabel,
+      });
+    }
+    return result;
+  }, []);
+
+  // Promise.all で並行処理
+  await Promise.all(
+    normalizedTags.map(async (normaTag) => {
+      try {
+        // 1. タグの UPSERT (存在しなければ挿入、存在すれば既存の値を維持して返す)
+        // DO UPDATE SET label = product_tags.label とすることで、空打ちアップデートを行い RETURNING で確実に id を取得します。
+        const tagRow = await t.one<unknown>(
+          `INSERT INTO product_tags (label, normalized_label) 
+           VALUES ($1, $2) 
+           ON CONFLICT (normalized_label) 
+           DO UPDATE SET label = product_tags.label 
+           RETURNING *`,
+          [normaTag.label, normaTag.normalizedLabel]
+        );
+
+        const productTagsRow = productTagsTbRowSchema.parse(tagRow);
+
+        // 2. 中間テーブルへの紐付け INSERT
+        // すでに紐付いている場合に備えて ON CONFLICT DO NOTHING を付与するとより安全です
+        await t.none(
+          `INSERT INTO product_sku_tags (product_tags_id, product_skus_id) 
+           VALUES ($1, $2) 
+           ON CONFLICT (product_tags_id, product_skus_id) DO NOTHING`,
+          [productTagsRow.id, productSkusTbRow.id]
+        );
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          throw new DataBaseError(err.message);
+        }
+        throw new UnexpectedError('💥エラー :: insertTags()');
+      }
+    })
+  );
+}
 
 // ユニーク制約ハンドリングの共通ヘルパー
 export async function upsertOne<T>({
