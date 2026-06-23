@@ -8,6 +8,7 @@ import {
   formatBasicProductData,
   formatProductData,
   formatSkusData,
+  insertTags,
   resolveRegularCategory,
   resolveSetCategory,
   upsertOne,
@@ -215,7 +216,10 @@ export const registerOneSetProduct = async (
       };
     }
 
-    // 5. summary
+    // 5. タグを(無ければ)作成し、紐づけ
+    await insertTags(t, body.tags, productSkusTbResults.rows);
+
+    // 6. summary
     return {
       isRegistered: true,
       rows: {
