@@ -268,3 +268,13 @@ export const viewProductComponentsRowSchema = z.object({
   updated_at: z.date(),
 });
 export const viewProductComponentsArraySchema = z.array(viewProductComponentsRowSchema);
+
+export const viewProductSkuTagsRowSchema = z.object({
+  product_skus_id: z.number().int().positive(),
+  product_sku_name: z.string().min(1).max(32),
+  product_tags_id: z.number().int().positive(),
+  label: z.string().min(1).max(32),
+  normalized_label: z.string().min(1).max(32),
+  created_at: z.date(),
+});
+export const viewProductSkuTagsArraySchema = z.array(viewProductSkuTagsRowSchema);

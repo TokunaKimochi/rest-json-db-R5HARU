@@ -111,7 +111,10 @@ export const registerOneRegularProduct = async (
       };
     }
 
-    // 5. summary
+    // 5. タグを(無ければ)作成し、紐づけ
+    await insertTags(t, body.tags, productSkusTbResults.rows);
+
+    // 6. summary
     return {
       isRegistered: true,
       rows: {
@@ -295,7 +298,10 @@ export const registerOneQuantityVariantProduct = async (
       };
     }
 
-    // 3. summary
+    // 3. タグを(無ければ)作成し、紐づけ
+    await insertTags(t, body.tags, productSkusTbResults.rows);
+
+    // 4. summary
     return {
       isRegistered: true,
       rows: {

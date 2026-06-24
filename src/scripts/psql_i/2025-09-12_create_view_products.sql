@@ -131,6 +131,20 @@ FROM
     LEFT JOIN unit_types ut ON pcmp.unit_type_id = ut.id
     LEFT JOIN product_inner_packaging_types ipt ON pcmp.inner_packaging_type_id = ipt.id;
 
+-- 製品 SKU タグビュー
+CREATE OR REPLACE VIEW v_product_sku_tags AS
+SELECT
+    pst.product_skus_id,
+    ps.name AS product_sku_name,
+    pst.product_tags_id,
+    pt.label,
+    pt.normalized_label,
+    pst.created_at
+FROM
+    product_tags pt
+    JOIN product_sku_tags pst ON pt.id = pst.product_tags_id
+    JOIN product_skus ps ON pst.product_skus_id = ps.id;
+
 -- セット品や SKU を作る時のアイテム候補一覧ビュー
 CREATE OR REPLACE VIEW v_single_products AS
 SELECT

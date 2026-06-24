@@ -286,6 +286,13 @@ export const paramsWithProductIdSchema = z
   })
   .brand<'ParamsWithProductId'>();
 
+export const paramsWithProductSkusIdSchema = z
+  .object({
+    // リクエストボディではなくパスパラメータ（e.g. /123）なのでキャメルケース
+    productSkusId: z.coerce.number().int().positive(),
+  })
+  .brand<'ParamsWithProductSkusId'>();
+
 export const queryWithBasicIdSchema = z
   .object({
     excludeId: z.coerce.number().int().gte(1).optional(),

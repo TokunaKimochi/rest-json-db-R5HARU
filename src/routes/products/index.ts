@@ -3,6 +3,7 @@ import { validateRequest } from '../../middleWares';
 import * as controllers from './products.co';
 import {
   paramsWithProductIdSchema,
+  paramsWithProductSkusIdSchema,
   postReqNewProductSchema,
   postReqNewSetProductSchema,
   productSkusSchema,
@@ -36,6 +37,12 @@ router
   .put(
     validateRequest({ body: putReqSetProductSchema }) as RequestHandler,
     controllers.updateOneSetItem as RequestHandler
+  );
+router
+  .route('/sku/:productSkusId/tags')
+  .get(
+    validateRequest({ params: paramsWithProductSkusIdSchema }) as RequestHandler,
+    controllers.findAllTagsAboutSku as unknown as RequestHandler
   );
 router
   .route('/sku')

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import {
   ParamsWithProductId,
+  ParamsWithProductSkusId,
   PostReqNewProduct,
   PostReqNewSetProduct,
   ProductSkus,
@@ -14,6 +15,7 @@ import {
   findAllComponentsAboutProduct,
   findAllProductSkuDetails,
   findAllSingleProducts,
+  findAllTagsAboutProductSku,
 } from './products.mo';
 import {
   registerOneQuantityVariantProduct,
@@ -153,6 +155,21 @@ export const findAllComponentsAbout = async (
   try {
     const components = await findAllComponentsAboutProduct(req.params);
     res.status(200).json(components);
+  } catch (err: unknown) {
+    console.error(err);
+    res.status(500);
+    next(err);
+  }
+};
+
+export const findAllTagsAboutSku = async (
+  req: Request<ParamsWithProductSkusId>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const tags = await findAllTagsAboutProductSku(req.params);
+    res.status(200).json(tags);
   } catch (err: unknown) {
     console.error(err);
     res.status(500);

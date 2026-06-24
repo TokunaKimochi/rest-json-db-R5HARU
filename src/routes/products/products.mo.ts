@@ -7,6 +7,7 @@ import UnexpectedError from '@/classes/unexpected-error';
 import jaconv from 'jaconv';
 import {
   ParamsWithProductId,
+  ParamsWithProductSkusId,
   PostReqNewProduct,
   PostReqNewSetProduct,
   ProductSkus,
@@ -20,6 +21,7 @@ import {
   ProductsTbRow,
   ViewProductCombinationsArray,
   ViewProductComponentsArray,
+  ViewProductSkuTagsArray,
   ViewSingleProductsRow,
   ViewSkuDetailsRow,
 } from './products.dbTable.types';
@@ -29,6 +31,7 @@ import {
   productTagsTbRowSchema,
   viewProductCombinationsArraySchema,
   viewProductComponentsArraySchema,
+  viewProductSkuTagsArraySchema,
   viewSingleProductsRowSchema,
   viewSkuDetailsRowSchema,
 } from './products.dbTable.schemas';
@@ -438,6 +441,20 @@ export const findAllComponentsAboutProduct = async (p: ParamsWithProductId): Pro
   return [];
 };
 
+export const findAllTagsAboutProductSku = async (p: ParamsWithProductSkusId): Promise<ViewProductSkuTagsArray> => {
+  const rows = await db
+    .manyOrNone('SELECT * FROM v_product_sku_tags WHERE product_skus_id = $1 ORDER BY product_tags_id ASC', [
+      p.productSkusId,
+    ])
+    .catch((err: string) => Promise.reject(new DataBaseError(err)));
+  const result = viewProductSkuTagsArraySchema.safeParse(rows);
+
+  if (result.success && result.data.length) return result.data;
+  if (result.error) throw new DataBaseError(result.error.message);
+  return [];
+};
+
+// excludeId は編集時に先代商品（リニューアル前）に自分自身を指定できたらマズイので指定する
 export const findAllBasicProducts = async (q: QueryWithBasicId): Promise<BasicProductsTbRow[]> => {
   const hasExcludeId = q.excludeId !== undefined;
 

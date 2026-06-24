@@ -11,6 +11,7 @@ import {
   viewProductCombinationsRowSchema,
   viewProductComponentsArraySchema,
   viewProductComponentsRowSchema,
+  viewProductSkuTagsArraySchema,
   viewSingleProductsRowSchema,
   viewSkuDetailsRowSchema,
 } from './products.dbTable.schemas';
@@ -28,3 +29,4 @@ export type ViewProductCombinationsRow = z.infer<typeof viewProductCombinationsR
 export type ViewProductCombinationsArray = z.infer<typeof viewProductCombinationsArraySchema>;
 export type ViewProductComponentsRow = z.infer<typeof viewProductComponentsRowSchema>;
 export type ViewProductComponentsArray = z.infer<typeof viewProductComponentsArraySchema>;
+export type ViewProductSkuTagsArray = z.infer<typeof viewProductSkuTagsArraySchema>;
