@@ -441,6 +441,9 @@ export const findAllComponentsAboutProduct = async (p: ParamsWithProductId): Pro
   return [];
 };
 
+export const findAllTagsWithProductSkuCount = async () => {};
+
+// 特定の SKU に付いているタグを取得
 export const findAllTagsAboutProductSku = async (p: ParamsWithProductSkusId): Promise<ViewProductSkuTagsArray> => {
   const rows = await db
     .manyOrNone('SELECT * FROM v_product_sku_tags WHERE product_skus_id = $1 ORDER BY product_tags_id ASC', [

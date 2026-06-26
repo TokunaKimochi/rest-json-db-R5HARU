@@ -7,6 +7,7 @@ import {
   formatBasicProductData,
   formatProductData,
   formatSkusData,
+  insertTags,
   resolveRegularCategory,
   resolveSetCategory,
   upsertOne,
@@ -126,7 +127,20 @@ export const updateOneRegularProduct = async (
     if (productSkusTbResults.rows.id !== body.sku_id)
       throw new UnexpectedError('Inconsistent ID value in table `product_skus`');
 
-    // 5. summary
+    // 5.1. 関連タグを一旦全て消し、
+    await t
+      .none('DELETE FROM product_sku_tags WHERE product_skus_id = $1', [productSkusTbResults.rows.id])
+      .catch((err: unknown) => {
+        if (err instanceof Error) throw new DataBaseError(err.message);
+        throw new UnexpectedError(
+          `💥エラー :: updateOneRegularProduct() 内
+          DELETE FROM product_sku_tags WHERE product_skus_id = ${productSkusTbResults.rows.id}`
+        );
+      });
+    // 5.2. 改めて作成し、紐づけ
+    await insertTags(t, body.tags, productSkusTbResults.rows);
+
+    // 6. summary
     return {
       isUpdated: true,
       rows: {
@@ -241,7 +255,20 @@ export const updateOneSetProduct = async (
     if (productSkusTbResults.rows.id !== body.sku_id)
       throw new UnexpectedError('Inconsistent ID value in table `product_skus`');
 
-    // 5. summary
+    // 5.1. 関連タグを一旦全て消し、
+    await t
+      .none('DELETE FROM product_sku_tags WHERE product_skus_id = $1', [productSkusTbResults.rows.id])
+      .catch((err: unknown) => {
+        if (err instanceof Error) throw new DataBaseError(err.message);
+        throw new UnexpectedError(
+          `💥エラー :: updateOneSetProduct() 内
+          DELETE FROM product_sku_tags WHERE product_skus_id = ${productSkusTbResults.rows.id}`
+        );
+      });
+    // 5.2. 改めて作成し、紐づけ
+    await insertTags(t, body.tags, productSkusTbResults.rows);
+
+    // 6. summary
     return {
       isUpdated: true,
       rows: {

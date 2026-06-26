@@ -145,6 +145,25 @@ FROM
     JOIN product_sku_tags pst ON pt.id = pst.product_tags_id
     JOIN product_skus ps ON pst.product_skus_id = ps.id;
 
+-- 各タグに、どの SKU が幾つ紐付けられているか
+CREATE OR REPLACE VIEW v_product_skus_tag_counts AS
+SELECT
+    pt.id AS tag_id,
+    pt.label,
+    COUNT(ps.id) AS tagged_skus_count,
+    -- 商品がない場合は NULL にするため FILTER を追加
+    ARRAY_AGG(ps.id) FILTER (
+        WHERE
+            ps.id IS NOT NULL
+    ) AS tagged_skus_ids
+FROM
+    product_tags pt
+    LEFT JOIN product_sku_tags pst ON pt.id = pst.product_tags_id
+    LEFT JOIN product_skus ps ON pst.product_skus_id = ps.id
+GROUP BY
+    pt.id,
+    pt.label;
+
 -- セット品や SKU を作る時のアイテム候補一覧ビュー
 CREATE OR REPLACE VIEW v_single_products AS
 SELECT
