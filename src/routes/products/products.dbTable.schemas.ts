@@ -269,6 +269,14 @@ export const viewProductComponentsRowSchema = z.object({
 });
 export const viewProductComponentsArraySchema = z.array(viewProductComponentsRowSchema);
 
+export const viewProductSkusTagCountsRowSchema = z.object({
+  tag_id: z.number().int().positive(),
+  label: z.string().min(1).max(32),
+  tagged_skus_count: z.number().int().nonnegative(),
+  tagged_skus_ids: z.array(z.number().int().positive()),
+});
+export const viewProductSkusTagCountsArraySchema = z.array(viewProductSkusTagCountsRowSchema);
+
 export const viewProductSkuTagsRowSchema = z.object({
   product_skus_id: z.number().int().positive(),
   product_sku_name: z.string().min(1).max(32),
