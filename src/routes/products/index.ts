@@ -44,6 +44,7 @@ router
     validateRequest({ params: paramsWithProductSkusIdSchema }) as RequestHandler,
     controllers.findAllTagsAboutSku as unknown as RequestHandler
   );
+router.route('/sku/tags').get(controllers.findAllTagsWithSkuCount as RequestHandler);
 router
   .route('/sku')
   .post(

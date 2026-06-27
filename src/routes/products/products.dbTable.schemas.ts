@@ -272,8 +272,8 @@ export const viewProductComponentsArraySchema = z.array(viewProductComponentsRow
 export const viewProductSkusTagCountsRowSchema = z.object({
   tag_id: z.number().int().positive(),
   label: z.string().min(1).max(32),
-  tagged_skus_count: z.number().int().nonnegative(),
-  tagged_skus_ids: z.array(z.number().int().positive()),
+  tagged_skus_count: z.coerce.number().int().nonnegative(),
+  tagged_skus_ids: z.array(z.number().int().positive()).nullable(),
 });
 export const viewProductSkusTagCountsArraySchema = z.array(viewProductSkusTagCountsRowSchema);
 

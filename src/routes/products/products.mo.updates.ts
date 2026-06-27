@@ -133,7 +133,7 @@ export const updateOneRegularProduct = async (
       .catch((err: unknown) => {
         if (err instanceof Error) throw new DataBaseError(err.message);
         throw new UnexpectedError(
-          `💥エラー :: updateOneRegularProduct() 内
+          `エラー :: updateOneRegularProduct() 内
           DELETE FROM product_sku_tags WHERE product_skus_id = ${productSkusTbResults.rows.id}`
         );
       });
@@ -261,7 +261,7 @@ export const updateOneSetProduct = async (
       .catch((err: unknown) => {
         if (err instanceof Error) throw new DataBaseError(err.message);
         throw new UnexpectedError(
-          `💥エラー :: updateOneSetProduct() 内
+          `エラー :: updateOneSetProduct() 内
           DELETE FROM product_sku_tags WHERE product_skus_id = ${productSkusTbResults.rows.id}`
         );
       });

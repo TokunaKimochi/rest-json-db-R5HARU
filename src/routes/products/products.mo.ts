@@ -21,6 +21,7 @@ import {
   ProductsTbRow,
   ViewProductCombinationsArray,
   ViewProductComponentsArray,
+  ViewProductSkusTagCountsArray,
   ViewProductSkuTagsArray,
   ViewSingleProductsRow,
   ViewSkuDetailsRow,
@@ -31,6 +32,7 @@ import {
   productTagsTbRowSchema,
   viewProductCombinationsArraySchema,
   viewProductComponentsArraySchema,
+  viewProductSkusTagCountsArraySchema,
   viewProductSkuTagsArraySchema,
   viewSingleProductsRowSchema,
   viewSkuDetailsRowSchema,
@@ -210,7 +212,7 @@ export async function insertTags(t: ITask<object>, tags: ProductSkus['tags'], pr
         if (err instanceof Error) {
           throw new DataBaseError(err.message);
         }
-        throw new UnexpectedError('💥エラー :: insertTags()');
+        throw new UnexpectedError(err as string);
       }
     })
   );
@@ -441,7 +443,19 @@ export const findAllComponentsAboutProduct = async (p: ParamsWithProductId): Pro
   return [];
 };
 
-export const findAllTagsWithProductSkuCount = async () => {};
+export const findAllTagsWithProductSkuCount = async (): Promise<ViewProductSkusTagCountsArray> => {
+  const rows = await db
+    .manyOrNone('SELECT * FROM v_product_skus_tag_counts ORDER BY tagged_skus_count DESC')
+    .catch((err: unknown) => {
+      if (err instanceof Error) throw new DataBaseError(err.message);
+      throw new UnexpectedError(err as string);
+    });
+  const result = viewProductSkusTagCountsArraySchema.safeParse(rows);
+
+  if (result.success && result.data.length) return result.data;
+  if (result.error) throw new UnexpectedError(result.error.message);
+  return [];
+};
 
 // 特定の SKU に付いているタグを取得
 export const findAllTagsAboutProductSku = async (p: ParamsWithProductSkusId): Promise<ViewProductSkuTagsArray> => {
@@ -449,11 +463,14 @@ export const findAllTagsAboutProductSku = async (p: ParamsWithProductSkusId): Pr
     .manyOrNone('SELECT * FROM v_product_sku_tags WHERE product_skus_id = $1 ORDER BY product_tags_id ASC', [
       p.productSkusId,
     ])
-    .catch((err: string) => Promise.reject(new DataBaseError(err)));
+    .catch((err: unknown) => {
+      if (err instanceof Error) throw new DataBaseError(err.message);
+      throw new UnexpectedError(err as string);
+    });
   const result = viewProductSkuTagsArraySchema.safeParse(rows);
 
   if (result.success && result.data.length) return result.data;
-  if (result.error) throw new DataBaseError(result.error.message);
+  if (result.error) throw new UnexpectedError(result.error.message);
   return [];
 };
 

@@ -16,6 +16,7 @@ import {
   findAllProductSkuDetails,
   findAllSingleProducts,
   findAllTagsAboutProductSku,
+  findAllTagsWithProductSkuCount,
 } from './products.mo';
 import {
   registerOneQuantityVariantProduct,
@@ -155,6 +156,17 @@ export const findAllComponentsAbout = async (
   try {
     const components = await findAllComponentsAboutProduct(req.params);
     res.status(200).json(components);
+  } catch (err: unknown) {
+    console.error(err);
+    res.status(500);
+    next(err);
+  }
+};
+
+export const findAllTagsWithSkuCount = async (_: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const tags = await findAllTagsWithProductSkuCount();
+    res.status(200).json(tags);
   } catch (err: unknown) {
     console.error(err);
     res.status(500);
