@@ -201,7 +201,7 @@ export const postReqNewSetProductSchema = basicProductsSchema.extend({
 });
 
 // （通常商品の）内容量変更などの既存商品のバリエーション（JAN は同じ）
-export const postReqProductVariantSchema = productsSchema
+export const postReqProductRevisionSchema = productsSchema
   .extend({
     // ulid_str はサーバ側で計算
     // is_set_product を上書き extend()
@@ -214,7 +214,7 @@ export const postReqProductVariantSchema = productsSchema
   .omit({ cached_category_id: true, display_category_name: true, is_assorted: true });
 
 // （セット商品の）内容量変更などの既存商品のバリエーション（JAN は同じ）
-export const postReqSetProductVariantSchema = productsSchema
+export const postReqSetProductRevisionSchema = productsSchema
   .extend({
     // ulid_str はサーバ側で計算
     // is_set_product を上書き extend()
@@ -226,8 +226,10 @@ export const postReqSetProductVariantSchema = productsSchema
   })
   .omit({ cached_category_id: true, display_category_name: true, is_assorted: true });
 
-// ケースの入り数違い
-export const postReqNewProductSkuSchema = productSkusSchema;
+export const postReqUnifiedRevisionSchema = z.discriminatedUnion('is_set_product', [
+  postReqProductRevisionSchema,
+  postReqSetProductRevisionSchema,
+]);
 
 export const newProductSummarySchema = z.object({
   basic_id: z.number().int().positive(),
