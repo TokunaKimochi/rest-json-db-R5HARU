@@ -42,16 +42,23 @@ export const CATEGORY_ID = {
   UNCATEGORIZED: { Int: 1, Str: '未分類' },
   OTHERS: { Int: 2, Str: 'その他' },
 } as const;
+const WITH_CHOON = /[-－﹣−‐⁃‑‒–—﹘―⎯⏤ーｰ─━]/g;
+// 日本語の長音記号 `ー' は除外
+const WITHOUT_CHOON = /[-－﹣−‐⁃‑‒–—﹘―⎯⏤ｰ─━]/g;
 
 const shortNameSanitize = (originalText: string, shouldDash2Space = true) => {
   let text = originalText;
 
   text = text.trim();
   text = jaconv.toZen(text);
-  text = text.replace(/[-－﹣−‐⁃‑‒–—﹘―⎯⏤ーｰ─━]/g, shouldDash2Space ? ' ' : '-');
+  if (shouldDash2Space) {
+    text = text.replace(WITH_CHOON, ' ');
+  } else {
+    text = text.replace(WITHOUT_CHOON, '-');
+  }
   text = text.replace(/\s+/g, ' ');
-  text = text.replace(/[ ]*（[ ]*/g, '（');
-  text = text.replace(/[ ]*）[ ]*/g, '）');
+  text = text.replace(/\s*（\s*/g, '（');
+  text = text.replace(/\s*）\s*/g, '）');
   text = text.replace(/．/g, '.');
 
   return text;
