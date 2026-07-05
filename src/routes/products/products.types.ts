@@ -7,6 +7,7 @@ import {
   postReqNewSetProductSchema,
   postReqProductRevisionSchema,
   postReqSetProductRevisionSchema,
+  postReqUnifiedRevisionSchema,
   productSkusSchema,
   putReqProductSchema,
   putReqSetProductSchema,
@@ -19,6 +20,7 @@ export type PostReqNewProduct = z.infer<typeof postReqNewProductSchema>;
 export type PostReqNewSetProduct = z.infer<typeof postReqNewSetProductSchema>;
 export type PostReqProductRevision = z.infer<typeof postReqProductRevisionSchema>;
 export type PostReqSetProductRevision = z.infer<typeof postReqSetProductRevisionSchema>;
+export type PostReqUnifiedRevision = z.infer<typeof postReqUnifiedRevisionSchema>;
 export type NewProductSummary = z.infer<typeof newProductSummarySchema>;
 export type PutReqProduct = z.infer<typeof putReqProductSchema>;
 export type PutReqSetProduct = z.infer<typeof putReqSetProductSchema>;

@@ -10,6 +10,8 @@ import {
   ParamsWithProductSkusId,
   PostReqNewProduct,
   PostReqNewSetProduct,
+  PostReqProductRevision,
+  PostReqSetProductRevision,
   ProductSkus,
   PutReqProduct,
   PutReqSetProduct,
@@ -101,7 +103,13 @@ export const formatBasicProductData = (
 });
 
 export const formatProductData = (
-  body: PostReqNewProduct | PostReqNewSetProduct | PutReqProduct | PutReqSetProduct,
+  body:
+    | PostReqNewProduct
+    | PostReqNewSetProduct
+    | PutReqProduct
+    | PutReqSetProduct
+    | PostReqProductRevision
+    | PostReqSetProductRevision,
   basicProductsTbRow: BasicProductsTbRow,
   category_id: number,
   display_category_name: string,
@@ -109,6 +117,8 @@ export const formatProductData = (
   mode: 'new' | 'edit'
 ) => {
   const [depth, width] = sortDimensions(body.depth_mm, body.width_mm);
+  const name = 'product_name' in body ? body.product_name : body.basic_name;
+
   const productInput = ((o) =>
     // 最後にオブジェクトに戻す
     Object.fromEntries(
@@ -119,9 +129,9 @@ export const formatProductData = (
     ))({
     basic_id: basicProductsTbRow.id,
     supplier_id: body.supplier_id,
-    name: body.basic_name,
+    name,
     short_name: shortNameSanitize(body.short_name),
-    is_set_product: body.is_set_product,
+    is_set_product: body.is_set_product !== '0',
     cached_category_id: category_id,
     display_category_name: is_assorted ? `${display_category_name} 他` : display_category_name,
     is_assorted,
@@ -139,7 +149,14 @@ export const formatProductData = (
 };
 
 export const formatSkusData = (
-  body: PostReqNewProduct | PostReqNewSetProduct | PutReqProduct | PutReqSetProduct | ProductSkus,
+  body:
+    | PostReqNewProduct
+    | PostReqNewSetProduct
+    | PutReqProduct
+    | PutReqSetProduct
+    | PostReqProductRevision
+    | PostReqSetProductRevision
+    | ProductSkus,
   productsTbRow: ProductsTbRow
 ) => {
   let name: string;
@@ -294,7 +311,7 @@ export async function upsertOne<T>({
 
 export const resolveRegularCategory = async (
   t: ITask<object>,
-  body: PostReqNewProduct | PutReqProduct
+  body: PostReqNewProduct | PutReqProduct | PostReqProductRevision
 ): Promise<{
   resolvedCategoryId: number;
   resolvedCategoryName: string;
@@ -339,7 +356,7 @@ export const resolveRegularCategory = async (
 
 export const resolveSetCategory = async (
   t: ITask<object>,
-  body: PostReqNewSetProduct | PutReqSetProduct
+  body: PostReqNewSetProduct | PutReqSetProduct | PostReqSetProductRevision
 ): Promise<{
   resolvedCategoryId: number;
   resolvedCategoryName: string;

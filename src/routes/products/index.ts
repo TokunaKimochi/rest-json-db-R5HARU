@@ -6,6 +6,7 @@ import {
   paramsWithProductSkusIdSchema,
   postReqNewProductSchema,
   postReqNewSetProductSchema,
+  postReqUnifiedRevisionSchema,
   productSkusSchema,
   putReqProductSchema,
   putReqSetProductSchema,
@@ -37,6 +38,12 @@ router
   .put(
     validateRequest({ body: putReqSetProductSchema }) as RequestHandler,
     controllers.updateOneSetItem as RequestHandler
+  );
+router
+  .route('/revision')
+  .post(
+    validateRequest({ body: postReqUnifiedRevisionSchema }) as RequestHandler,
+    controllers.registerOneNewRevision as RequestHandler
   );
 router
   .route('/sku/:productSkusId/tags')

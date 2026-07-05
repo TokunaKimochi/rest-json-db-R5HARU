@@ -22,7 +22,7 @@ export const productsSchema = z.object({
   supplier_id: z.coerce.number().int().positive(),
   product_name: z.string().trim().min(1).max(32),
   short_name: z.string().trim().min(1).max(32),
-  is_set_product: z.preprocess((v) => Number(v), z.coerce.boolean()),
+  is_set_product: z.enum(['0', '1']),
   cached_category_id: z.coerce.number().int().positive(),
   display_category_name: z.string().min(1).max(32),
   is_assorted: z.boolean(),
@@ -169,7 +169,7 @@ export const postReqNewProductSchema = basicProductsSchema.extend({
   // product_name は basicProductsSchema.basic_name をコピー
   // ulid_str はサーバ側で計算
   // is_set_product を上書き extend()
-  ...productsSchema.extend({ is_set_product: z.preprocess((v) => !!Number(v), z.literal(false)) }).omit({
+  ...productsSchema.extend({ is_set_product: z.literal('0') }).omit({
     basic_id: true,
     product_name: true,
     cached_category_id: true,
@@ -187,7 +187,7 @@ export const postReqNewSetProductSchema = basicProductsSchema.extend({
   // product_name は basicProductsSchema.basic_name をコピー
   // ulid_str はサーバ側で計算
   // is_set_product を上書き extend()
-  ...productsSchema.extend({ is_set_product: z.preprocess((v) => !!Number(v), z.literal(true)) }).omit({
+  ...productsSchema.extend({ is_set_product: z.literal('1') }).omit({
     basic_id: true,
     product_name: true,
     cached_category_id: true,
@@ -205,7 +205,7 @@ export const postReqProductRevisionSchema = productsSchema
   .extend({
     // ulid_str はサーバ側で計算
     // is_set_product を上書き extend()
-    is_set_product: z.preprocess((v) => !!Number(v), z.literal(false)),
+    is_set_product: z.literal('0'),
     ...productComponentsSchema.shape,
     // skus_name は productsSchema.short_name をコピー
     // product_id はコピー
@@ -218,7 +218,7 @@ export const postReqSetProductRevisionSchema = productsSchema
   .extend({
     // ulid_str はサーバ側で計算
     // is_set_product を上書き extend()
-    is_set_product: z.preprocess((v) => !!Number(v), z.literal(true)),
+    is_set_product: z.literal('1'),
     ...productCombinationsSchema.shape,
     // skus_name は productsSchema.short_name をコピー
     // product_id はコピー
@@ -244,7 +244,7 @@ export const putReqProductSchema = basicProductsSchema.extend({
   // product_name は basicProductsSchema.basic_name をコピー
   // ulid_str は更新不可
   // is_set_product を上書き extend()
-  ...productsSchema.extend({ is_set_product: z.preprocess((v) => !!Number(v), z.literal(false)) }).omit({
+  ...productsSchema.extend({ is_set_product: z.literal('0') }).omit({
     product_name: true,
     cached_category_id: true,
     display_category_name: true,
@@ -265,7 +265,7 @@ export const putReqSetProductSchema = basicProductsSchema.extend({
   // product_name は basicProductsSchema.basic_name をコピー
   // ulid_str 変更不可
   // is_set_product を上書き extend()
-  ...productsSchema.extend({ is_set_product: z.preprocess((v) => !!Number(v), z.literal(true)) }).omit({
+  ...productsSchema.extend({ is_set_product: z.literal('1') }).omit({
     product_name: true,
     cached_category_id: true,
     display_category_name: true,

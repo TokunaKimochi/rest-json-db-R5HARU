@@ -4,6 +4,7 @@ import {
   ParamsWithProductSkusId,
   PostReqNewProduct,
   PostReqNewSetProduct,
+  PostReqUnifiedRevision,
   ProductSkus,
   PutReqProduct,
   PutReqSetProduct,
@@ -19,6 +20,7 @@ import {
   findAllTagsWithProductSkuCount,
 } from './products.mo';
 import {
+  registerOneNewRevisionProduct,
   registerOneQuantityVariantProduct,
   registerOneRegularProduct,
   registerOneSetProduct,
@@ -87,6 +89,24 @@ export const updateOneSetItem = async (
     // productSummary.isUpdated の真偽にかかわらず
     // ステータスコード 200
     res.status(200).json(productSummary);
+  } catch (err: unknown) {
+    res.status(500);
+    next(err);
+  }
+};
+
+export const registerOneNewRevision = async (
+  req: Request<object, object, PostReqUnifiedRevision>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const revisionSummary = await registerOneNewRevisionProduct(req.body);
+    if (revisionSummary.isRegistered === false) {
+      res.status(200).json(revisionSummary);
+    } else {
+      res.status(201).json(revisionSummary);
+    }
   } catch (err: unknown) {
     res.status(500);
     next(err);

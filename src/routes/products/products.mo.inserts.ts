@@ -2,7 +2,13 @@ import { insert } from 'sql-bricks';
 import { DataBaseError, db } from '@/db';
 import jaconv from 'jaconv';
 import UnexpectedError from '@/classes/unexpected-error';
-import { NewProductSummary, PostReqNewProduct, PostReqNewSetProduct, ProductSkus } from './products.types';
+import {
+  NewProductSummary,
+  PostReqNewProduct,
+  PostReqNewSetProduct,
+  PostReqUnifiedRevision,
+  ProductSkus,
+} from './products.types';
 import { basicProductsTbRowSchema, productSkusTbRowSchema, productsTbRowSchema } from './products.dbTable.schemas';
 import {
   formatBasicProductData,
@@ -227,6 +233,137 @@ export const registerOneSetProduct = async (
       isRegistered: true,
       rows: {
         basic_id: basicProductsTbResults.rows.id,
+        product_id: productsTbResults.rows.id,
+        sku_id: productSkusTbResults.rows.id,
+        product_name: productsTbResults.rows.name,
+        short_name: productsTbResults.rows.short_name,
+      },
+    };
+  });
+
+// JAN 変更なしの仕様変更登録（通常商品 or セット商品）
+export const registerOneNewRevisionProduct = async (
+  body: PostReqUnifiedRevision
+): Promise<
+  | { isRegistered: true; rows: NewProductSummary }
+  | {
+      isRegistered: false;
+      uniqueConstraintError: {
+        key: string;
+        value: string;
+      };
+    }
+> =>
+  db.tx('new-revision-product-registration', async (t) => {
+    // 0. 通常商品かセット商品かフラグにセット
+    const isSet = 'combinations' in body;
+    // 1. upsertOne() 再利用のため basic_products テーブルを取得
+    const row = await t
+      .one<unknown>(
+        `SELECT
+          id,
+          name,
+          internal_code,
+          jan_code,
+          sourcing_type_id,
+          packaging_type_id,
+          expiration_value,
+          expiration_unit,
+          predecessor_id,
+          created_at,
+          updated_at
+        FROM basic_products WHERE id = $1`,
+        [body.basic_id]
+      )
+      .catch((err: string) => {
+        throw new UnexpectedError(err);
+      });
+    const basicProductsTbRow = basicProductsTbRowSchema.parse(row);
+    // 2. products
+    const { resolvedCategoryId, resolvedCategoryName, isAssorted } = isSet
+      ? await resolveSetCategory(t, body)
+      : await resolveRegularCategory(t, body);
+    const productsTbResults = await upsertOne({
+      t,
+      table: 'products',
+      input: formatProductData(body, basicProductsTbRow, resolvedCategoryId, resolvedCategoryName, isAssorted, 'new'),
+      schema: productsTbRowSchema,
+      returning: '*, available_date::text AS available_date, discontinued_date::text AS discontinued_date',
+      updateId: null,
+    });
+    if (productsTbResults.isSucceeded === false) {
+      return {
+        isRegistered: false,
+        uniqueConstraintError: {
+          key: `${productsTbResults.uniqueConstraintError.table}.${productsTbResults.uniqueConstraintError.column}`,
+          value: productsTbResults.uniqueConstraintError.value,
+        },
+      };
+    }
+
+    if (isSet) {
+      // 3.A. product_combinations (並列挿入)
+      await Promise.all(
+        body.combinations.map(async (combination) => {
+          const { text, values } = insert('product_combinations', {
+            product_id: productsTbResults.rows.id,
+            item_product_id: combination.item_product_id,
+            quantity: combination.quantity,
+          }).toParams();
+
+          await t.none(text, values).catch((err: string) => {
+            throw new DataBaseError(err);
+          });
+        })
+      );
+    } else {
+      // 3.B. product_components (並列挿入)
+      await Promise.all(
+        body.components.map(async (component) => {
+          const { text, values } = insert('product_components', {
+            product_id: productsTbResults.rows.id,
+            title: component.title,
+            category_id: component.category_id,
+            symbol: jaconv.toHanAscii(component.symbol),
+            amount: component.amount,
+            unit_type_id: component.unit_type_id,
+            pieces: component.pieces,
+            inner_packaging_type_id: component.inner_packaging_type_id,
+          }).toParams();
+
+          await t.none(text, values).catch((err: string) => {
+            throw new DataBaseError(err);
+          });
+        })
+      );
+    }
+
+    // 4. product_skus
+    const productSkusTbResults = await upsertOne({
+      t,
+      table: 'product_skus',
+      input: formatSkusData(body, productsTbResults.rows),
+      schema: productSkusTbRowSchema,
+      updateId: null,
+    });
+    if (productSkusTbResults.isSucceeded === false) {
+      return {
+        isRegistered: false,
+        uniqueConstraintError: {
+          key: `${productSkusTbResults.uniqueConstraintError.table}.${productSkusTbResults.uniqueConstraintError.column}`,
+          value: productSkusTbResults.uniqueConstraintError.value,
+        },
+      };
+    }
+
+    // 5. タグを(無ければ)作成し、紐づけ
+    await insertTags(t, body.tags, productSkusTbResults.rows);
+
+    // 6. summary
+    return {
+      isRegistered: true,
+      rows: {
+        basic_id: body.basic_id,
         product_id: productsTbResults.rows.id,
         sku_id: productSkusTbResults.rows.id,
         product_name: productsTbResults.rows.name,
