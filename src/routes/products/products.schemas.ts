@@ -241,11 +241,9 @@ export const newProductSummarySchema = z.object({
 
 // 通常商品の編集
 export const putReqProductSchema = basicProductsSchema.extend({
-  // product_name は basicProductsSchema.basic_name をコピー
   // ulid_str は更新不可
   // is_set_product を上書き extend()
   ...productsSchema.extend({ is_set_product: z.literal('0') }).omit({
-    product_name: true,
     cached_category_id: true,
     display_category_name: true,
     is_assorted: true,
@@ -262,11 +260,9 @@ export const putReqProductSchema = basicProductsSchema.extend({
 
 // セット商品の編集
 export const putReqSetProductSchema = basicProductsSchema.extend({
-  // product_name は basicProductsSchema.basic_name をコピー
   // ulid_str 変更不可
   // is_set_product を上書き extend()
   ...productsSchema.extend({ is_set_product: z.literal('1') }).omit({
-    product_name: true,
     cached_category_id: true,
     display_category_name: true,
     is_assorted: true,
