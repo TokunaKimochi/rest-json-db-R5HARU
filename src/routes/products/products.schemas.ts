@@ -26,6 +26,8 @@ export const productsSchema = z.object({
   cached_category_id: z.coerce.number().int().positive(),
   display_category_name: z.string().min(1).max(32),
   is_assorted: z.boolean(),
+  max_piece_weight: z.coerce.number().int().positive(),
+  max_piece_weight_unit_type_id: z.coerce.number().int().positive(),
   depth_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
   width_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
   diameter_mm: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
@@ -175,6 +177,8 @@ export const postReqNewProductSchema = basicProductsSchema.extend({
     cached_category_id: true,
     display_category_name: true,
     is_assorted: true,
+    max_piece_weight: true,
+    max_piece_weight_unit_type_id: true,
   }).shape,
   ...productComponentsSchema.shape,
   // skus_name は productsSchema.short_name をコピー
@@ -211,7 +215,13 @@ export const postReqProductRevisionSchema = productsSchema
     // product_id はコピー
     ...productSkusSchema.omit({ skus_name: true, product_id: true }).shape,
   })
-  .omit({ cached_category_id: true, display_category_name: true, is_assorted: true });
+  .omit({
+    cached_category_id: true,
+    display_category_name: true,
+    is_assorted: true,
+    max_piece_weight: true,
+    max_piece_weight_unit_type_id: true,
+  });
 
 // （セット商品の）内容量変更などの既存商品のバリエーション（JAN は同じ）
 export const postReqSetProductRevisionSchema = productsSchema
@@ -224,7 +234,13 @@ export const postReqSetProductRevisionSchema = productsSchema
     // product_id はコピー
     ...productSkusSchema.omit({ skus_name: true, product_id: true }).shape,
   })
-  .omit({ cached_category_id: true, display_category_name: true, is_assorted: true });
+  .omit({
+    cached_category_id: true,
+    display_category_name: true,
+    is_assorted: true,
+    max_piece_weight: true,
+    max_piece_weight_unit_type_id: true,
+  });
 
 export const postReqUnifiedRevisionSchema = z.discriminatedUnion('is_set_product', [
   postReqProductRevisionSchema,
@@ -247,6 +263,8 @@ export const putReqProductSchema = basicProductsSchema.extend({
     cached_category_id: true,
     display_category_name: true,
     is_assorted: true,
+    max_piece_weight: true,
+    max_piece_weight_unit_type_id: true,
   }).shape,
   components: productComponentsSchema.shape.components.element
     .extend({
@@ -266,6 +284,8 @@ export const putReqSetProductSchema = basicProductsSchema.extend({
     cached_category_id: true,
     display_category_name: true,
     is_assorted: true,
+    max_piece_weight: true,
+    max_piece_weight_unit_type_id: true,
   }).shape,
   combinations: productCombinationsSchema.shape.combinations.element
     .extend({

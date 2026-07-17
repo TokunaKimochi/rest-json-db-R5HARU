@@ -398,6 +398,8 @@ export const registerOneQuantityVariantProduct = async (
           cached_category_id,
           display_category_name,
           is_assorted,
+          max_piece_weight,
+          max_piece_weight_unit_type_id,
           depth_mm,
           width_mm,
           diameter_mm,

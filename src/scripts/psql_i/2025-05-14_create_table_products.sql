@@ -87,18 +87,18 @@ CREATE TABLE suppliers (
 );
 
 -- まず１つ目の関数を実行
-CREATE TRIGGER updated_at_1_suppliers BEFORE
-UPDATE ON suppliers FOR EACH ROW
+CREATE TRIGGER updated_at_1_suppliers
+BEFORE UPDATE ON suppliers FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_1 ();
 
 -- updated_at カラムが更新された時、２つ目の関数を実行
-CREATE TRIGGER updated_at_2_suppliers BEFORE
-UPDATE OF updated_at ON suppliers FOR EACH ROW
+CREATE TRIGGER updated_at_2_suppliers
+BEFORE UPDATE OF updated_at ON suppliers FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_2 ();
 
 -- 最後に３つ目の関数を実行
-CREATE TRIGGER updated_at_3_suppliers BEFORE
-UPDATE ON suppliers FOR EACH ROW
+CREATE TRIGGER updated_at_3_suppliers
+BEFORE UPDATE ON suppliers FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE unit_types (
@@ -110,18 +110,18 @@ CREATE TABLE unit_types (
 );
 
 -- まず１つ目の関数を実行
-CREATE TRIGGER updated_at_1_unit_types BEFORE
-UPDATE ON unit_types FOR EACH ROW
+CREATE TRIGGER updated_at_1_unit_types
+BEFORE UPDATE ON unit_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_1 ();
 
 -- updated_at カラムが更新された時、２つ目の関数を実行
-CREATE TRIGGER updated_at_2_unit_types BEFORE
-UPDATE OF updated_at ON unit_types FOR EACH ROW
+CREATE TRIGGER updated_at_2_unit_types
+BEFORE UPDATE OF updated_at ON unit_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_2 ();
 
 -- 最後に３つ目の関数を実行
-CREATE TRIGGER updated_at_3_unit_types BEFORE
-UPDATE ON unit_types FOR EACH ROW
+CREATE TRIGGER updated_at_3_unit_types
+BEFORE UPDATE ON unit_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE product_sourcing_types (
@@ -133,18 +133,18 @@ CREATE TABLE product_sourcing_types (
 );
 
 -- まず１つ目の関数を実行
-CREATE TRIGGER updated_at_1_product_sourcing_types BEFORE
-UPDATE ON product_sourcing_types FOR EACH ROW
+CREATE TRIGGER updated_at_1_product_sourcing_types
+BEFORE UPDATE ON product_sourcing_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_1 ();
 
 -- updated_at カラムが更新された時、２つ目の関数を実行
-CREATE TRIGGER updated_at_2_product_sourcing_types BEFORE
-UPDATE OF updated_at ON product_sourcing_types FOR EACH ROW
+CREATE TRIGGER updated_at_2_product_sourcing_types
+BEFORE UPDATE OF updated_at ON product_sourcing_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_2 ();
 
 -- 最後に３つ目の関数を実行
-CREATE TRIGGER updated_at_3_product_sourcing_types BEFORE
-UPDATE ON product_sourcing_types FOR EACH ROW
+CREATE TRIGGER updated_at_3_product_sourcing_types
+BEFORE UPDATE ON product_sourcing_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE product_categories (
@@ -158,18 +158,18 @@ CREATE TABLE product_categories (
 );
 
 -- まず１つ目の関数を実行
-CREATE TRIGGER updated_at_1_product_categories BEFORE
-UPDATE ON product_categories FOR EACH ROW
+CREATE TRIGGER updated_at_1_product_categories
+BEFORE UPDATE ON product_categories FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_1 ();
 
 -- updated_at カラムが更新された時、２つ目の関数を実行
-CREATE TRIGGER updated_at_2_product_categories BEFORE
-UPDATE OF updated_at ON product_categories FOR EACH ROW
+CREATE TRIGGER updated_at_2_product_categories
+BEFORE UPDATE OF updated_at ON product_categories FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_2 ();
 
 -- 最後に３つ目の関数を実行
-CREATE TRIGGER updated_at_3_product_categories BEFORE
-UPDATE ON product_categories FOR EACH ROW
+CREATE TRIGGER updated_at_3_product_categories
+BEFORE UPDATE ON product_categories FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE product_packaging_types (
@@ -198,18 +198,18 @@ CREATE TABLE product_packaging_types (
 );
 
 -- まず１つ目の関数を実行
-CREATE TRIGGER updated_at_1_product_packaging_types BEFORE
-UPDATE ON product_packaging_types FOR EACH ROW
+CREATE TRIGGER updated_at_1_product_packaging_types
+BEFORE UPDATE ON product_packaging_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_1 ();
 
 -- updated_at カラムが更新された時、２つ目の関数を実行
-CREATE TRIGGER updated_at_2_product_packaging_types BEFORE
-UPDATE OF updated_at ON product_packaging_types FOR EACH ROW
+CREATE TRIGGER updated_at_2_product_packaging_types
+BEFORE UPDATE OF updated_at ON product_packaging_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_2 ();
 
 -- 最後に３つ目の関数を実行
-CREATE TRIGGER updated_at_3_product_packaging_types BEFORE
-UPDATE ON product_packaging_types FOR EACH ROW
+CREATE TRIGGER updated_at_3_product_packaging_types
+BEFORE UPDATE ON product_packaging_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE product_inner_packaging_types (
@@ -221,18 +221,18 @@ CREATE TABLE product_inner_packaging_types (
 );
 
 -- まず１つ目の関数を実行
-CREATE TRIGGER updated_at_1_product_inner_packaging_types BEFORE
-UPDATE ON product_inner_packaging_types FOR EACH ROW
+CREATE TRIGGER updated_at_1_product_inner_packaging_types
+BEFORE UPDATE ON product_inner_packaging_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_1 ();
 
 -- updated_at カラムが更新された時、２つ目の関数を実行
-CREATE TRIGGER updated_at_2_product_inner_packaging_types BEFORE
-UPDATE OF updated_at ON product_inner_packaging_types FOR EACH ROW
+CREATE TRIGGER updated_at_2_product_inner_packaging_types
+BEFORE UPDATE OF updated_at ON product_inner_packaging_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_2 ();
 
 -- 最後に３つ目の関数を実行
-CREATE TRIGGER updated_at_3_product_inner_packaging_types BEFORE
-UPDATE ON product_inner_packaging_types FOR EACH ROW
+CREATE TRIGGER updated_at_3_product_inner_packaging_types
+BEFORE UPDATE ON product_inner_packaging_types FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE basic_products (
@@ -264,18 +264,18 @@ CREATE TABLE basic_products (
 );
 
 -- まず１つ目の関数を実行
-CREATE TRIGGER updated_at_1_basic_products BEFORE
-UPDATE ON basic_products FOR EACH ROW
+CREATE TRIGGER updated_at_1_basic_products
+BEFORE UPDATE ON basic_products FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_1 ();
 
 -- updated_at カラムが更新された時、２つ目の関数を実行
-CREATE TRIGGER updated_at_2_basic_products BEFORE
-UPDATE OF updated_at ON basic_products FOR EACH ROW
+CREATE TRIGGER updated_at_2_basic_products
+BEFORE UPDATE OF updated_at ON basic_products FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_2 ();
 
 -- 最後に３つ目の関数を実行
-CREATE TRIGGER updated_at_3_basic_products BEFORE
-UPDATE ON basic_products FOR EACH ROW
+CREATE TRIGGER updated_at_3_basic_products
+BEFORE UPDATE ON basic_products FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE products (
@@ -289,6 +289,8 @@ CREATE TABLE products (
     cached_category_id SMALLINT NOT NULL,
     display_category_name VARCHAR(32) NOT NULL, -- 同じく直接入力ではなく導出
     is_assorted BOOLEAN NOT NULL, -- 同じく導出
+    max_piece_weight INTEGER NOT NULL, -- 同じく導出
+    max_piece_weight_unit_type_id SMALLINT NOT NULL, -- 同じく導出
     depth_mm INTEGER, -- 商品サイズ縦（奥行き） (mm)
     width_mm INTEGER, -- 商品サイズ横 (mm)
     diameter_mm INTEGER, -- 商品サイズ直径 (mm)
@@ -327,22 +329,23 @@ CREATE TABLE products (
     ),
     FOREIGN KEY (basic_id) REFERENCES basic_products (id),
     FOREIGN KEY (supplier_id) REFERENCES suppliers (id),
-    FOREIGN KEY (cached_category_id) REFERENCES product_categories (id)
+    FOREIGN KEY (cached_category_id) REFERENCES product_categories (id),
+    FOREIGN KEY (max_piece_weight_unit_type_id) REFERENCES unit_types (id)
 );
 
 -- まず１つ目の関数を実行
-CREATE TRIGGER updated_at_1_products BEFORE
-UPDATE ON products FOR EACH ROW
+CREATE TRIGGER updated_at_1_products
+BEFORE UPDATE ON products FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_1 ();
 
 -- updated_at カラムが更新された時、２つ目の関数を実行
-CREATE TRIGGER updated_at_2_products BEFORE
-UPDATE OF updated_at ON products FOR EACH ROW
+CREATE TRIGGER updated_at_2_products
+BEFORE UPDATE OF updated_at ON products FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_2 ();
 
 -- 最後に３つ目の関数を実行
-CREATE TRIGGER updated_at_3_products BEFORE
-UPDATE ON products FOR EACH ROW
+CREATE TRIGGER updated_at_3_products
+BEFORE UPDATE ON products FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE product_components (
@@ -364,18 +367,18 @@ CREATE TABLE product_components (
 );
 
 -- まず１つ目の関数を実行
-CREATE TRIGGER updated_at_1_product_components BEFORE
-UPDATE ON product_components FOR EACH ROW
+CREATE TRIGGER updated_at_1_product_components
+BEFORE UPDATE ON product_components FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_1 ();
 
 -- updated_at カラムが更新された時、２つ目の関数を実行
-CREATE TRIGGER updated_at_2_product_components BEFORE
-UPDATE OF updated_at ON product_components FOR EACH ROW
+CREATE TRIGGER updated_at_2_product_components
+BEFORE UPDATE OF updated_at ON product_components FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_2 ();
 
 -- 最後に３つ目の関数を実行
-CREATE TRIGGER updated_at_3_product_components BEFORE
-UPDATE ON product_components FOR EACH ROW
+CREATE TRIGGER updated_at_3_product_components
+BEFORE UPDATE ON product_components FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE product_combinations (
@@ -391,18 +394,18 @@ CREATE TABLE product_combinations (
 );
 
 -- まず１つ目の関数を実行
-CREATE TRIGGER updated_at_1_product_combinations BEFORE
-UPDATE ON product_combinations FOR EACH ROW
+CREATE TRIGGER updated_at_1_product_combinations
+BEFORE UPDATE ON product_combinations FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_1 ();
 
 -- updated_at カラムが更新された時、２つ目の関数を実行
-CREATE TRIGGER updated_at_2_product_combinations BEFORE
-UPDATE OF updated_at ON product_combinations FOR EACH ROW
+CREATE TRIGGER updated_at_2_product_combinations
+BEFORE UPDATE OF updated_at ON product_combinations FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_2 ();
 
 -- 最後に３つ目の関数を実行
-CREATE TRIGGER updated_at_3_product_combinations BEFORE
-UPDATE ON product_combinations FOR EACH ROW
+CREATE TRIGGER updated_at_3_product_combinations
+BEFORE UPDATE ON product_combinations FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE product_skus (
@@ -455,18 +458,18 @@ CREATE TABLE product_skus (
 );
 
 -- まず１つ目の関数を実行
-CREATE TRIGGER updated_at_1_product_skus BEFORE
-UPDATE ON product_skus FOR EACH ROW
+CREATE TRIGGER updated_at_1_product_skus
+BEFORE UPDATE ON product_skus FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_1 ();
 
 -- updated_at カラムが更新された時、２つ目の関数を実行
-CREATE TRIGGER updated_at_2_product_skus BEFORE
-UPDATE OF updated_at ON product_skus FOR EACH ROW
+CREATE TRIGGER updated_at_2_product_skus
+BEFORE UPDATE OF updated_at ON product_skus FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_2 ();
 
 -- 最後に３つ目の関数を実行
-CREATE TRIGGER updated_at_3_product_skus BEFORE
-UPDATE ON product_skus FOR EACH ROW
+CREATE TRIGGER updated_at_3_product_skus
+BEFORE UPDATE ON product_skus FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
 CREATE TABLE product_tags (
@@ -478,18 +481,18 @@ CREATE TABLE product_tags (
 );
 
 -- まず１つ目の関数を実行
-CREATE TRIGGER updated_at_1_product_tags BEFORE
-UPDATE ON product_tags FOR EACH ROW
+CREATE TRIGGER updated_at_1_product_tags
+BEFORE UPDATE ON product_tags FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_1 ();
 
 -- updated_at カラムが更新された時、２つ目の関数を実行
-CREATE TRIGGER updated_at_2_product_tags BEFORE
-UPDATE OF updated_at ON product_tags FOR EACH ROW
+CREATE TRIGGER updated_at_2_product_tags
+BEFORE UPDATE OF updated_at ON product_tags FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_2 ();
 
 -- 最後に３つ目の関数を実行
-CREATE TRIGGER updated_at_3_product_tags BEFORE
-UPDATE ON product_tags FOR EACH ROW
+CREATE TRIGGER updated_at_3_product_tags
+BEFORE UPDATE ON product_tags FOR EACH ROW
 EXECUTE PROCEDURE trg_updated_at_3 ();
 
 -- このテーブルは updated_at を持たせない
