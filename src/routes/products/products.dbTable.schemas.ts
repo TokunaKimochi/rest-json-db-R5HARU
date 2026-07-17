@@ -155,6 +155,8 @@ export const viewSkuDetailsRowSchema = z.object({
   is_set_product: z.boolean(),
   display_category_name: z.string().min(1).max(32),
   is_assorted: z.boolean(),
+  max_piece_weight: z.number().int().positive(),
+  max_piece_weight_unit_type_id: z.number().int().positive(),
   available_date: z.date(),
   discontinued_date: z.date(),
 
