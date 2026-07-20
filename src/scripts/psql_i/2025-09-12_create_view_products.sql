@@ -1,16 +1,20 @@
--- ?ｿｽV?ｿｽt?ｿｽgJIS CRLF ?ｿｽﾅ保托ｿｽ?ｿｽ?ｿｽ?ｿｽﾄコ?ｿｽ}?ｿｽ?ｿｽ?ｿｽh?ｿｽv?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽv?ｿｽg?ｿｽﾅ趣ｿｽ?ｿｽs
+-- シフトJIS CRLF で保存してコマンドプロンプトで実行
 -- psql> \i <FULL_PATH(unix like)>.sql
-/* == ?ｿｽ?ｿｽ?ｿｽO?ｿｽ?ｿｽ?ｿｽ?ｿｽ ==
-- ?ｿｽ?ｿｽ?ｿｽo?ｿｽ[?ｿｽW?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽﾌ抵ｿｽ`?ｿｽ?ｿｽ?ｿｽN?ｿｽ?ｿｽ?ｿｽ[?ｿｽ?ｿｽ?ｿｽA?ｿｽb?ｿｽv */
+/* == 事前処理 ==
+- 旧バージョンの定義をクリーンアップ */
 DROP VIEW IF EXISTS v_sku_details;
 
 DROP VIEW IF EXISTS v_product_combinations;
 
 DROP VIEW IF EXISTS v_product_components;
 
+DROP VIEW IF EXISTS v_product_sku_tags;
+
+DROP VIEW IF EXISTS v_product_skus_tag_counts;
+
 DROP VIEW IF EXISTS v_single_products;
 
---- ?ｿｽ?ｿｽ?ｿｽi?ｿｽﾚ細ビ?ｿｽ?ｿｽ?ｿｽ[
+--- 製品詳細ビュー
 CREATE OR REPLACE VIEW v_sku_details AS
 SELECT
     -- SKU
@@ -85,17 +89,17 @@ FROM
     JOIN product_categories pc ON p.cached_category_id = pc.id
     LEFT JOIN product_packaging_types ppt ON bp.packaging_type_id = ppt.id;
 
---- ?ｿｽZ?ｿｽb?ｿｽg?ｿｽi?ｿｽ\?ｿｽ?ｿｽ?ｿｽr?ｿｽ?ｿｽ?ｿｽ[
+--- セット品構成ビュー
 CREATE OR REPLACE VIEW v_product_combinations AS
 SELECT
     p.id AS product_id,
     pcmb.id AS combination_id,
     pcmb.quantity,
-    -- Set Product (?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽi)
+    -- Set Product (完成商品)
     p.id AS set_product_id,
     p.name AS set_product_name,
     p.short_name AS set_product_short_name,
-    -- Item Product (?ｿｽ?ｿｽ?ｿｽ?､品)
+    -- Item Product (内訳商品)
     pcmb.item_product_id,
     item_p.name AS item_product_name,
     item_p.short_name AS item_product_short_name,
@@ -106,7 +110,7 @@ FROM
     JOIN product_combinations pcmb ON p.id = pcmb.product_id
     JOIN products item_p ON pcmb.item_product_id = item_p.id;
 
---- ?ｿｽ?ｿｽ?ｿｽi?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽr?ｿｽ?ｿｽ?ｿｽ[
+--- 製品成分ビュー
 CREATE OR REPLACE VIEW v_product_components AS
 SELECT
     p.id AS product_id,
@@ -133,7 +137,7 @@ FROM
     LEFT JOIN unit_types ut ON pcmp.unit_type_id = ut.id
     LEFT JOIN product_inner_packaging_types ipt ON pcmp.inner_packaging_type_id = ipt.id;
 
--- ?ｿｽ?ｿｽ?ｿｽi SKU ?ｿｽ^?ｿｽO?ｿｽr?ｿｽ?ｿｽ?ｿｽ[
+-- 製品 SKU タグビュー
 CREATE OR REPLACE VIEW v_product_sku_tags AS
 SELECT
     pst.product_skus_id,
@@ -147,13 +151,13 @@ FROM
     JOIN product_sku_tags pst ON pt.id = pst.product_tags_id
     JOIN product_skus ps ON pst.product_skus_id = ps.id;
 
--- ?ｿｽe?ｿｽ^?ｿｽO?ｿｽﾉ、?ｿｽﾇゑｿｽ SKU ?ｿｽ?ｿｽ?ｿｽ?ｿｽﾂ紐?ｿｽt?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽﾄゑｿｽ?ｿｽ驍ｩ
+-- 各タグに、どの SKU が幾つ紐付けられているか
 CREATE OR REPLACE VIEW v_product_skus_tag_counts AS
 SELECT
     pt.id AS tag_id,
     pt.label,
     COUNT(ps.id) AS tagged_skus_count,
-    -- ?ｿｽ?ｿｽ?ｿｽi?ｿｽ?ｿｽ?ｿｽﾈゑｿｽ?ｿｽ鼾??ｿｽ?ｿｽ NULL ?ｿｽﾉゑｿｽ?ｿｽ驍ｽ?ｿｽ?ｿｽ FILTER ?ｿｽ?ｿｽﾇ会ｿｽ
+    -- 商品がない場合は NULL にするため FILTER を追加
     ARRAY_AGG(ps.id) FILTER (
         WHERE
             ps.id IS NOT NULL
@@ -166,10 +170,10 @@ GROUP BY
     pt.id,
     pt.label;
 
--- ?ｿｽZ?ｿｽb?ｿｽg?ｿｽi?ｿｽ?ｿｽ SKU ?ｿｽ?ｿｽ?ｿｽ?ｿｽ骼橸ｿｽﾌア?ｿｽC?ｿｽe?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ齬暦ｿｽr?ｿｽ?ｿｽ?ｿｽ[
+-- セット品や SKU を作る時のアイテム候補一覧ビュー
 CREATE OR REPLACE VIEW v_single_products AS
 SELECT
-    -- Product (?ｿｽP?ｿｽﾌ擾ｿｽ?ｿｽi)
+    -- Product (単体商品)
     p.id AS product_id,
     p.name AS product_name,
     p.short_name AS product_short_name,
@@ -193,9 +197,9 @@ SELECT
     pst.name AS sourcing_type,
     ppt.name AS packaging_type,
     -- Supplier
-    -- name2 ?ｿｽ?ｿｽ NOT NULL DEFAULT '' ?ｿｽﾌゑｿｽ?ｿｽﾟ、?ｿｽ?ｶ趣ｿｽ?ｿｽﾌとゑｿｽ?ｿｽﾉ余?ｿｽ?ｿｽ?ｿｽﾈ厄ｿｽ?ｿｽ?ｿｽ?ｿｽX?ｿｽy?ｿｽ[?ｿｽX?ｿｽ?ｿｽ?ｿｽc?ｿｽ?ｿｽﾈゑｿｽ?ｿｽ謔､?ｿｽ?ｿｽ RTRIM ?ｿｽ?ｿｽ?ｿｽg?ｿｽp
+    -- name2 は NOT NULL DEFAULT '' のため、空文字のときに余分な末尾スペースが残らないように RTRIM を使用
     RTRIM(s.name1 || ' ' || s.name2) AS supplier_name,
-    -- First Component (?ｿｽ?ｿｽ\?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽE?ｿｽ?ｿｽ?ｿｽe?ｿｽ?ｿｽ)
+    -- First Component (代表成分・内容量)
     pcmp.title AS component_title,
     pc.name AS component_category_name,
     pcmp.symbol AS component_symbol,
@@ -209,8 +213,8 @@ FROM
     LEFT JOIN suppliers s ON p.supplier_id = s.id
     LEFT JOIN product_sourcing_types pst ON bp.sourcing_type_id = pst.id
     LEFT JOIN product_packaging_types ppt ON bp.packaging_type_id = ppt.id
-    -- LATERAL JOIN: ?ｿｽe?ｿｽ?ｿｽ?ｿｽi(p)?ｿｽﾉ紐?ｿｽﾃゑｿｽ?ｿｽﾅ擾ｿｽ?ｿｽ?ｿｽ1?ｿｽ?ｿｽ?ｿｽﾌ撰ｿｽ?ｿｽ?ｿｽ(pcmp)?ｿｽ?ｿｽ?ｿｽ謫ｾ
-    -- LATERAL ?ｿｽﾍ外?ｿｽ?ｿｽ?ｿｽﾌ行 (p) ?ｿｽ?ｿｽ?ｿｽQ?ｿｽﾆでゑｿｽ?ｿｽ驍ｽ?ｿｽﾟ、?ｿｽT?ｿｽu?ｿｽN?ｿｽG?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ p.id ?ｿｽ?ｿｽ?ｿｽg?ｿｽ?ｿｽ?ｿｽﾄ該?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽi?ｿｽ?ｿｽ
+    -- LATERAL JOIN: 各製品(p)に紐づく最初の1件の成分(pcmp)を取得
+    -- LATERAL は外側の行 (p) を参照できるため、サブクエリ内で p.id を使って該当成分を絞る
     LEFT JOIN LATERAL (
         SELECT
             pcmp.title,
@@ -223,13 +227,13 @@ FROM
         FROM
             product_components pcmp
         WHERE
-            -- ?ｿｽT?ｿｽu?ｿｽN?ｿｽG?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽﾅ外?ｿｽ?ｿｽ?ｿｽ?ｿｽ p.id ?ｿｽ?ｿｽ?ｿｽQ?ｿｽﾆゑｿｽ?ｿｽﾄゑｿｽ?ｿｽ?ｿｽi?ｿｽY?ｿｽ?ｿｽ?ｿｽs?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽﾎサ?ｿｽu?ｿｽN?ｿｽG?ｿｽ?ｿｽ?ｿｽﾍ具ｿｽﾉなゑｿｽj
+            -- サブクエリ内で外側の p.id を参照している（該当行が無ければサブクエリは空になる）
             pcmp.product_id = p.id
         ORDER BY
             pcmp.id ASC
         LIMIT
             1
-            -- ?ｿｽT?ｿｽu?ｿｽN?ｿｽG?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽﾌ場合?ｿｽALEFT JOIN LATERAL ?ｿｽﾉゑｿｽ?ｿｽ pcmp.* ?ｿｽ?ｿｽ NULL ?ｿｽﾉなゑｿｽ
+            -- サブクエリが空の場合、LEFT JOIN LATERAL により pcmp.* は NULL になる
     ) pcmp ON TRUE
     LEFT JOIN product_categories pc ON pcmp.category_id = pc.id
     LEFT JOIN unit_types ut ON pcmp.unit_type_id = ut.id

@@ -3,13 +3,17 @@
 /* == 事前処理 ==
 - 旧バージョンの定義をクリーンアップ */
 -- CASCADE オプションでテーブル削除時に関連ビューとトリガーも削除
+DROP VIEW IF EXISTS v_ids_and_names_for_products;
+
+DROP TABLE IF EXISTS product_sku_tags CASCADE;
+
+DROP TABLE IF EXISTS product_tags CASCADE;
+
 DROP TABLE IF EXISTS product_skus CASCADE;
 
 DROP TABLE IF EXISTS product_combinations CASCADE;
 
 DROP TABLE IF EXISTS product_components CASCADE;
-
-DROP TABLE IF EXISTS unit_types CASCADE;
 
 DROP TABLE IF EXISTS product_inner_packaging_types CASCADE;
 
@@ -18,6 +22,8 @@ DROP TABLE IF EXISTS products CASCADE;
 DROP TABLE IF EXISTS suppliers CASCADE;
 
 DROP TABLE IF EXISTS basic_products CASCADE;
+
+DROP TABLE IF EXISTS unit_types CASCADE;
 
 DROP TABLE IF EXISTS product_sourcing_types CASCADE;
 

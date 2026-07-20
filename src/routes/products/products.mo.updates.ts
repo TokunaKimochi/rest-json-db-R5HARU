@@ -8,8 +8,8 @@ import {
   formatProductData,
   formatSkusData,
   insertTags,
-  resolveRegularCategory,
-  resolveSetCategory,
+  resolveRegularProductSpecs,
+  resolveSetProductSpecs,
   upsertOne,
 } from './products.mo';
 import {
@@ -54,7 +54,8 @@ export const updateOneRegularProduct = async (
       throw new UnexpectedError('Inconsistent ID value in table `basic_products`');
 
     // 2. products
-    const { resolvedCategoryId, resolvedCategoryName, isAssorted } = await resolveRegularCategory(t, body);
+    const { resolvedCategoryId, resolvedCategoryName, isAssorted, maxPieceWeight, maxPieceWeightUnitTypeId } =
+      await resolveRegularProductSpecs(t, body);
     const productsTbResults = await upsertOne({
       t,
       table: 'products',
@@ -64,6 +65,8 @@ export const updateOneRegularProduct = async (
         resolvedCategoryId,
         resolvedCategoryName,
         isAssorted,
+        maxPieceWeight,
+        maxPieceWeightUnitTypeId,
         'edit'
       ),
       schema: productsTbRowSchema,
@@ -187,7 +190,8 @@ export const updateOneSetProduct = async (
       throw new UnexpectedError('Inconsistent ID value in table `basic_products`');
 
     // 2. products
-    const { resolvedCategoryId, resolvedCategoryName, isAssorted } = await resolveSetCategory(t, body);
+    const { resolvedCategoryId, resolvedCategoryName, isAssorted, maxPieceWeight, maxPieceWeightUnitTypeId } =
+      await resolveSetProductSpecs(t, body);
     const productsTbResults = await upsertOne({
       t,
       table: 'products',
@@ -197,6 +201,8 @@ export const updateOneSetProduct = async (
         resolvedCategoryId,
         resolvedCategoryName,
         isAssorted,
+        maxPieceWeight,
+        maxPieceWeightUnitTypeId,
         'edit'
       ),
       schema: productsTbRowSchema,

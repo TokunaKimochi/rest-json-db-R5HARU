@@ -15,8 +15,8 @@ import {
   formatProductData,
   formatSkusData,
   insertTags,
-  resolveRegularCategory,
-  resolveSetCategory,
+  resolveRegularProductSpecs,
+  resolveSetProductSpecs,
   upsertOne,
 } from './products.mo';
 
@@ -53,7 +53,8 @@ export const registerOneRegularProduct = async (
     }
 
     // 2. products
-    const { resolvedCategoryId, resolvedCategoryName, isAssorted } = await resolveRegularCategory(t, body);
+    const { resolvedCategoryId, resolvedCategoryName, isAssorted, maxPieceWeight, maxPieceWeightUnitTypeId } =
+      await resolveRegularProductSpecs(t, body);
     const productsTbResults = await upsertOne({
       t,
       table: 'products',
@@ -63,6 +64,8 @@ export const registerOneRegularProduct = async (
         resolvedCategoryId,
         resolvedCategoryName,
         isAssorted,
+        maxPieceWeight,
+        maxPieceWeightUnitTypeId,
         'new'
       ),
       schema: productsTbRowSchema,
@@ -166,7 +169,8 @@ export const registerOneSetProduct = async (
     }
 
     // 2. products
-    const { resolvedCategoryId, resolvedCategoryName, isAssorted } = await resolveSetCategory(t, body);
+    const { resolvedCategoryId, resolvedCategoryName, isAssorted, maxPieceWeight, maxPieceWeightUnitTypeId } =
+      await resolveSetProductSpecs(t, body);
     const productsTbResults = await upsertOne({
       t,
       table: 'products',
@@ -176,6 +180,8 @@ export const registerOneSetProduct = async (
         resolvedCategoryId,
         resolvedCategoryName,
         isAssorted,
+        maxPieceWeight,
+        maxPieceWeightUnitTypeId,
         'new'
       ),
       schema: productsTbRowSchema,
@@ -280,13 +286,22 @@ export const registerOneNewRevisionProduct = async (
       });
     const basicProductsTbRow = basicProductsTbRowSchema.parse(row);
     // 2. products
-    const { resolvedCategoryId, resolvedCategoryName, isAssorted } = isSet
-      ? await resolveSetCategory(t, body)
-      : await resolveRegularCategory(t, body);
+    const { resolvedCategoryId, resolvedCategoryName, isAssorted, maxPieceWeight, maxPieceWeightUnitTypeId } = isSet
+      ? await resolveSetProductSpecs(t, body)
+      : await resolveRegularProductSpecs(t, body);
     const productsTbResults = await upsertOne({
       t,
       table: 'products',
-      input: formatProductData(body, basicProductsTbRow, resolvedCategoryId, resolvedCategoryName, isAssorted, 'new'),
+      input: formatProductData(
+        body,
+        basicProductsTbRow,
+        resolvedCategoryId,
+        resolvedCategoryName,
+        isAssorted,
+        maxPieceWeight,
+        maxPieceWeightUnitTypeId,
+        'new'
+      ),
       schema: productsTbRowSchema,
       returning: '*, available_date::text AS available_date, discontinued_date::text AS discontinued_date',
       updateId: null,

@@ -114,6 +114,8 @@ export const formatProductData = (
   category_id: number,
   display_category_name: string,
   is_assorted: boolean,
+  max_piece_weight: number,
+  max_piece_weight_unit_type_id: number,
   mode: 'new' | 'edit'
 ) => {
   const [depth, width] = sortDimensions(body.depth_mm, body.width_mm);
@@ -135,6 +137,8 @@ export const formatProductData = (
     cached_category_id: category_id,
     display_category_name: is_assorted ? `${display_category_name} 他` : display_category_name,
     is_assorted,
+    max_piece_weight,
+    max_piece_weight_unit_type_id,
     depth_mm: depth ?? null,
     width_mm: width ?? null,
     diameter_mm: body.diameter_mm ?? null,
@@ -308,19 +312,74 @@ export async function upsertOne<T>({
     throw new DataBaseError(err as string);
   }
 }
-
-export const resolveRegularCategory = async (
+export const resolveRegularProductSpecs = async (
   t: ITask<object>,
   body: PostReqNewProduct | PutReqProduct | PostReqProductRevision
 ): Promise<{
   resolvedCategoryId: number;
   resolvedCategoryName: string;
   isAssorted: boolean;
+  maxPieceWeight: number;
+  maxPieceWeightUnitTypeId: number;
 }> => {
-  // Set で順番を維持しつつ重複を消し、スプレッド構文で配列に戻す
-  const categoryIds = [...new Set(body.components.map((component) => component.category_id))];
+  const components = body.components ?? [];
+
+  // reduce の累積値 (accumulator)
+  interface Acc {
+    // 総内容量の内一番多くを占める内容物の合計（amount * pieces の最大値）
+    majorityTotalAmount: number;
+    // 上記多数派のカテゴリID
+    majorityCategoryId: number;
+    // 全体の中で最大の個包装の重さ（単一 piece の amount の最大値）
+    maxPieceWeight: number;
+    // 上記 maxPieceWeight に対応する単位ID
+    maxPieceWeightUnitTypeId: number;
+    // カテゴリIDの重複を排除しつつ最初に出現した順序を保持するための Set
+    seenCategoryIds: Set<number>;
+    // 順序を保持したカテゴリID配列
+    orderedCategoryIds: number[];
+  }
+
+  const initialAcc: Acc = {
+    majorityTotalAmount: 0,
+    majorityCategoryId: CATEGORY_ID.UNCATEGORIZED.Int,
+    maxPieceWeight: 0,
+    maxPieceWeightUnitTypeId: 1,
+    seenCategoryIds: new Set<number>(),
+    orderedCategoryIds: [],
+  };
+
+  // reduce で副作用を一箇所にまとめ、集計ロジックを明確にする
+  const stats = components.reduce<Acc>((acc, component) => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { amount, pieces, category_id, unit_type_id } = component;
+    const totalAmountForComponent = amount * pieces;
+
+    // 「総内容量で最も多い」判定
+    if (totalAmountForComponent > acc.majorityTotalAmount) {
+      acc.majorityTotalAmount = totalAmountForComponent;
+      acc.majorityCategoryId = category_id;
+    }
+
+    // 「個包装あたりの重さで最大」判定
+    if (amount > acc.maxPieceWeight) {
+      acc.maxPieceWeight = amount;
+      acc.maxPieceWeightUnitTypeId = unit_type_id;
+    }
+
+    // カテゴリID を順序を保って一意に収集
+    if (!acc.seenCategoryIds.has(category_id)) {
+      acc.seenCategoryIds.add(category_id);
+      acc.orderedCategoryIds.push(category_id);
+    }
+
+    return acc;
+  }, initialAcc);
+
+  const categoryIds = stats.orderedCategoryIds;
+
   const { name: categoryName } = await t
-    .one('SELECT name FROM product_categories WHERE id = $1', [categoryIds[0]])
+    .one('SELECT name FROM product_categories WHERE id = $1', [stats.majorityCategoryId])
     .then((row) => z.object({ name: z.string().min(1).max(32) }).parse(row))
     .catch((err: string) => {
       throw new UnexpectedError(err);
@@ -330,13 +389,19 @@ export const resolveRegularCategory = async (
   const hasUncategorized = categoryIds.includes(CATEGORY_ID.UNCATEGORIZED.Int);
   const hasOthers = categoryIds.includes(CATEGORY_ID.OTHERS.Int);
 
-  // 引数に渡すIDと名前を決定（1 > 2 > それ以外のカテゴリー の優先順位）
+  /**
+   * 優先順位：
+   * - 「未分類」が含まれていれば最優先で未分類を返す
+   * - 次に「その他」が含まれていればその他を返す
+   * - それ以外は多数派のカテゴリを返す
+   */
   // eslint-disable-next-line no-nested-ternary
   const resolvedCategoryId = hasUncategorized
     ? CATEGORY_ID.UNCATEGORIZED.Int
     : hasOthers
     ? CATEGORY_ID.OTHERS.Int
-    : categoryIds[0];
+    : stats.majorityCategoryId;
+
   // eslint-disable-next-line no-nested-ternary
   const resolvedCategoryName = hasUncategorized
     ? CATEGORY_ID.UNCATEGORIZED.Str
@@ -344,50 +409,118 @@ export const resolveRegularCategory = async (
     ? CATEGORY_ID.OTHERS.Str
     : categoryName;
 
-  // 「未分類」や「その他」が含まれる場合は false、それ以外で複数カテゴリ or アソート含なら true
+  // 「未分類」や「その他」が含まれる場合は false、それ以外で複数カテゴリなら true
   const isAssorted = !hasUncategorized && !hasOthers && categoryIds.length > 1;
 
   return {
     resolvedCategoryId,
     resolvedCategoryName,
     isAssorted,
+    maxPieceWeight: stats.maxPieceWeight,
+    maxPieceWeightUnitTypeId: stats.maxPieceWeightUnitTypeId,
   };
 };
 
-export const resolveSetCategory = async (
+export const resolveSetProductSpecs = async (
   t: ITask<object>,
   body: PostReqNewSetProduct | PutReqSetProduct | PostReqSetProductRevision
 ): Promise<{
   resolvedCategoryId: number;
   resolvedCategoryName: string;
   isAssorted: boolean;
+  maxPieceWeight: number;
+  maxPieceWeightUnitTypeId: number;
 }> => {
-  // Set で順番を維持しつつ重複を消し、スプレッド構文で配列に戻す
-  const itemIds = [...new Set(body.combinations.map((item) => item.item_product_id))];
+  // 組み合わせ内の item_product_id を順序を保って一意に抽出
+  const itemIds = [...new Set((body.combinations ?? []).map((item) => item.item_product_id))];
+
+  // 組み合わせが空ならエラー
+  if (itemIds.length === 0) {
+    throw new UnexpectedError('No item_product_id found in body.combinations');
+  }
+
+  const productsTbRowSchemaWithoutReturning = productsTbRowSchema.extend({
+    // この２つは insert の RETURNING 句で DATE 型を YYYY-MM-DD にキャストする前提の定義
+    // なので、ここでは上書き
+    available_date: z.date(),
+    discontinued_date: z.date(),
+  });
   const itemProducts = await t
     .many('SELECT * FROM products WHERE id IN ($1:csv)', [itemIds])
-    .then((rows) =>
-      z
-        .array(
-          productsTbRowSchema.extend({
-            // この２つは insert の RETURNING 句で DATE 型を YYYY-MM-DD にキャストする前提の定義
-            // なので、ここでは上書き
-            available_date: z.date(),
-            discontinued_date: z.date(),
-          })
-        )
-        .min(1)
-        .parse(rows)
-    )
+    .then((rows) => z.array(productsTbRowSchemaWithoutReturning).min(1).parse(rows))
     .catch((err: string) => {
       throw new UnexpectedError(err);
     });
 
-  const categoryIds = [...new Set(itemProducts.map((item) => item.cached_category_id))];
-  const isAssortedArr = [...new Set(itemProducts.map((item) => item.is_assorted))];
+  // reduce の累積値（accumulator）
+  interface Acc {
+    // 構成商品の中で最大の個包装の重さ
+    maxPieceWeight: number;
+    // 上記 maxPieceWeight に対応する単位ID
+    maxPieceWeightUnitTypeId: number;
+    // 上記 maxPieceWeight に対応するカテゴリID（最大個包装のカテゴリ）
+    maxPieceWeightCategoryId: number;
+    // カテゴリIDの重複を排除しつつ最初に出現した順序を保持するための Set
+    seenCategoryIds: Set<number>;
+    // 順序を保持したカテゴリID配列（最終的にこれを使う）
+    orderedCategoryIds: number[];
+    // 各構成商品の is_assorted フラグを順序を保って収集（いずれか true ならアソート扱い）
+    orderedAssortedFlags: boolean[];
+  }
+
+  const initialAcc: Acc = {
+    maxPieceWeight: 0,
+    maxPieceWeightUnitTypeId: 1,
+    maxPieceWeightCategoryId: CATEGORY_ID.UNCATEGORIZED.Int,
+    seenCategoryIds: new Set<number>(),
+    orderedCategoryIds: [],
+    orderedAssortedFlags: [],
+  };
+
+  // productsTbRowSchemaWithoutReturning の型を取り出す
+  type ProductRow = z.infer<typeof productsTbRowSchemaWithoutReturning>;
+
+  // id -> product の Map を作る（キャスト不要）
+  const productById = new Map<number, ProductRow>();
+  for (const p of itemProducts) {
+    productById.set(p.id, p);
+  }
+
+  // itemIds に対して DB から取得できなかった id を検出して明示的にエラー
+  const missingIds = itemIds.filter((id) => !productById.has(id));
+  if (missingIds.length > 0) {
+    throw new UnexpectedError(`Products not found for ids: ${missingIds.join(',')}`);
+  }
+
+  // itemIds の順序で走査して集計（順序を保持したカテゴリ収集のため）
+  const stats = itemIds.reduce<Acc>((acc, id) => {
+    const item = productById.get(id)!; // ここでは既に存在を保証済みなので非 null アサーション
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { max_piece_weight, max_piece_weight_unit_type_id, cached_category_id, is_assorted } = item;
+
+    // 「個包装あたりの重さで最大」判定
+    if (max_piece_weight > acc.maxPieceWeight) {
+      acc.maxPieceWeight = max_piece_weight;
+      acc.maxPieceWeightUnitTypeId = max_piece_weight_unit_type_id;
+      acc.maxPieceWeightCategoryId = cached_category_id;
+    }
+
+    // カテゴリID を順序を保って一意に収集
+    if (!acc.seenCategoryIds.has(cached_category_id)) {
+      acc.seenCategoryIds.add(cached_category_id);
+      acc.orderedCategoryIds.push(cached_category_id);
+    }
+
+    // アソート真偽値を順序を保って収集
+    acc.orderedAssortedFlags.push(Boolean(is_assorted));
+
+    return acc;
+  }, initialAcc);
+
+  const categoryIds = stats.orderedCategoryIds;
 
   const { name: categoryName } = await t
-    .one('SELECT name FROM product_categories WHERE id = $1', [categoryIds[0]])
+    .one('SELECT name FROM product_categories WHERE id = $1', [stats.maxPieceWeightCategoryId])
     .then((row) => z.object({ name: z.string().min(1).max(32) }).parse(row))
     .catch((err: string) => {
       throw new UnexpectedError(err);
@@ -397,13 +530,19 @@ export const resolveSetCategory = async (
   const hasUncategorized = categoryIds.includes(CATEGORY_ID.UNCATEGORIZED.Int);
   const hasOthers = categoryIds.includes(CATEGORY_ID.OTHERS.Int);
 
-  // 引数に渡すIDと名前を決定（1 > 2 > それ以外のカテゴリー の優先順位）
+  /**
+   * 優先順位：
+   * - 「未分類」が含まれていれば最優先で未分類を返す
+   * - 次に「その他」が含まれていればその他を返す
+   * - それ以外は最大個包装のカテゴリを返す
+   */
   // eslint-disable-next-line no-nested-ternary
   const resolvedCategoryId = hasUncategorized
     ? CATEGORY_ID.UNCATEGORIZED.Int
     : hasOthers
     ? CATEGORY_ID.OTHERS.Int
-    : categoryIds[0];
+    : stats.maxPieceWeightCategoryId;
+
   // eslint-disable-next-line no-nested-ternary
   const resolvedCategoryName = hasUncategorized
     ? CATEGORY_ID.UNCATEGORIZED.Str
@@ -411,13 +550,16 @@ export const resolveSetCategory = async (
     ? CATEGORY_ID.OTHERS.Str
     : categoryName;
 
-  // 「未分類」や「その他」が含まれる場合は false、それ以外で複数カテゴリ or アソート含なら true
-  const isAssorted = !hasUncategorized && !hasOthers && (categoryIds.length > 1 || isAssortedArr.includes(true));
+  // 「未分類」や「その他」が含まれる場合は false、それ以外で複数カテゴリ or 構成商品のいずれかがアソートなら true
+  const isAssorted =
+    !hasUncategorized && !hasOthers && (categoryIds.length > 1 || stats.orderedAssortedFlags.includes(true));
 
   return {
     resolvedCategoryId,
     resolvedCategoryName,
     isAssorted,
+    maxPieceWeight: stats.maxPieceWeight,
+    maxPieceWeightUnitTypeId: stats.maxPieceWeightUnitTypeId,
   };
 };
 

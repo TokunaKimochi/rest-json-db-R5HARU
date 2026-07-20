@@ -197,6 +197,8 @@ export const postReqNewSetProductSchema = basicProductsSchema.extend({
     cached_category_id: true,
     display_category_name: true,
     is_assorted: true,
+    max_piece_weight: true,
+    max_piece_weight_unit_type_id: true,
   }).shape,
   ...productCombinationsSchema.shape,
   // skus_name は productsSchema.short_name をコピー
