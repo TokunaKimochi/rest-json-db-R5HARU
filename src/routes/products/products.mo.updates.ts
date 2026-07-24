@@ -114,7 +114,7 @@ export const updateOneRegularProduct = async (
     const productSkusTbResults = await upsertOne({
       t,
       table: 'product_skus',
-      input: formatSkusData(body, productsTbResults.rows),
+      input: formatSkusData(body, productsTbResults.rows, 'edit'),
       schema: productSkusTbRowSchema,
       updateId: body.sku_id,
     });
@@ -245,7 +245,7 @@ export const updateOneSetProduct = async (
     const productSkusTbResults = await upsertOne({
       t,
       table: 'product_skus',
-      input: formatSkusData(body, productsTbResults.rows),
+      input: formatSkusData(body, productsTbResults.rows, 'edit'),
       schema: productSkusTbRowSchema,
       updateId: body.sku_id,
     });

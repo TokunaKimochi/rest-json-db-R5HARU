@@ -183,6 +183,7 @@ export const postReqNewProductSchema = basicProductsSchema.extend({
   ...productComponentsSchema.shape,
   // skus_name は productsSchema.short_name をコピー
   // product_id はコピー
+  // ulid_str はサーバ側で計算
   ...productSkusSchema.omit({ skus_name: true, product_id: true }).shape,
 });
 
@@ -203,6 +204,7 @@ export const postReqNewSetProductSchema = basicProductsSchema.extend({
   ...productCombinationsSchema.shape,
   // skus_name は productsSchema.short_name をコピー
   // product_id はコピー
+  // ulid_str はサーバ側で計算
   ...productSkusSchema.omit({ skus_name: true, product_id: true }).shape,
 });
 
@@ -215,6 +217,7 @@ export const postReqProductRevisionSchema = productsSchema
     ...productComponentsSchema.shape,
     // skus_name は productsSchema.short_name をコピー
     // product_id はコピー
+    // ulid_str はサーバ側で計算
     ...productSkusSchema.omit({ skus_name: true, product_id: true }).shape,
   })
   .omit({
@@ -234,6 +237,7 @@ export const postReqSetProductRevisionSchema = productsSchema
     ...productCombinationsSchema.shape,
     // skus_name は productsSchema.short_name をコピー
     // product_id はコピー
+    // ulid_str はサーバ側で計算
     ...productSkusSchema.omit({ skus_name: true, product_id: true }).shape,
   })
   .omit({
@@ -274,6 +278,7 @@ export const putReqProductSchema = basicProductsSchema.extend({
     })
     .array()
     .min(1),
+  // ulid_str は更新不可
   ...productSkusSchema.shape,
   sku_id: z.number().int().positive(),
 });
@@ -295,6 +300,7 @@ export const putReqSetProductSchema = basicProductsSchema.extend({
     })
     .array()
     .min(1),
+  // ulid_str は更新不可
   ...productSkusSchema.shape,
   sku_id: z.number().int().positive(),
 });

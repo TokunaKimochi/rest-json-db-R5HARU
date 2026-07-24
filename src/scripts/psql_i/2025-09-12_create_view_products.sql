@@ -20,6 +20,7 @@ SELECT
     -- SKU
     ps.id AS sku_id,
     ps.name AS sku_name,
+    ps.ulid_str AS sku_ulid_str,
     ps.priority,
     ps.case_quantity,
     ps.inner_carton_quantity,

@@ -106,7 +106,7 @@ export const registerOneRegularProduct = async (
     const productSkusTbResults = await upsertOne({
       t,
       table: 'product_skus',
-      input: formatSkusData(body, productsTbResults.rows),
+      input: formatSkusData(body, productsTbResults.rows, 'new'),
       schema: productSkusTbRowSchema,
       updateId: null,
     });
@@ -217,7 +217,7 @@ export const registerOneSetProduct = async (
     const productSkusTbResults = await upsertOne({
       t,
       table: 'product_skus',
-      input: formatSkusData(body, productsTbResults.rows),
+      input: formatSkusData(body, productsTbResults.rows, 'new'),
       schema: productSkusTbRowSchema,
       updateId: null,
     });
@@ -357,7 +357,7 @@ export const registerOneNewRevisionProduct = async (
     const productSkusTbResults = await upsertOne({
       t,
       table: 'product_skus',
-      input: formatSkusData(body, productsTbResults.rows),
+      input: formatSkusData(body, productsTbResults.rows, 'new'),
       schema: productSkusTbRowSchema,
       updateId: null,
     });
@@ -438,7 +438,7 @@ export const registerOneQuantityVariantProduct = async (
     const productSkusTbResults = await upsertOne({
       t,
       table: 'product_skus',
-      input: formatSkusData(body, productsTbRow),
+      input: formatSkusData(body, productsTbRow, 'new'),
       schema: productSkusTbRowSchema,
       updateId: null,
     });

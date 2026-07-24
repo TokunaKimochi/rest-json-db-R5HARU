@@ -306,7 +306,7 @@ CREATE TABLE products (
     discontinued_date DATE NOT NULL DEFAULT '2555-01-01',
     note TEXT,
     -- 後で（同時ではない）画像などを関連付ける際に使用するユニークキーとして
-    ulid_str VARCHAR(26) UNIQUE,
+    ulid_str VARCHAR(26) UNIQUE NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     CONSTRAINT chk_product_dimensions CHECK (
@@ -434,6 +434,8 @@ CREATE TABLE product_skus (
     inner_carton_width_mm INTEGER, -- ボールサイズ横 (mm)
     inner_carton_height_mm INTEGER, -- ボールサイズ高さ (mm)
     inner_carton_weight_g INTEGER, -- ボール重量 (g)
+    -- 後で（同時ではない）画像などを関連付ける際に使用するユニークキーとして
+    ulid_str VARCHAR(26) UNIQUE NOT NULL,
     -- B はゼロでなければ在庫チェック表に載せる
     priority level_abc_enum NOT NULL DEFAULT 'B',
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),

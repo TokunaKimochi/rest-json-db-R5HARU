@@ -161,7 +161,8 @@ export const formatSkusData = (
     | PostReqProductRevision
     | PostReqSetProductRevision
     | ProductSkus,
-  productsTbRow: ProductsTbRow
+  productsTbRow: ProductsTbRow,
+  mode: 'new' | 'edit'
 ) => {
   let name: string;
   if ('skus_name' in body) {
@@ -171,7 +172,15 @@ export const formatSkusData = (
   }
   const [caseDepth, caseWidth] = sortDimensions(body.case_depth_mm, body.case_width_mm);
   const [innerDepth, innerWidth] = sortDimensions(body.inner_carton_depth_mm, body.inner_carton_width_mm);
-  return {
+
+  const input = ((o) =>
+    // 最後にオブジェクトに戻す
+    Object.fromEntries(
+      // [key,value] の配列に変換
+      Object.entries(o)
+        // 値が undefined のものを排除
+        .filter(([, v]) => v !== undefined)
+    ))({
     product_id: productsTbRow.id,
     name,
     case_quantity: body.case_quantity ?? null,
@@ -186,8 +195,10 @@ export const formatSkusData = (
     inner_carton_width_mm: innerWidth ?? null,
     inner_carton_height_mm: body.inner_carton_height_mm ?? null,
     inner_carton_weight_g: body.inner_carton_weight_g ?? null,
+    ulid_str: mode === 'new' ? ulid() : undefined,
     priority: body.priority,
-  };
+  });
+  return input;
 };
 
 export async function insertTags(t: ITask<object>, tags: ProductSkus['tags'], productSkusTbRow: ProductSkusTbRow) {
@@ -275,6 +286,7 @@ export async function upsertOne<T>({
 > {
   const { text, values } =
     updateId !== null ? update(table, input).where('id', updateId).toParams() : insert(table, input).toParams();
+  console.log(text);
 
   const keyRegex = /^Key \((.*?)\)=\((.*?)\) already exists\.$/;
   const pgErrorSchema = z.object({
