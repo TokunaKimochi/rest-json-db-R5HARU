@@ -1,6 +1,19 @@
 -- シフトJIS CRLF で保存してコマンドプロンプトで実行
 -- psql> \i <FULL_PATH(unix like)>.sql
 INSERT INTO
+    suppliers (tel, fax, url, zip_code, address1, name1, note)
+VALUES
+    (
+        '075-662-9600',
+        '075-662-9603',
+        'https://www.nintendo.co.jp',
+        '6018502',
+        '京都府京都市南区東九条南松田町2番地1',
+        '自社㈱日本工場',
+        'ＦＡＸ注文'
+    );
+
+INSERT INTO
     unit_types (name)
 VALUES
     ('g');
