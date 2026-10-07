@@ -54,7 +54,7 @@ const shortNameSanitize = (originalText: string, shouldDash2Space = true) => {
   text = text.trim();
   text = jaconv.toZen(text);
   if (shouldDash2Space) {
-    text = text.replace(WITH_CHOON, ' ');
+    text = text.replace(WITHOUT_CHOON, ' ');
   } else {
     text = text.replace(WITHOUT_CHOON, '-');
   }
@@ -71,7 +71,7 @@ const normalize = (originalText: string) => {
 
   text = text.trim();
   text = jaconv.toKatakana(text);
-  text = text.replace(/[-－﹣−‐⁃‑‒–—﹘―⎯⏤ーｰ─━]/g, '');
+  text = text.replace(WITH_CHOON, '');
   text = text.replace(/\s+/g, '');
   text = jaconv.normalize(text);
 
